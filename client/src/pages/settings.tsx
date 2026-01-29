@@ -17,6 +17,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { PhoneInput } from "@/components/ui/phone-input";
 
 const UNLOCK_DURATION_MS = 5 * 60 * 1000;
 
@@ -830,13 +831,11 @@ export default function Settings() {
                     Phone Number
                     {!isUnlocked && <Lock className="h-3 w-3 text-muted-foreground" />}
                   </Label>
-                  <Input 
-                    id="phone" 
-                    placeholder="+44 7700 900000"
+                  <PhoneInput 
                     value={profileForm.phone}
-                    onChange={(e) => setProfileForm(prev => ({ ...prev, phone: e.target.value }))}
+                    onChange={(value) => setProfileForm(prev => ({ ...prev, phone: value }))}
                     disabled={!isUnlocked}
-                    className={!isUnlocked ? "bg-muted cursor-not-allowed" : ""}
+                    placeholder="7700 900000"
                   />
                 </div>
                 <div className="space-y-2">

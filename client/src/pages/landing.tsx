@@ -103,7 +103,7 @@ const HeroCarousel = () => {
           transition={{ duration: 0.5, ease: "easeInOut" }}
           className="absolute inset-0"
         >
-          <Card className="border-0 shadow-2xl bg-white/60 backdrop-blur-md p-6 h-full flex flex-col justify-between transform hover:scale-[1.02] transition-transform duration-500">
+          <Card className="border-0 shadow-2xl bg-white/60 backdrop-blur-md p-6 h-full flex flex-col justify-between">
             <CardContent className="p-0 space-y-6">
               <div className="flex items-center justify-between border-b pb-4">
                 <div className="space-y-1">
@@ -202,17 +202,17 @@ export default function Landing() {
           <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-green-100 to-primary/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
         </div>
 
-        <div className="flex flex-col lg:flex-row items-center gap-6 sm:gap-8 lg:gap-16 py-4 md:py-8 animate-in slide-in-from-bottom-4 duration-700 px-1">
+        <div className="flex flex-col lg:flex-row items-center gap-8 sm:gap-10 lg:gap-16 py-8 sm:py-10 md:py-12 animate-in slide-in-from-bottom-4 duration-700 px-2 sm:px-4">
           {/* Left Content */}
-          <div className="flex-1 z-10 space-y-3 sm:space-y-4 md:space-y-6 text-center lg:text-left">
+          <div className="flex-1 z-10 space-y-5 sm:space-y-6 md:space-y-8 text-center lg:text-left">
             {/* Badge */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-primary/10 rounded-full text-primary text-xs sm:text-sm font-semibold"
+              className="inline-flex items-center gap-2.5 px-4 sm:px-5 py-2 sm:py-2.5 bg-primary/10 rounded-full text-primary text-sm sm:text-base font-semibold"
             >
-              <Heart className="w-3 h-3 sm:w-4 sm:h-4 fill-primary animate-heartbeat" />
+              <Heart className="w-4 h-4 sm:w-5 sm:h-5 fill-primary stroke-primary animate-heart-pulse" />
               Your personal wellness companion
             </motion.div>
 
@@ -221,9 +221,9 @@ export default function Landing() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="space-y-3 sm:space-y-4"
+              className="space-y-4 sm:space-y-5"
             >
-              <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 leading-tight">
                 Your Wellbeing,{" "}
                 <span className="text-primary relative">
                   Understood
@@ -241,7 +241,7 @@ export default function Landing() {
                   </svg>
                 </span>
               </h1>
-              <p className="text-base sm:text-xl md:text-2xl text-slate-600 max-w-lg leading-relaxed mx-auto lg:mx-0">
+              <p className="text-lg sm:text-xl md:text-2xl text-slate-600 max-w-lg leading-relaxed mx-auto lg:mx-0">
                 Monitor your activities, track your mood, and connect with
                 healthcare professionals.
               </p>
@@ -252,7 +252,7 @@ export default function Landing() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="flex flex-wrap gap-2 sm:gap-4 justify-center lg:justify-start"
+              className="flex flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start"
             >
               {[
                 { icon: Activity, text: "Activity Tracking" },
@@ -261,10 +261,10 @@ export default function Landing() {
               ].map((item, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-1.5 sm:gap-2 bg-white/80 backdrop-blur-sm px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-sm border border-slate-100"
+                  className="flex items-center gap-2 sm:gap-2.5 bg-white/80 backdrop-blur-sm px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl shadow-sm border border-slate-100"
                 >
-                  <item.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
-                  <span className="text-xs sm:text-sm font-medium text-slate-700">
+                  <item.icon className="w-5 h-5 sm:w-5 sm:h-5 text-primary" />
+                  <span className="text-sm sm:text-base font-medium text-slate-700">
                     {item.text}
                   </span>
                 </div>
@@ -276,23 +276,23 @@ export default function Landing() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-3 sm:pt-4 justify-center lg:justify-start"
+              className="flex flex-col sm:flex-row gap-4 pt-4 sm:pt-5 justify-center lg:justify-start"
             >
               <Link href="/auth/register">
                 <Button
-                  size="default"
-                  className="w-full sm:w-auto shadow-lg shadow-primary/25 h-11 sm:h-14 px-6 sm:px-8 text-sm sm:text-lg font-semibold group"
+                  size="lg"
+                  className="w-full sm:w-auto shadow-lg shadow-primary/25 text-base sm:text-lg font-semibold"
                   data-testid="button-get-started-hero"
                 >
                   Get Started Free
-                  <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="ml-2 w-5 h-5" />
                 </Button>
               </Link>
               <Link href="/auth/login">
                 <Button
-                  size="default"
+                  size="lg"
                   variant="outline"
-                  className="w-full sm:w-auto h-11 sm:h-14 px-6 sm:px-8 text-sm sm:text-lg font-semibold bg-white/80 hover:bg-white border-2 border-slate-200 hover:border-primary/30"
+                  className="w-full sm:w-auto text-base sm:text-lg font-semibold bg-white/80 border-2 border-slate-200"
                   data-testid="button-signin-hero"
                 >
                   Sign In
@@ -305,11 +305,11 @@ export default function Landing() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="flex items-center gap-4 sm:gap-6 pt-4 sm:pt-6 border-t border-slate-200 justify-center lg:justify-start"
+              className="flex items-center gap-4 sm:gap-6 pt-6 sm:pt-8 border-t border-slate-200 justify-center lg:justify-start"
             >
-              <div className="flex items-center gap-2 sm:gap-3">
-                <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
-                <div className="text-xs sm:text-sm">
+              <div className="flex items-center gap-3">
+                <ShieldCheck className="w-6 h-6 sm:w-7 sm:h-7 text-primary shrink-0" />
+                <div className="text-sm sm:text-base">
                   <p className="font-semibold text-slate-800">
                     Trusted by healthcare professionals
                   </p>

@@ -14,6 +14,7 @@ import api from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
+import { PhoneInput } from "@/components/ui/phone-input";
 import {
   SidebarProvider,
   Sidebar,
@@ -549,13 +550,11 @@ export default function ProviderSettings() {
                     Phone Number
                     {!isUnlocked && <Lock className="h-3 w-3 text-muted-foreground" />}
                   </Label>
-                  <Input 
-                    id="phone" 
-                    placeholder="+44 7700 900000"
+                  <PhoneInput 
                     value={personalForm.phone}
-                    onChange={(e) => setPersonalForm(prev => ({ ...prev, phone: e.target.value }))}
+                    onChange={(value) => setPersonalForm(prev => ({ ...prev, phone: value }))}
                     disabled={!isUnlocked}
-                    className={!isUnlocked ? "bg-muted cursor-not-allowed" : ""}
+                    placeholder="7700 900000"
                   />
                 </div>
                 <div className="space-y-2">

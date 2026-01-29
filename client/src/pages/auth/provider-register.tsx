@@ -4,11 +4,12 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useLocation, Redirect } from "wouter";
 import { useState, useRef } from "react";
-import { ArrowLeft, Upload, FileText, Building, User, Mail, Lock, Phone, MapPin, Loader2, Eye, EyeOff, X, CheckCircle } from "lucide-react";
+import { ArrowLeft, Upload, FileText, Building, User, Mail, Lock, MapPin, Loader2, Eye, EyeOff, X, CheckCircle } from "lucide-react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { useToast } from "@/hooks/use-toast";
+import { PhoneInput } from "@/components/ui/phone-input";
 import { useAuth, getDashboardPath } from "@/contexts/AuthContext";
 import { PageLoader } from "@/components/ui/page-loader";
 import api from "@/lib/api";
@@ -246,11 +247,6 @@ export default function ProviderRegister() {
       const selectedServices = Object.keys(formData.services).filter(
         key => formData.services[key as keyof typeof formData.services]
       );
-      
-      const phonePrefix = formData.countryCode === 'uk' ? '+44' : 
-                          formData.countryCode === 'us' ? '+1' : 
-                          formData.countryCode === 'ca' ? '+1' : 
-                          formData.countryCode === 'au' ? '+61' : '+33';
 
       const providerData = {
         professionalInfo: {
@@ -270,7 +266,7 @@ export default function ProviderRegister() {
             postcode: formData.postCode,
             country: 'UK'
           },
-          phone: `${phonePrefix} ${formData.phone}`,
+          phone: formData.phone,
           email: formData.email
         },
         availability: {
@@ -512,29 +508,12 @@ export default function ProviderRegister() {
 
                 <div className="space-y-2">
                   <Label className="text-xs sm:text-sm">Contact Number <span className="text-red-500">*</span></Label>
-                  <div className="flex gap-1 sm:gap-2">
-                    <Select value={formData.countryCode} onValueChange={(value) => handleInputChange("countryCode", value)}>
-                      <SelectTrigger className="w-16 sm:w-20 text-xs sm:text-sm">
-                        <SelectValue placeholder="+44" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="uk">+44</SelectItem>
-                        <SelectItem value="us">+1</SelectItem>
-                        <SelectItem value="ca">+1</SelectItem>
-                        <SelectItem value="au">+61</SelectItem>
-                        <SelectItem value="eu">+33</SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <div className="relative flex-1">
-                      <Phone className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground flex-shrink-0" />
-                      <Input 
-                        placeholder="2079460000" 
-                        className="pl-9 w-full text-xs sm:text-sm" 
-                        value={formData.phone}
-                        onChange={(e) => handleInputChange("phone", e.target.value)}
-                      />
-                    </div>
-                  </div>
+                  <PhoneInput 
+                    value={formData.phone}
+                    onChange={(value) => handleInputChange("phone", value)}
+                    placeholder="2079460000"
+                    defaultCountryCode="GB"
+                  />
                 </div>
 
                 <div className="space-y-3 sm:space-y-4 pt-2">

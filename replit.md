@@ -52,3 +52,21 @@ The project structure separates frontend (`client/`) and backend (`server/`) for
 
 -   **Frontend:** `@tanstack/react-query`, `framer-motion`, `date-fns`, `react-day-picker`, `embla-carousel-react`, `zod`.
 -   **Backend:** `mongoose`, `jsonwebtoken`, `bcryptjs`, `@google/generative-ai`, `resend`, `express-validator`.
+
+## Recent Changes (January 2026)
+
+### UI/UX Enhancements
+- **Heart Icon Animation**: Landing page heart icon beside "Your personal wellness companion" now pulses smoothly from filled to outline (2.5s animation cycle)
+- **Dashboard Mobile View**: User profile avatar hidden on mobile for cleaner greeting text display
+- **Country Code Phone Input**: New PhoneInput component with country code selector using REST Countries API
+  - Searchable dropdown with 250+ countries and dial codes
+  - Flags displayed using Unicode emoji
+  - Applied to: User settings, Provider settings, Provider registration
+  - Falls back to common countries (UK, US, Canada, Australia, etc.) until full API loads
+- **Mobile Responsiveness Improvements**:
+  - Larger hero section fonts (text-3xl for headline, text-lg for description on mobile)
+  - Improved landing page spacing with better vertical rhythm (space-y-5 to space-y-10)
+  - Larger key point chips with better touch targets
+  - Dashboard quick actions using hover-elevate utility instead of custom hover states
+  - Removed all custom hover effects (scale, shadow, border changes) to comply with design system
+  - Better card padding and section spacing throughout dashboard
