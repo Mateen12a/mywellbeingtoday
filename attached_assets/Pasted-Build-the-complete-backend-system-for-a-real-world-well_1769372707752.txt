@@ -1,0 +1,315 @@
+Build the complete backend system for a real-world wellbeing web application called mywellbeingtoday.
+
+This is not a prototype. It must be a fully working, production-ready backend that connects to an already-built frontend and supports real users.
+
+CORE TECH REQUIREMENTS (NON-NEGOTIABLE)
+
+Backend runtime: Node.js (JavaScript only, no TypeScript)
+
+Framework: Express.js
+
+Database: MongoDB
+
+Database connection:
+
+Use MONGO_URI from environment secrets (already provided)
+
+Architecture:
+
+RESTful APIs
+
+Clean separation of concerns
+
+Authentication:
+
+JWT-based authentication
+
+Role-based access control
+
+CORS:
+
+Enabled and configured properly
+
+Backend must:
+
+Run independently
+
+Be deployable on its own
+
+Expose a clean API for frontend consumption
+
+USER ROLES (MUST BE IMPLEMENTED)
+
+Implement full support for the following roles:
+
+User
+
+Provider (health or social care professional)
+
+Admin
+
+Super Admin
+
+Each role must have:
+
+Clearly defined permissions
+
+Backend-enforced access rules
+
+Secure role checks on every sensitive endpoint
+
+AUTHENTICATION & ACCOUNT FLOW
+
+Implement a complete and secure flow for:
+
+User registration
+
+Email-based verification or authentication codes
+
+Login and logout
+
+Password reset and recovery
+
+Profile creation and updates
+
+Forms must:
+
+Allow manual input options where appropriate
+
+Be flexible enough to support diverse user backgrounds
+
+EMAIL SYSTEM (REQUIRED)
+
+Implement a professional email service
+
+Prepare integration using Resend
+
+Use environment variables for API keys
+
+Do NOT hardcode secrets
+
+Email requirements:
+
+Branded email templates
+
+Text branding: mywellbeingtoday
+
+Modern, calm design with brand colours
+
+Support:
+
+Verification emails
+
+Password recovery
+
+Notifications
+
+Appointment confirmations
+
+Email system must:
+
+Work safely even if Resend key is not yet active
+
+Be easy to activate once domain and key are ready
+
+CORE WELLBEING FLOW (VERY IMPORTANT)
+
+The primary user journey must feel guided and intuitive.
+
+Flow:
+
+User registers
+
+User lands on dashboard
+
+Dashboard clearly guides user to:
+
+Log today’s activity
+
+Log current mood
+
+System analyzes wellbeing
+
+System returns:
+
+A wellbeing report
+
+Calm, supportive suggestions
+
+Report can be:
+
+Downloaded
+
+Printed
+
+If help is recommended:
+
+User is guided to the provider directory
+
+User can book an appointment
+
+Booking form can:
+
+Auto-fill with wellbeing report
+
+Or allow manual reason entry
+
+ACTIVITY & MOOD LOGGING
+
+Implement APIs for:
+
+Logging daily activities
+
+Logging mood and wellbeing state
+
+Supporting both:
+
+Manual text input
+
+Voice input (backend-ready structure)
+
+All logs must:
+
+Be timestamped
+
+Be stored in MongoDB
+
+Be linked to the user
+
+Be retrievable historically
+
+AI ASSISTANT (CORE FEATURE)
+
+AI is a key part of the product.
+
+Implement an AI assistant layer that:
+
+Analyzes user activity and mood
+
+Generates wellbeing insights
+
+Produces calm, non-alarming suggestions
+
+Helps users reflect on their day
+
+Rules:
+
+No medical diagnosis
+
+No fear-based language
+
+Focus on awareness, guidance, and support
+
+If Gemini AI is used:
+
+Use environment variables
+
+Do not hardcode API keys
+
+If AI keys are missing:
+
+Gracefully fall back to safe mock responses
+
+Do not crash the backend
+
+Clearly document:
+
+Required AI configuration
+
+Keys needed
+
+Where to add them
+
+PROVIDER DIRECTORY & APPOINTMENTS
+
+Implement backend support for:
+
+Provider profiles
+
+Searchable provider directory
+
+Appointment booking
+
+Linking wellbeing reports to appointments
+
+Provider access only to authorised user data
+
+ADMIN & SUPER ADMIN FEATURES
+
+Admins must be able to:
+
+Manage users
+
+Manage providers
+
+Review wellbeing data within permissions
+
+Manage directory content
+
+Super Admins must be able to:
+
+Manage admins
+
+Control system-wide settings
+
+View anonymised analytics
+
+Oversee compliance and governance
+
+All admin actions must:
+
+Be logged
+
+Be permission-checked
+
+Be enforced server-side
+
+SETTINGS & CONFIGURATION
+
+Backend support for:
+
+User settings
+
+Privacy and consent
+
+Notification preferences
+
+Subscription readiness (even if payments are added later)
+
+QUALITY & DELIVERY REQUIREMENTS
+
+Backend must be fully functional
+
+No placeholder-only logic
+
+No broken routes
+
+Clean, maintainable structure
+
+Clear API contracts matching frontend needs
+
+Test all flows before completion
+
+After completion:
+
+Backend must run without errors
+
+Frontend must connect cleanly
+
+Provide brief guidance on:
+
+AI setup
+
+Email setup
+
+Required environment variables
+
+FINAL INSTRUCTION
+
+This is a production-ready backend, intended for real users.
+
+Do not explain concepts.
+Do not skip features.
+Do not leave unfinished logic.
+
+Build it as a real product, not a demo.

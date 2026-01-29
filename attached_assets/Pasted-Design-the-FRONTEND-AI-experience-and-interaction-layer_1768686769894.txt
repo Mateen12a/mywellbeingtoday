@@ -1,0 +1,180 @@
+Design the FRONTEND AI experience and interaction layer for the wellbeing web application MyWellbeingToday, owned by Wellbeing@Fingertip and built by Airfns Softwares.
+
+This task is FRONTEND ONLY.
+Do NOT implement backend logic, AI engines, databases, or API servers.
+
+The goal is to design and build the AI-driven user experience, flows, screens, and data structures so that real AI services can be connected later without refactoring the UI.
+
+AI is a CORE FEATURE and must feel native to the product, not an add-on.
+
+GLOBAL RULES (NON-NEGOTIABLE)
+
+- Frontend communicates with AI ONLY via REST API calls (mocked for now)
+- No AI logic runs in the browser
+- No AI providers are hardcoded
+- All AI responses are mocked safely in the frontend
+- Mock responses must follow real-world AI response shapes
+- No runtime errors if backend or AI is unavailable
+
+AI UX RESPONSIBILITIES (FRONTEND)
+
+The frontend must present AI as a trusted wellbeing assistant that supports:
+- Activity tracking
+- Symptom awareness
+- Wellbeing analysis
+- Guidance and recommendations
+- Planning and insights
+
+The AI must never:
+- Claim medical diagnosis
+- Use fear-based language
+- Use the word “simple”
+
+AI INTERACTION SURFACES (REQUIRED)
+
+1. DAILY ACTIVITY & SYMPTOM INPUT (AI-AWARE UI)
+
+Design interfaces where users can:
+- Log daily activities manually
+- Trigger voice entry (UI only)
+- Record physical and mental experiences
+- Select context (work, home, travel, school, leisure)
+- Record sleep, stress, conflicts, mood
+
+Frontend must:
+- Structure this data exactly as it would be sent to an AI API
+- Timestamp entries
+- Prepare payloads for analysis
+
+2. AI ANALYSIS RESULTS DISPLAY
+
+Design UI components to display AI outputs including:
+- Wellbeing classification:
+  - Asymptomatic
+  - Mild
+  - Moderate
+  - Severe
+- Confidence or clarity indicators
+- Calm explanatory summaries
+- Visual status indicators (icons, colour states)
+
+All AI outputs are mocked but must feel real and consistent.
+
+3. MOOD TRACKER (AI-INFORMED UI)
+
+Design a mood tracker that:
+- Reflects AI analysis results
+- Accepts wearable data placeholders
+- Degrades gracefully if wearables are not connected
+- Updates dashboards and daily summaries
+
+Mood states must influence:
+- Dashboard highlights
+- Decision prompts
+- Guidance visibility
+
+4. AI DECISION & GUIDANCE FLOW
+
+When symptoms are detected, the UI must:
+- Show severity clearly
+- Present AI-recommended next steps
+- Offer actions such as:
+  - Monitor wellbeing
+  - Learn more
+  - Seek professional help
+
+Recommendations must:
+- Feel supportive and non-alarming
+- Be location-aware in structure (even if mocked)
+- Respect user choice and consent
+
+5. WELLBEING PLAN UI
+
+Design AI-driven wellbeing plan views that:
+- Show daily, weekly, monthly, or yearly plans
+- Present steps, reminders, and guidance
+- Can be downloaded or printed (UI only)
+- Are structured for future real AI content
+
+6. AI SEARCH & KNOWLEDGE EXPERIENCE
+
+Design an AI-assisted search interface where users can:
+- Ask about symptoms or activities
+- Learn recommended actions
+- Understand wellbeing impacts
+
+Responses must:
+- Be calm and inclusive
+- Avoid diagnosis language
+- Be adaptable by persona and context
+
+7. AGGREGATE INSIGHTS (FRONTEND VIEW)
+
+Design UI views for:
+- Monthly, quarterly, yearly wellbeing insights
+- Community or organisational trends
+- Research and policy dashboards
+
+Data must be presented as:
+- Fully anonymised
+- Aggregated summaries
+- Mocked but realistic
+
+8. CERTIFICATION SUPPORT UI
+
+Design frontend flows for:
+- Viewing AI-assisted summaries
+- Supporting wellbeing or medical certification processes
+- Viewing renewal history
+
+AI assists with summaries only. No certification claims.
+
+PERSONA-AWARE UI DESIGN
+
+The AI experience must adapt visually and textually for:
+- Individual citizens of all ages
+- Employees and workplaces
+- Event participants
+- Residents at home or on journeys
+- Community and population-level views
+
+Tone must always be:
+- Calm
+- Respectful
+- Confidence-building
+- Accessible regardless of technical skill
+
+SECURITY & ETHICS (FRONTEND)
+
+- Display clear disclaimers
+- Respect privacy boundaries
+- Require consent confirmations where relevant
+- Never imply diagnosis or treatment
+
+API READINESS (FRONTEND ONLY)
+
+Prepare API service files such as:
+- analyzeDailyLog()
+- generateWellbeingPlan()
+- recommendActions()
+- fetchAggregateInsights()
+
+All API calls must:
+- Use mock responses for now
+- Be isolated in a services layer
+- Be easy to switch to real backend endpoints later
+
+OUTPUT REQUIREMENTS
+
+Produce:
+- Fully designed AI-aware frontend UI
+- Mock AI responses with real-world structure
+- Clean component architecture
+- Clear separation between UI, state, and API services
+- No backend code
+- No AI provider logic
+
+Do NOT explain steps.
+Do NOT generate backend code.
+Do NOT hardcode AI engines.
+Design the AI experience exactly as specified so it can later connect to real AI services without UI changes.

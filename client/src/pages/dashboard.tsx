@@ -1,0 +1,1082 @@
+import { useState, useEffect, useMemo } from "react";
+import {
+  Card,
+  CardContent,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Link } from "wouter";
+import {
+  Activity,
+  Heart,
+  Sun,
+  Calendar,
+  ChevronRight,
+  Plus,
+  MapPin,
+  FileText,
+  Lightbulb,
+  Bell,
+  AlertCircle,
+  Loader2,
+  X,
+  TrendingUp,
+  MessageCircle,
+  Sparkles,
+  Clock,
+  BarChart3,
+} from "lucide-react";
+import {
+  Area,
+  AreaChart,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+} from "recharts";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Skeleton } from "@/components/ui/skeleton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { PageLoader } from "@/components/ui/page-loader";
+import { SkeletonCard, FadeInContent } from "@/components/ui/skeleton-card";
+import { useQuery } from "@tanstack/react-query";
+import { useAuth } from "@/contexts/AuthContext";
+import api from "@/lib/api";
+import { ReportDownloadButton } from "@/components/report-download-button";
+
+function isValidDate(date: any): boolean {
+  if (!date) return false;
+  const parsed = new Date(date);
+  return !isNaN(parsed.getTime());
+}
+
+function formatDayLabel(dateValue: any): string | null {
+  if (!isValidDate(dateValue)) {
+    return null;
+  }
+  return new Date(dateValue).toLocaleDateString('en-US', { weekday: 'short' });
+}
+
+function getTodayKey(): string {
+  return new Date().toISOString().split('T')[0];
+}
+
+function getWellbeingStatus(score: number): { text: string; color: string; bgColor: string; borderColor: string; indicatorColor: string } {
+  if (score >= 70) {
+    return { 
+      text: "You're doing great!", 
+      color: "text-green-700", 
+      bgColor: "bg-green-50",
+      borderColor: "border-green-200",
+      indicatorColor: "bg-green-500"
+    };
+  } else if (score >= 40) {
+    return { 
+      text: "Room for improvement", 
+      color: "text-amber-700", 
+      bgColor: "bg-amber-50",
+      borderColor: "border-amber-200",
+      indicatorColor: "bg-amber-500"
+    };
+  } else {
+    return { 
+      text: "Consider seeking support", 
+      color: "text-red-700", 
+      bgColor: "bg-red-50",
+      borderColor: "border-red-200",
+      indicatorColor: "bg-red-500"
+    };
+  }
+}
+
+function getWellbeingTips(score: number): string[] {
+  if (score >= 70) {
+    return [
+      "Keep up your healthy habits!",
+      "Consider sharing your wellness journey with others"
+    ];
+  } else if (score >= 40) {
+    return [
+      "Try adding one more healthy activity to your routine",
+      "Consider talking to someone about how you're feeling"
+    ];
+  } else {
+    return [
+      "Reach out to a mental health professional",
+      "Small steps matter - try one self-care activity today"
+    ];
+  }
+}
+
+function getLatestTimestamp(items: any[]): Date | null {
+  if (!items || items.length === 0) return null;
+  const timestamps = items
+    .map((item: any) => item.createdAt || item.loggedAt || item.date)
+    .filter(Boolean)
+    .map((ts: string) => new Date(ts))
+    .filter((d: Date) => !isNaN(d.getTime()));
+  if (timestamps.length === 0) return null;
+  return timestamps.reduce((latest: Date, current: Date) => 
+    current > latest ? current : latest
+  );
+}
+
+function getMinutesSince(timestamp: Date | null): number | null {
+  if (!timestamp) return null;
+  return Math.floor((Date.now() - timestamp.getTime()) / (1000 * 60));
+}
+
+interface DynamicGreetingParams {
+  hasLoggedActivityToday: boolean;
+  hasLoggedMoodToday: boolean;
+  todayActivities: any[] | null;
+  todayMoodLogs: any[] | null;
+  recentActivities: any[];
+  recentMoods: any[];
+  currentHour: number;
+}
+
+function getDynamicGreeting(params: DynamicGreetingParams): string {
+  const {
+    hasLoggedActivityToday,
+    hasLoggedMoodToday,
+    todayActivities,
+    todayMoodLogs,
+    recentActivities,
+    recentMoods,
+    currentHour,
+  } = params;
+
+  const latestActivityTime = getLatestTimestamp(todayActivities || []);
+  const latestMoodTime = getLatestTimestamp(todayMoodLogs || []);
+  const minutesSinceActivity = getMinutesSince(latestActivityTime);
+  const minutesSinceMood = getMinutesSince(latestMoodTime);
+
+  const justLoggedActivity = minutesSinceActivity !== null && minutesSinceActivity <= 30;
+  const justLoggedMood = minutesSinceMood !== null && minutesSinceMood <= 30;
+
+  if (justLoggedActivity && justLoggedMood) {
+    return "You're on track! Your wellbeing insights are building up.";
+  }
+  if (justLoggedActivity) {
+    return "Great job logging your activity! What's next on your wellness journey?";
+  }
+  if (justLoggedMood) {
+    return "Thanks for checking in! Keep tracking to see your patterns.";
+  }
+
+  if (hasLoggedActivityToday && hasLoggedMoodToday) {
+    return "You're on track! Your wellbeing insights are building up.";
+  }
+  if (hasLoggedActivityToday && !hasLoggedMoodToday) {
+    return "You've logged an activity. How about checking in with your mood?";
+  }
+  if (hasLoggedMoodToday && !hasLoggedActivityToday) {
+    return "You've checked in today. Consider logging your activities too.";
+  }
+
+  const latestAnyLogTime = latestActivityTime && latestMoodTime
+    ? (latestActivityTime > latestMoodTime ? latestActivityTime : latestMoodTime)
+    : latestActivityTime || latestMoodTime;
+  const minutesSinceAnyLog = getMinutesSince(latestAnyLogTime);
+
+  if (minutesSinceAnyLog !== null && minutesSinceAnyLog >= 60) {
+    return "Let's take a moment to check and reflect on what happened to you today.";
+  }
+
+  const consecutiveDays = calculateLoggingStreak(recentActivities, recentMoods);
+  if (consecutiveDays >= 7) {
+    return `Amazing ${consecutiveDays}-day streak! Keep up your consistent wellness tracking.`;
+  }
+  if (consecutiveDays >= 3) {
+    return `Great ${consecutiveDays}-day streak! You're building healthy habits.`;
+  }
+
+  const morningLogs = countMorningLogs(recentActivities, recentMoods);
+  const totalLogs = (recentActivities?.length || 0) + (recentMoods?.length || 0);
+  const isMorningLogger = totalLogs > 0 && morningLogs / totalLogs > 0.5;
+  
+  if (isMorningLogger && currentHour < 12) {
+    return "Good to see you this morning! Ready to log your wellness activities?";
+  }
+
+  const topActivity = getMostCommonActivity(recentActivities);
+  if (topActivity) {
+    return `Ready for some ${topActivity.toLowerCase()} or something new today?`;
+  }
+
+  return "Ready to start your wellness journey today? Log an activity or mood to begin.";
+}
+
+function calculateLoggingStreak(activities: any[], moods: any[]): number {
+  const allDates = new Set<string>();
+  
+  [...(activities || []), ...(moods || [])].forEach((item: any) => {
+    const dateStr = item.createdAt || item.loggedAt || item.date;
+    if (dateStr) {
+      const date = new Date(dateStr);
+      if (!isNaN(date.getTime())) {
+        allDates.add(date.toISOString().split('T')[0]);
+      }
+    }
+  });
+
+  const sortedDates = Array.from(allDates).sort().reverse();
+  if (sortedDates.length === 0) return 0;
+
+  const today = getTodayKey();
+  let streak = 0;
+  let expectedDate = new Date(today);
+
+  for (const dateStr of sortedDates) {
+    const expectedStr = expectedDate.toISOString().split('T')[0];
+    if (dateStr === expectedStr) {
+      streak++;
+      expectedDate.setDate(expectedDate.getDate() - 1);
+    } else if (dateStr < expectedStr) {
+      break;
+    }
+  }
+
+  return streak;
+}
+
+function countMorningLogs(activities: any[], moods: any[]): number {
+  let count = 0;
+  [...(activities || []), ...(moods || [])].forEach((item: any) => {
+    const dateStr = item.createdAt || item.loggedAt || item.date;
+    if (dateStr) {
+      const date = new Date(dateStr);
+      if (!isNaN(date.getTime()) && date.getHours() < 12) {
+        count++;
+      }
+    }
+  });
+  return count;
+}
+
+function getMostCommonActivity(activities: any[]): string | null {
+  if (!activities || activities.length === 0) return null;
+  
+  const activityCounts: Record<string, number> = {};
+  activities.forEach((activity: any) => {
+    const name = activity.activityType || activity.category || activity.name;
+    if (name) {
+      activityCounts[name] = (activityCounts[name] || 0) + 1;
+    }
+  });
+
+  const entries = Object.entries(activityCounts);
+  if (entries.length === 0) return null;
+
+  entries.sort((a, b) => b[1] - a[1]);
+  return entries[0][0];
+}
+
+export default function Dashboard() {
+  const { user, isLoading: authLoading } = useAuth();
+  
+  const firstName = user?.profile?.firstName || "there";
+  const userInitials = (user?.profile?.firstName?.[0]?.toUpperCase() || "") + (user?.profile?.lastName?.[0]?.toUpperCase() || "");
+  const avatarUrl = user?.profile?.avatarUrl;
+  const userStatus = (user as any)?.status || "active";
+
+  const [promptDismissed, setPromptDismissed] = useState(() => {
+    const dismissed = localStorage.getItem('dailyPromptDismissed');
+    return dismissed === getTodayKey();
+  });
+
+  const isReady = !!user && !authLoading;
+
+  const { data: activitiesData, isLoading: activitiesLoading } = useQuery({
+    queryKey: ["activities", user?._id],
+    queryFn: async () => {
+      const response = await api.getActivities({ limit: 5 });
+      return response.data;
+    },
+    enabled: isReady,
+    refetchOnMount: 'always',
+    staleTime: 0,
+  });
+
+  const { data: moodsData, isLoading: moodsLoading } = useQuery({
+    queryKey: ["moods", user?._id],
+    queryFn: async () => {
+      const response = await api.getMoods({ limit: 7 });
+      return response.data;
+    },
+    enabled: isReady,
+    refetchOnMount: 'always',
+    staleTime: 0,
+  });
+
+  const { data: moodStats, isLoading: moodStatsLoading } = useQuery({
+    queryKey: ["moodStats", user?._id],
+    queryFn: async () => {
+      const response = await api.getMoodStats(7);
+      return response.data;
+    },
+    enabled: isReady,
+    refetchOnMount: 'always',
+    staleTime: 0,
+  });
+
+  const { data: reportsData, isLoading: reportsLoading } = useQuery({
+    queryKey: ["wellbeingReports", user?._id],
+    queryFn: async () => {
+      const response = await api.getWellbeingReports({ limit: 3 });
+      return response.data;
+    },
+    enabled: isReady,
+    refetchOnMount: 'always',
+    staleTime: 0,
+  });
+
+  const { data: dashboardSummary } = useQuery({
+    queryKey: ["dashboardSummary", user?._id],
+    queryFn: async () => {
+      const response = await api.getDashboardSummary();
+      return response.data;
+    },
+    enabled: isReady,
+    refetchOnMount: 'always',
+    staleTime: 0,
+  });
+
+  const { data: todayActivities } = useQuery({
+    queryKey: ["todayActivities", user?._id],
+    queryFn: async () => {
+      const response = await api.getTodayActivities();
+      return response.data;
+    },
+    enabled: isReady,
+    refetchOnMount: 'always',
+    staleTime: 0,
+  });
+
+  const { data: todayMood } = useQuery({
+    queryKey: ["todayMood", user?._id],
+    queryFn: async () => {
+      const response = await api.getTodayMood();
+      return response.data;
+    },
+    enabled: isReady,
+    refetchOnMount: 'always',
+    staleTime: 0,
+  });
+
+  const { data: latestReportData } = useQuery({
+    queryKey: ["latestReport", user?._id],
+    queryFn: async () => {
+      const response = await api.getLatestReport();
+      return response.data;
+    },
+    enabled: isReady,
+    refetchOnMount: 'always',
+    staleTime: 0,
+  });
+
+  const { data: upcomingAppointmentData } = useQuery({
+    queryKey: ["upcomingAppointment", user?._id],
+    queryFn: async () => {
+      const response = await api.getUpcomingAppointment();
+      return response.data;
+    },
+    enabled: isReady,
+    refetchOnMount: 'always',
+    staleTime: 0,
+  });
+
+  const { data: conversationsData } = useQuery({
+    queryKey: ["conversations", user?._id],
+    queryFn: async () => {
+      const response = await api.getConversations({ limit: 1 });
+      return response.data;
+    },
+    enabled: isReady,
+    refetchOnMount: 'always',
+    staleTime: 0,
+  });
+
+  const hasLoggedActivityToday = (todayActivities?.activities?.length || 0) > 0;
+  const hasLoggedMoodToday = (todayMood?.moodLogs?.length || 0) > 0;
+  const showDailyPrompt = !promptDismissed && (!hasLoggedActivityToday || !hasLoggedMoodToday);
+
+  const wellbeingScore = useMemo(() => {
+    if (latestReportData?.report?.overallScore) {
+      return latestReportData.report.overallScore;
+    }
+    if (moodStats?.averageScore) {
+      return Math.round(moodStats.averageScore * 20);
+    }
+    const recentMoods = moodsData?.moodLogs?.slice(0, 7) || [];
+    if (recentMoods.length > 0) {
+      const avg = recentMoods.reduce((sum: number, m: any) => sum + (m.moodScore || 0), 0) / recentMoods.length;
+      return Math.round(avg * 20);
+    }
+    return null;
+  }, [latestReportData, moodStats, moodsData]);
+
+  const currentHour = new Date().getHours();
+  const greeting =
+    currentHour < 12
+      ? "Good morning"
+      : currentHour < 18
+        ? "Good afternoon"
+        : "Good evening";
+
+  const dynamicGreetingMessage = useMemo(() => {
+    return getDynamicGreeting({
+      hasLoggedActivityToday,
+      hasLoggedMoodToday,
+      todayActivities: todayActivities?.activities || null,
+      todayMoodLogs: todayMood?.moodLogs || null,
+      recentActivities: activitiesData?.activities || [],
+      recentMoods: moodsData?.moodLogs || [],
+      currentHour,
+    });
+  }, [hasLoggedActivityToday, hasLoggedMoodToday, todayActivities, todayMood, activitiesData, moodsData, currentHour]);
+
+  const hasUpcomingAppointment = !!upcomingAppointmentData?.appointment;
+  const hasUsedAIAssistant = (conversationsData?.conversations?.length || 0) > 0;
+  const hasReports = (reportsData?.reports?.length || 0) > 0;
+  const isHighStress = wellbeingScore !== null && wellbeingScore < 40;
+
+  interface Suggestion {
+    id: string;
+    title: string;
+    description: string;
+    href: string;
+    buttonText: string;
+    icon: React.ElementType;
+    priority: number;
+    gradient: string;
+    borderColor: string;
+    textColor: string;
+    buttonBorderColor: string;
+    buttonTextColor: string;
+    buttonHoverBg: string;
+  }
+
+  const personalizedSuggestions = useMemo(() => {
+    const suggestions: Suggestion[] = [];
+
+    if (!hasLoggedMoodToday) {
+      suggestions.push({
+        id: 'log-mood',
+        title: 'Log your mood for today',
+        description: 'Take a moment to check in with yourself and track how you\'re feeling right now.',
+        href: '/mood',
+        buttonText: 'Log Mood',
+        icon: Heart,
+        priority: 1,
+        gradient: 'from-rose-50 to-pink-50',
+        borderColor: 'border-rose-100',
+        textColor: 'text-rose-900',
+        buttonBorderColor: 'border-rose-200',
+        buttonTextColor: 'text-rose-700',
+        buttonHoverBg: 'hover:bg-rose-100',
+      });
+    }
+
+    if (!hasLoggedActivityToday) {
+      suggestions.push({
+        id: 'log-activity',
+        title: 'Track your activities',
+        description: 'Record what you\'ve been up to today to understand how activities affect your wellbeing.',
+        href: '/activity',
+        buttonText: 'Log Activity',
+        icon: Activity,
+        priority: 2,
+        gradient: 'from-green-50 to-emerald-50',
+        borderColor: 'border-green-100',
+        textColor: 'text-green-900',
+        buttonBorderColor: 'border-green-200',
+        buttonTextColor: 'text-green-700',
+        buttonHoverBg: 'hover:bg-green-100',
+      });
+    }
+
+    if (isHighStress) {
+      suggestions.push({
+        id: 'relaxation',
+        title: 'Try a relaxation exercise',
+        description: 'Your stress levels seem elevated. Consider trying a breathing or mindfulness exercise.',
+        href: '/ai-assistant',
+        buttonText: 'Get Guided Help',
+        icon: Sparkles,
+        priority: 3,
+        gradient: 'from-violet-50 to-purple-50',
+        borderColor: 'border-violet-100',
+        textColor: 'text-violet-900',
+        buttonBorderColor: 'border-violet-200',
+        buttonTextColor: 'text-violet-700',
+        buttonHoverBg: 'hover:bg-violet-100',
+      });
+    }
+
+    if (hasUpcomingAppointment) {
+      const appointment = upcomingAppointmentData?.appointment;
+      const appointmentDate = appointment?.dateTime ? new Date(appointment.dateTime) : null;
+      const formattedDate = appointmentDate 
+        ? appointmentDate.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })
+        : 'soon';
+      suggestions.push({
+        id: 'appointment',
+        title: 'You have an appointment coming up',
+        description: `Your next appointment is scheduled for ${formattedDate}. Make sure you're prepared!`,
+        href: '/history',
+        buttonText: 'View Details',
+        icon: Clock,
+        priority: 4,
+        gradient: 'from-amber-50 to-orange-50',
+        borderColor: 'border-amber-100',
+        textColor: 'text-amber-900',
+        buttonBorderColor: 'border-amber-200',
+        buttonTextColor: 'text-amber-700',
+        buttonHoverBg: 'hover:bg-amber-100',
+      });
+    }
+
+    if (!hasUsedAIAssistant) {
+      suggestions.push({
+        id: 'ai-assistant',
+        title: 'Chat with your AI wellness companion',
+        description: 'Get personalized support, wellness tips, and guidance from your AI assistant.',
+        href: '/ai-assistant',
+        buttonText: 'Start Chat',
+        icon: MessageCircle,
+        priority: 5,
+        gradient: 'from-cyan-50 to-sky-50',
+        borderColor: 'border-cyan-100',
+        textColor: 'text-cyan-900',
+        buttonBorderColor: 'border-cyan-200',
+        buttonTextColor: 'text-cyan-700',
+        buttonHoverBg: 'hover:bg-cyan-100',
+      });
+    }
+
+    suggestions.push({
+      id: 'wellbeing-report',
+      title: 'View Wellbeing Report',
+      description: hasReports 
+        ? 'Review your latest wellbeing insights and personalized recommendations.'
+        : 'Generate your first wellbeing report to get personalized insights.',
+      href: '/history',
+      buttonText: hasReports ? 'View Reports' : 'Get Started',
+      icon: BarChart3,
+      priority: 6,
+      gradient: 'from-blue-50 to-indigo-50',
+      borderColor: 'border-blue-100',
+      textColor: 'text-blue-900',
+      buttonBorderColor: 'border-blue-200',
+      buttonTextColor: 'text-blue-700',
+      buttonHoverBg: 'hover:bg-blue-100',
+    });
+
+    if (hasUsedAIAssistant && hasLoggedMoodToday && hasLoggedActivityToday && !isHighStress) {
+      suggestions.push({
+        id: 'directory',
+        title: 'Explore healthcare providers',
+        description: 'Find specialists and healthcare providers near you for professional support.',
+        href: '/directory',
+        buttonText: 'Browse Directory',
+        icon: MapPin,
+        priority: 7,
+        gradient: 'from-teal-50 to-emerald-50',
+        borderColor: 'border-teal-100',
+        textColor: 'text-teal-900',
+        buttonBorderColor: 'border-teal-200',
+        buttonTextColor: 'text-teal-700',
+        buttonHoverBg: 'hover:bg-teal-100',
+      });
+    }
+
+    return suggestions.sort((a, b) => a.priority - b.priority).slice(0, 4);
+  }, [hasLoggedMoodToday, hasLoggedActivityToday, isHighStress, hasUpcomingAppointment, hasUsedAIAssistant, hasReports, upcomingAppointmentData]);
+
+  const dismissPrompt = () => {
+    localStorage.setItem('dailyPromptDismissed', getTodayKey());
+    setPromptDismissed(true);
+  };
+
+  const moodChartData = useMemo(() => {
+    if (moodStats?.daily?.length > 0) {
+      return moodStats.daily
+        .map((item: any) => {
+          const dayLabel = formatDayLabel(item.date);
+          if (!dayLabel) return null;
+          return {
+            day: dayLabel,
+            value: item.averageMood || 0,
+          };
+        })
+        .filter(Boolean);
+    }
+    if ((moodsData?.moodLogs?.length ?? 0) > 0) {
+      return moodsData!.moodLogs
+        .slice(0, 7)
+        .reverse()
+        .map((log: any) => {
+          const dayLabel = formatDayLabel(log.createdAt);
+          if (!dayLabel) return null;
+          return {
+            day: dayLabel,
+            value: log.moodScore || 0,
+          };
+        })
+        .filter(Boolean);
+    }
+    return [];
+  }, [moodStats, moodsData]);
+
+  const recentActivities = activitiesData?.activities || [];
+  const reports = reportsData?.reports || [];
+
+  const isInitialLoading = authLoading || (activitiesLoading && moodsLoading && reportsLoading);
+
+  if (isInitialLoading) {
+    return (
+      <div className="flex flex-col items-center justify-center min-h-[80vh] space-y-4">
+        <Loader2 className="h-12 w-12 animate-spin text-primary" />
+        <p className="text-muted-foreground animate-pulse font-medium">Preparing your wellbeing sanctuary...</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-8 animate-in fade-in duration-500">
+      {userStatus === "suspended" && (
+        <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-900 shadow-sm">
+          <AlertCircle className="h-4 w-4" />
+          <AlertTitle className="font-bold ml-2">Account Suspended</AlertTitle>
+          <AlertDescription className="ml-6 mt-1">
+            Your account has been suspended. Please contact support for more information.
+            <div className="mt-3">
+              <Button size="sm" variant="outline" className="bg-white border-red-200 text-red-700 hover:bg-red-50 h-8">
+                Contact Support
+              </Button>
+            </div>
+          </AlertDescription>
+        </Alert>
+      )}
+
+      {showDailyPrompt && (
+        <Card className="border-2 border-primary/30 bg-gradient-to-r from-primary/5 via-secondary/20 to-primary/5 shadow-md relative overflow-hidden">
+          <div className="absolute top-0 left-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -ml-16 -mt-16 pointer-events-none" />
+          <div className="absolute bottom-0 right-0 w-32 h-32 bg-secondary/30 rounded-full blur-2xl -mr-16 -mb-16 pointer-events-none" />
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={dismissPrompt}
+            className="absolute top-3 right-3 h-8 w-8 rounded-full hover:bg-white/50 z-10"
+          >
+            <X className="h-4 w-4 text-gray-500" />
+          </Button>
+          <CardContent className="p-6 relative z-10">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+              <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                <Bell className="h-6 w-6 text-primary" />
+              </div>
+              <div className="flex-1">
+                <h3 className="font-bold text-lg text-black mb-1">
+                  You haven't logged today yet!
+                </h3>
+                <p className="text-gray-700 text-sm">
+                  Take a moment to track your {!hasLoggedMoodToday && !hasLoggedActivityToday 
+                    ? "mood and activities" 
+                    : !hasLoggedMoodToday 
+                      ? "mood" 
+                      : "activities"} to stay on top of your wellbeing.
+                </p>
+              </div>
+              <div className="flex gap-2 w-full sm:w-auto">
+                {!hasLoggedMoodToday && (
+                  <Link href="/mood" className="flex-1 sm:flex-none">
+                    <Button className="w-full rounded-full shadow-sm">
+                      <Heart className="w-4 h-4 mr-2" /> Log Mood
+                    </Button>
+                  </Link>
+                )}
+                {!hasLoggedActivityToday && (
+                  <Link href="/activity" className="flex-1 sm:flex-none">
+                    <Button variant="outline" className="w-full rounded-full border-primary/30">
+                      <Activity className="w-4 h-4 mr-2" /> Log Activity
+                    </Button>
+                  </Link>
+                )}
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {wellbeingScore !== null && (
+        <Card className={`${getWellbeingStatus(wellbeingScore).bgColor} ${getWellbeingStatus(wellbeingScore).borderColor} border shadow-sm`}>
+          <CardContent className="p-6">
+            <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
+              <div className="flex items-center gap-4 flex-1">
+                <div className={`h-16 w-16 rounded-2xl ${getWellbeingStatus(wellbeingScore).indicatorColor} flex items-center justify-center shadow-sm`}>
+                  <TrendingUp className="h-8 w-8 text-white" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 mb-1">
+                    <h3 className="font-bold text-lg text-black">Your Wellbeing Status</h3>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <span className={`text-3xl font-bold ${getWellbeingStatus(wellbeingScore).color}`}>
+                      {wellbeingScore}
+                    </span>
+                    <span className="text-gray-500 text-sm">/100</span>
+                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getWellbeingStatus(wellbeingScore).bgColor} ${getWellbeingStatus(wellbeingScore).color} border ${getWellbeingStatus(wellbeingScore).borderColor}`}>
+                      {getWellbeingStatus(wellbeingScore).text}
+                    </span>
+                  </div>
+                </div>
+              </div>
+              <div className="w-full md:w-auto md:max-w-xs">
+                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Tips for you</p>
+                <ul className="space-y-1">
+                  {getWellbeingTips(wellbeingScore).map((tip, i) => (
+                    <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
+                      <Lightbulb className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
+                      <span>{tip}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+              <div className="flex items-center shrink-0">
+                <ReportDownloadButton 
+                  variant="outline" 
+                  size="sm"
+                  className="bg-white/80 hover:bg-white border-gray-300"
+                />
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Welcome Header */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 flex-wrap">
+        <div className="flex items-center gap-4">
+          <Avatar className="h-12 w-12 border-2 border-primary/20">
+            <AvatarImage src={avatarUrl} alt={firstName} />
+            <AvatarFallback className="bg-primary/10 text-primary font-bold">
+              {userInitials || "U"}
+            </AvatarFallback>
+          </Avatar>
+          <div>
+            <h1 className="text-3xl font-serif font-bold text-black">
+              {greeting}, {firstName}
+            </h1>
+            <p className="text-gray-800 font-medium">
+              {dynamicGreetingMessage}
+            </p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full text-sm font-bold text-secondary-foreground shrink-0 border border-secondary">
+            <Calendar className="w-4 h-4" />
+            <span>
+              {new Date().toLocaleDateString(undefined, {
+                weekday: "long",
+                month: "long",
+                day: "numeric",
+              })}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* Mood Check-in Card */}
+      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/30 overflow-hidden relative shadow-sm">
+        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
+        <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
+          <div className="space-y-4 max-w-lg">
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 text-xs font-bold text-primary tracking-wide uppercase border border-primary/20">
+              <Sun className="w-3 h-3" /> Daily Check-in
+            </div>
+            <h2 className="text-2xl font-serif font-bold text-black">
+              How are you feeling right now?
+            </h2>
+            <p className="text-gray-800 font-medium">
+              Taking a moment to reflect can help you understand your patterns better.
+            </p>
+          </div>
+          <Link href="/mood">
+            <Button
+              size="lg"
+              className="rounded-full px-8 shadow-lg shadow-primary/20 hover:scale-105 transition-transform font-bold"
+            >
+              <Heart className="mr-2 w-5 h-5" /> Log Mood
+            </Button>
+          </Link>
+        </CardContent>
+      </Card>
+
+      {/* Quick Actions Grid */}
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {[
+          {
+            title: "Log Activity",
+            icon: Activity,
+            href: "/activity",
+            color: "text-blue-700",
+            bg: "bg-blue-100",
+          },
+          {
+            title: "My History",
+            icon: Calendar,
+            href: "/history",
+            color: "text-purple-700",
+            bg: "bg-purple-100",
+          },
+          {
+            title: "Directory",
+            icon: MapPin,
+            href: "/directory",
+            color: "text-emerald-700",
+            bg: "bg-emerald-100",
+          },
+          {
+            title: "Certificates",
+            icon: FileText,
+            href: "/certificates",
+            color: "text-amber-700",
+            bg: "bg-amber-100",
+          },
+        ].map((action, i) => (
+          <Link key={i} href={action.href}>
+            <Card className="hover:shadow-md transition-all cursor-pointer border-transparent hover:border-gray-200 h-full group bg-white border border-gray-100">
+              <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+                <div
+                  className={`h-12 w-12 rounded-2xl ${action.bg} ${action.color} flex items-center justify-center group-hover:scale-110 transition-transform border border-transparent`}
+                >
+                  <action.icon className="w-6 h-6 stroke-[2.5px]" />
+                </div>
+                <span className="font-bold text-black">{action.title}</span>
+              </CardContent>
+            </Card>
+          </Link>
+        ))}
+      </div>
+
+      {/* Personalized Suggestions For You */}
+      <div>
+        <h2 className="text-xl font-serif font-bold text-black mb-4 flex items-center gap-2">
+          <Lightbulb className="w-5 h-5 text-amber-500" /> Suggestions for You
+        </h2>
+        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+          {reportsLoading || moodsLoading || activitiesLoading ? (
+            Array.from({ length: 4 }).map((_, i) => (
+              <Card key={i} className="bg-gray-50 border-gray-100">
+                <CardContent className="p-5 space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Skeleton className="h-10 w-10 rounded-xl" />
+                    <Skeleton className="h-5 w-3/4" />
+                  </div>
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-2/3" />
+                  <Skeleton className="h-9 w-full mt-2" />
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            personalizedSuggestions.map((suggestion) => {
+              const IconComponent = suggestion.icon;
+              return (
+                <Card 
+                  key={suggestion.id} 
+                  className={`bg-gradient-to-br ${suggestion.gradient} ${suggestion.borderColor} hover:shadow-md transition-all`}
+                >
+                  <CardContent className="p-5">
+                    <div className="flex items-start gap-3 mb-3">
+                      <div className={`h-10 w-10 rounded-xl ${suggestion.gradient.replace('from-', 'bg-').split(' ')[0]} flex items-center justify-center shrink-0`}>
+                        <IconComponent className={`w-5 h-5 ${suggestion.textColor}`} />
+                      </div>
+                      <h3 className={`font-bold ${suggestion.textColor} text-sm leading-tight`}>
+                        {suggestion.title}
+                      </h3>
+                    </div>
+                    <p className={`text-sm ${suggestion.textColor.replace('900', '800')} mb-4 line-clamp-2`}>
+                      {suggestion.description}
+                    </p>
+                    <Link href={suggestion.href}>
+                      <Button 
+                        size="sm" 
+                        variant="outline" 
+                        className={`w-full ${suggestion.buttonBorderColor} ${suggestion.buttonTextColor} ${suggestion.buttonHoverBg} font-medium`}
+                      >
+                        {suggestion.buttonText}
+                        <ChevronRight className="w-4 h-4 ml-1" />
+                      </Button>
+                    </Link>
+                  </CardContent>
+                </Card>
+              );
+            })
+          )}
+        </div>
+      </div>
+
+      {/* Stats / Recent Activity */}
+      <div className="grid md:grid-cols-2 gap-8">
+        <Card className="border-gray-200">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-lg font-serif font-bold text-black">
+              Recent Activity
+            </CardTitle>
+            <Link href="/activity#recent">
+              <Button
+                variant="ghost"
+                size="sm"
+                className="font-semibold text-primary"
+              >
+                View All <ChevronRight className="w-4 h-4 ml-1" />
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent>
+            {activitiesLoading ? (
+              <div className="space-y-4">
+                {Array.from({ length: 3 }).map((_, i) => (
+                  <div key={i} className="flex items-center gap-4 pb-4 border-b last:border-0 last:pb-0">
+                    <Skeleton className="h-10 w-10 rounded-full" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-4 w-3/4" />
+                      <Skeleton className="h-3 w-1/2" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : recentActivities.length > 0 ? (
+              <div className="space-y-4">
+                {recentActivities.slice(0, 3).map((activity: any) => (
+                  <div
+                    key={activity._id}
+                    className="flex items-center gap-4 pb-4 border-b last:border-0 last:pb-0"
+                  >
+                    <div className="h-10 w-10 rounded-full bg-secondary/50 flex items-center justify-center text-xs font-bold text-gray-700 border border-secondary">
+                      {activity.name?.[0]?.toUpperCase() || activity.activityType?.[0]?.toUpperCase() || "A"}
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-bold text-sm text-black">{activity.name || activity.activityType}</p>
+                      <p className="text-xs font-medium text-gray-600">
+                        {activity.category} • {new Date(activity.createdAt).toLocaleDateString()}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-muted-foreground">
+                <Activity className="w-12 h-12 mx-auto mb-3 opacity-30" />
+                <p className="text-sm">No activities logged yet</p>
+              </div>
+            )}
+            <Link href="/activity" className="block mt-4">
+              <Button
+                variant="outline"
+                className="w-full border-dashed border-gray-300 font-semibold text-gray-700 hover:text-black"
+              >
+                <Plus className="w-4 h-4 mr-2" /> Add New Entry
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+
+        {/* Weekly Mood Chart */}
+        <Card className="border-gray-200">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-lg font-serif font-bold text-black">
+              Weekly Mood
+            </CardTitle>
+            <Link href="/history">
+              <Button
+                variant="link"
+                size="sm"
+                className="h-auto p-0 font-medium text-gray-600 hover:text-black"
+              >
+                View History
+              </Button>
+            </Link>
+          </CardHeader>
+          <CardContent className="h-[300px]">
+            {moodStatsLoading || moodsLoading ? (
+              <div className="h-full flex items-center justify-center">
+                <Loader2 className="w-6 h-6 animate-spin text-primary" />
+              </div>
+            ) : moodChartData.length > 0 ? (
+              <ResponsiveContainer width="100%" height="100%">
+                <AreaChart
+                  data={moodChartData}
+                  margin={{ top: 10, right: 10, left: -20, bottom: 0 }}
+                >
+                  <defs>
+                    <linearGradient id="colorMood" x1="0" y1="0" x2="0" y2="1">
+                      <stop
+                        offset="5%"
+                        stopColor="hsl(var(--primary))"
+                        stopOpacity={0.3}
+                      />
+                      <stop
+                        offset="95%"
+                        stopColor="hsl(var(--primary))"
+                        stopOpacity={0}
+                      />
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    vertical={false}
+                    stroke="hsl(var(--border))"
+                  />
+                  <XAxis
+                    dataKey="day"
+                    axisLine={false}
+                    tickLine={false}
+                    tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
+                    dy={10}
+                  />
+                  <YAxis domain={[0, 6]} hide={true} />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: "hsl(var(--card))",
+                      borderColor: "hsl(var(--border))",
+                      borderRadius: "8px",
+                      boxShadow: "0 4px 6px -1px rgb(0 0 0 / 0.1)",
+                    }}
+                    itemStyle={{ color: "hsl(var(--foreground))" }}
+                  />
+                  <Area
+                    type="monotone"
+                    dataKey="value"
+                    stroke="hsl(var(--primary))"
+                    strokeWidth={2}
+                    fillOpacity={1}
+                    fill="url(#colorMood)"
+                  />
+                </AreaChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="h-full flex flex-col items-center justify-center text-muted-foreground">
+                <Heart className="w-12 h-12 mb-3 opacity-30" />
+                <p className="text-sm">No mood data yet</p>
+                <Link href="/mood">
+                  <Button variant="link" className="mt-2 text-sm">
+                    Log your first mood
+                  </Button>
+                </Link>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </div>
+  );
+}

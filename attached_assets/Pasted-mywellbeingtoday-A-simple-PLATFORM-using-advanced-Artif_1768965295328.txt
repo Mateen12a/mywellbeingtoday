@@ -1,0 +1,101 @@
+mywellbeingtoday.,
+
+A simple PLATFORM using advanced Artificial Intelligence to monitor the
+impact of my daily activities on wellbeing and for me to have easy access to health
+and social care closer to me quicker.
+
+why should I worry about my wellbeing when I feel mostly
+
+fine?
+
+unwell starts quietly, and monitoring my health
+and wellbeing helps me spot early warning
+signs like poor sleep, rising stress, anxiety,
+disruption of work, productivity or personal
+time to prevent recurring symptoms turns to
+terminal illness and unbearable expenses.
+
+GET STARTED
+
+1. After creating account by user
+2. User after creating account and
+signing, to complete and submit info
+about him/her self and to consent.
+
+Additional info about the user:
+
+Post Code
+Address
+
+Telephone
+Country
+
+Region
+
+Diversity
+
+Age
+
+Religion, No religion. Other…..[to input
+manually]
+
+Work/ Category of employment –
+Permanently employed, self-
+employed,freelance, public servant, house
+wife. Other………[to input manually]
+
+Education
+
+Student Graduate
+College
+Post graduate
+
+DASHBOARD PAGE
+
+Good day…….
+
+Let’s take a moment to check and reflect on what
+happens to you today
+1 2 3 4
+5
+[My activity. ] [ My mood.] [Service [Certificates.]
+[My History]
+[ drop down lists tracker Providers lists]. Medicals
+OK
+of the activities types and OTHER i.e.
+manually input/add] date, time
+Brief explanation/history
+[ Manually or Voice]
+
+2. The mood tracker above should be
+How are you feeling today?
+
+1[Physical] 2[Psychological].
+Click and drag to point of your feeling today
+
+The dragging towards struggling ...,should link to severe, while
+towards thriving…… should link to asymptomatic.
+
+Also link to the drag is
+
+the advice [towards thriving …say maintain and sustain this
+wellbeing and towards severe …..say seek appropriate health and
+
+medical attention
+3 SERVICES PROVIDERS
+To use link up with available providers data in the country
+Create platform to register, submit license/relevant document,
+verification, approval or rejection and admission into the directory
+Addresses, location and telephone numbers
+To have also in the directory Countries emergency numbers and
+providers of ambulances
+
+Just to indicate by the side of Service Providers if they
+provide Medical Certificates will be part of what service
+providers are to give to users
+
+4. History and records of users’ activities and
+wellbeing – Confidential
+
+To ask of the consent to use the information
+for research and policy purpose only.

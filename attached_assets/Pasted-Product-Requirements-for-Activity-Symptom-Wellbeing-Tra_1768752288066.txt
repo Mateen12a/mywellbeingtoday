@@ -1,0 +1,43 @@
+Product Requirements for Activity, 
+Symptom, Wellbeing Tracking, Health 
+Professionals, Emergency Directory. 
+Objectives: 
+1. Ability to manually and automatically log on an activity or symptom. 
+2. Ability to search for information on a recommended solution or action to the 
+impact of the logged activity or symptom (Physical or Mental) 
+3. Ability to analyze (AI, Wearable) daily, weekly, monthly or yearly activity(s) and 
+develop a related well-being plan that can either be downloaded, print 
+4. Ability to look and access directories of available physical and mental health 
+professionals (Doctors, Dentist, Psychiatrists, Nurses, Carer, General Practioner, 
+Health Insurers, Dispenser, Pharmacists, Psychosocial, etc), ambulances, first 
+Aider, etc) in a search directory of their availability, credit rating and distance map 
+to be able to make an appointment or telemedicine for efficient attendance. 
+5. Ability to provide individual interaction with the practitioner, and the app 
+including security, confidentiality and quality assurance 
+6. Ability to provide a snapshot monthly, quarterly or yearly history of a common or 
+experienced ailment, disease, or well-being data of an area, community, or region 
+for research and policy. 
+7. Ability to provide a medical certification, renewed etc 
+8. Ability to use Mobile device, Touch Screen and Laptop to access. 
+Persona 
+Who are the target personas for this product, and which is the key persona? 
+ 
+Key Persona Individual Citizens of all ages 
+Persona 2 Employees in the workplaces 
+Persona 3 An employee at an event 
+Persona 4 Resident at home, on a journey, in a leisure 
+Persona 5 Residents/Citizens in the community and a country 
+ 
+Use Case 
+Scenario 1: Registration logging and creation of a user access and accreditation code for 
+individuals’ groups organizations etc 
+Scenario 2: Free and Payment Process 
+Scenario 2: Logging or from a dropdown lists a physical activity session, or mental activity 
+experience for the day (e.g., at work, home, school etc ) 
+Scenario 2: Logging a symptom or wellness experience [the information to automatically go 
+into the record as a case to further proceed or wellness with feedback on what was done to 
+attain or sustain the wellness. 
+Scenario 3: If symptomatic, the levels of the symptom will determine what steps to take (search 
+for recommendations and help as outlined above) 
+Scenario 3: Records and history of individual cases and wellbeing 
+Scenario 4. Data for organisation use, research, policy and comparative analysis.

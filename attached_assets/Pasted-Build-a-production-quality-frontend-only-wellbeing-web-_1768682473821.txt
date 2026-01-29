@@ -1,0 +1,144 @@
+Build a production-quality frontend-only wellbeing web application called MyWellbeingToday, owned by Wellbeing@Fingertip and built by Airfns Softwares.
+
+This project is a dedicated FRONTEND application only.
+Do NOT create any backend, server, database, authentication logic, or API implementations.
+This project must focus entirely on UI, UX, routing, state structure, and user flows.
+
+This frontend will later connect to a separate backend via REST APIs.
+
+TECH STACK (FRONTEND ONLY)
+
+- React (JavaScript, NOT TypeScript)
+- Vite
+- Tailwind CSS
+- React Router
+- Responsive design for mobile, tablet, laptop, and large screens
+
+Do NOT use Next.js.
+Do NOT use Express.
+Do NOT use Node server code.
+
+ASSETS
+
+- Use logo.svg from the attached-assets folder as the main product logo
+- Use fingertip.png from the attached-assets folder for ownership branding
+- Do NOT generate new logos or placeholder images
+- Extract colours from logo.svg and apply them consistently across the UI
+
+BRANDING
+
+Product: MyWellbeingToday  
+Owner: Wellbeing@Fingertip  
+Builder: Airfns Softwares  
+
+Footer must clearly but subtly display:
+- “Owned by Wellbeing@Fingertip”
+- “Built by Airfns Softwares”
+
+Do NOT use the word “simple” anywhere in the UI.
+
+DESIGN & UX EXPECTATIONS
+
+- Calm, reassuring, health-appropriate visual tone
+- Inclusive and confidence-building language
+- Clear hierarchy, spacing, and typography
+- Mobile-first layouts
+- No medical diagnosis claims
+- Designed for users of all ages and technical ability
+
+APPLICATION ROUTES & PAGES
+
+Create a complete, navigable UI with the following pages:
+
+1. Landing Page
+- Product introduction
+- Core benefits
+- Trust-focused messaging
+- Calls to action for Register and Login
+
+2. Authentication UI (UI ONLY)
+- Register page
+- Login page
+- Verification code input page
+- Password recovery page
+
+3. User Dashboard
+- Welcome state
+- Daily wellbeing summary (mock data)
+- Mood indicator (mock data)
+- Navigation to all core features
+
+4. Daily Activity Logging
+- Text input for daily activities
+- Voice input button (UI only)
+- Date selector
+- Save action (local mock state only)
+
+5. Mood & Wellbeing
+- Mood level display
+- Symptom category cards:
+  - Asymptomatic
+  - Mild
+  - Moderate
+  - Severe
+- Visual indicators only
+
+6. Wellbeing History
+- Tabs for daily, weekly, monthly, yearly
+- Charts or visual placeholders
+- Download / print buttons (UI only)
+
+7. Health & Emergency Directory
+- Search input
+- List of providers (mock data)
+- Distance, contact, and location placeholders
+- Map placeholder section
+
+8. Certificates
+- List of certificates (mock data)
+- View and download buttons (UI only)
+
+9. Settings
+- Profile settings UI
+- Notification preferences UI
+- Privacy and consent UI
+- Subscription and billing UI (display only)
+
+10. Admin Area (UI ONLY)
+- Admin dashboard layout
+- User management table (mock data)
+- Practitioner management UI
+- Content and directory management UI
+- Role indicators for Admin and Super Admin
+
+STATE & DATA HANDLING
+
+- Use React Context and local state
+- Mock data using structured JSON objects
+- Create reusable services folder for future API calls
+- Clearly comment where backend integration will occur
+
+MANDATORY STRUCTURE
+
+/frontend
+  /src
+    /components
+    /pages
+    /routes
+    /contexts
+    /hooks
+    /services
+    /assets
+  .env.example
+  package.json
+
+The application must:
+- Run without errors in Replit
+- Have no broken routes
+- Have clean, readable component structure
+- Be ready to connect to a backend via API later
+
+Do NOT explain steps.
+Do NOT include backend code.
+Do NOT generate placeholder servers.
+Build a complete, polished frontend UI foundation.
