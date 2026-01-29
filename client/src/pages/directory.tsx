@@ -259,23 +259,23 @@ const BookingModal = ({ provider, isOpen, onClose }: BookingModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && reset()}>
-      <DialogContent className="sm:max-w-[600px] w-[95vw] z-[60] gap-0 p-0 overflow-hidden rounded-xl top-[5%] translate-y-0 md:top-[50%] md:-translate-y-1/2 max-h-[90dvh] md:max-h-none flex flex-col">
-        <div className="bg-primary/5 p-4 md:p-6 border-b shrink-0">
+      <DialogContent className="sm:max-w-[600px] w-[95vw] z-[60] gap-0 p-0 overflow-hidden rounded-lg sm:rounded-xl top-[5%] translate-y-0 md:top-[50%] md:-translate-y-1/2 max-h-[90dvh] md:max-h-none flex flex-col">
+        <div className="bg-primary/5 p-3 sm:p-4 md:p-6 border-b shrink-0">
           <DialogHeader className="pr-8">
-            <DialogTitle className="text-xl font-serif">Book Appointment</DialogTitle>
-            <DialogDescription>
-              Schedule with <span className="font-semibold text-foreground">{providerName}</span>
+            <DialogTitle className="text-lg sm:text-xl font-serif">Book Appointment</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">
+              Schedule with <span className="font-semibold text-foreground truncate">{providerName}</span>
             </DialogDescription>
           </DialogHeader>
           
-          <div className="flex items-center gap-2 mt-4">
+          <div className="flex items-center gap-1.5 sm:gap-2 mt-3 sm:mt-4">
              {[1, 2, 3, 4].map((i) => (
                 <div key={i} className={cn("h-1 flex-1 rounded-full transition-colors", step >= i ? "bg-primary" : "bg-primary/20")} />
              ))}
           </div>
         </div>
 
-        <div className="p-6 overflow-y-auto">
+        <div className="p-3 sm:p-4 md:p-6 overflow-y-auto">
         {isCheckingPending && step === 1 && (
           <div className="flex flex-col items-center justify-center py-12 space-y-4 animate-in fade-in duration-300">
             <Loader2 className="w-8 h-8 animate-spin text-primary" />
@@ -303,48 +303,50 @@ const BookingModal = ({ provider, isOpen, onClose }: BookingModalProps) => {
         )}
 
         {step === 1 && !hasPendingAppointment && !isCheckingPending && (
-          <div className="grid md:grid-cols-2 gap-6 animate-in fade-in slide-in-from-right-4 duration-300">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4 md:gap-6 animate-in fade-in slide-in-from-right-4 duration-300">
             <div className="space-y-2">
-              <Label className="font-medium">1. Select Date</Label>
-              <div className="border rounded-xl p-2 bg-card shadow-sm">
+              <Label className="font-medium text-sm">1. Select Date</Label>
+              <div className="border rounded-lg sm:rounded-xl p-1.5 sm:p-2 bg-card shadow-sm overflow-x-auto">
                 <Calendar
                   mode="single"
                   selected={date}
                   onSelect={setDate}
-                  className="rounded-md w-full"
+                  className="rounded-md w-full text-xs sm:text-sm"
                   disabled={(date) => date < new Date() || date.getDay() === 0 || date.getDay() === 6}
                   classNames={{
-                    head_cell: "text-muted-foreground font-normal text-[0.8rem]",
-                    cell: "text-center text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
+                    head_cell: "text-muted-foreground font-normal text-[0.7rem] sm:text-[0.8rem]",
+                    cell: "text-center text-xs sm:text-sm p-0 relative [&:has([aria-selected])]:bg-accent first:[&:has([aria-selected])]:rounded-l-md last:[&:has([aria-selected])]:rounded-r-md focus-within:relative focus-within:z-20",
                   }}
                 />
               </div>
             </div>
             
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div className="space-y-2">
-                 <Label className="font-medium">2. Select Time</Label>
-                 <div className="grid grid-cols-2 gap-2">
+                 <Label className="font-medium text-sm">2. Select Time</Label>
+                 <div className="grid grid-cols-2 sm:grid-cols-3 gap-1.5 sm:gap-2">
                     {availableTimes.map(time => (
                       <Button 
                         key={time} 
+                        size="sm"
                         variant={selectedTime === time ? "default" : "outline"} 
                         className={cn(
-                          "justify-start font-normal",
+                          "justify-center font-normal text-xs sm:text-sm gap-1",
                           selectedTime === time ? "" : "hover:bg-primary/5 hover:border-primary/30"
                         )}
                         onClick={() => setSelectedTime(time)}
                       >
-                        <Clock className="w-4 h-4 mr-2 text-muted-foreground" />
-                        {time}
+                        <Clock className="w-3 h-3 sm:w-4 sm:h-4" />
+                        <span className="hidden sm:inline">{time}</span>
+                        <span className="sm:hidden text-[10px]">{time}</span>
                       </Button>
                     ))}
                  </div>
               </div>
               <div className="space-y-2">
-                <Label className="font-medium">3. Consultation Type</Label>
+                <Label className="font-medium text-sm">3. Consultation Type</Label>
                 <Select value={formData.type} onValueChange={(val: any) => setFormData({...formData, type: val})}>
-                  <SelectTrigger className="z-[70]">
+                  <SelectTrigger className="z-[70] text-sm h-9">
                     <SelectValue placeholder="Select type" />
                   </SelectTrigger>
                   <SelectContent className="z-[100]">
@@ -367,37 +369,38 @@ const BookingModal = ({ provider, isOpen, onClose }: BookingModalProps) => {
                   </SelectContent>
                 </Select>
               </div>
-              <div className="bg-secondary/20 p-3 rounded-lg text-xs text-muted-foreground">
-                 <p className="flex items-center gap-1.5 font-medium text-foreground mb-1"><Info className="w-3 h-3" /> Note</p>
-                 Times are in your local timezone.
+              <div className="bg-secondary/20 p-2.5 sm:p-3 rounded-lg text-[10px] sm:text-xs text-muted-foreground space-y-1">
+                 <p className="flex items-center gap-1 font-medium text-foreground"><Info className="w-3 h-3 shrink-0" /> Note</p>
+                 <p>Times are in your local timezone.</p>
               </div>
             </div>
           </div>
         )}
 
         {step === 2 && (
-          <div className="space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
-             <div className="space-y-4">
+          <div className="space-y-4 sm:space-y-6 animate-in fade-in slide-in-from-right-4 duration-300">
+             <div className="space-y-3 sm:space-y-4">
               <div className="space-y-2">
-                 <div className="flex items-center justify-between">
-                   <Label>Primary Reason for Visit</Label>
+                 <div className="flex items-center justify-between gap-2 flex-wrap">
+                   <Label className="text-sm">Primary Reason for Visit</Label>
                    <Button
                      type="button"
                      variant="outline"
                      size="sm"
-                     className="text-xs gap-1.5 h-7"
+                     className="text-[10px] sm:text-xs gap-1 shrink-0"
                      onClick={handleUseWellbeingReport}
                      disabled={isLoadingReport}
                    >
                      {isLoadingReport ? (
                        <>
                          <Loader2 className="w-3 h-3 animate-spin" />
-                         Loading...
+                         <span className="hidden sm:inline">Loading...</span>
                        </>
                      ) : (
                        <>
                          <FileText className="w-3 h-3" />
-                         Use my recent health summary
+                         <span className="hidden xs:inline">Use my recent health summary</span>
+                         <span className="xs:hidden">My summary</span>
                        </>
                      )}
                    </Button>
@@ -406,12 +409,12 @@ const BookingModal = ({ provider, isOpen, onClose }: BookingModalProps) => {
                    placeholder="Briefly describe your symptoms or reason for booking..." 
                    value={formData.reason}
                    onChange={(e) => setFormData({...formData, reason: e.target.value})}
-                   className="min-h-[100px] resize-none"
+                   className="min-h-[80px] sm:min-h-[100px] resize-none text-sm"
                  />
               </div>
               
-              <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 text-sm text-amber-800 flex items-start gap-2">
-                <Info className="w-4 h-4 mt-0.5 shrink-0" />
+              <div className="bg-amber-50 border border-amber-100 rounded-lg p-2.5 sm:p-3 text-[10px] sm:text-sm text-amber-800 flex items-start gap-2">
+                <Info className="w-3.5 sm:w-4 h-3.5 sm:h-4 mt-0.5 shrink-0" />
                 <p>Your medical data is encrypted and shared only with {providerName}'s office for this appointment.</p>
               </div>
             </div>
@@ -419,33 +422,33 @@ const BookingModal = ({ provider, isOpen, onClose }: BookingModalProps) => {
         )}
 
         {step === 3 && (
-          <div className="flex flex-col items-center justify-center py-12 space-y-6 animate-in fade-in zoom-in-95 duration-300">
+          <div className="flex flex-col items-center justify-center py-12 space-y-4 sm:space-y-6 animate-in fade-in zoom-in-95 duration-300">
             <div className="relative">
-              <div className="w-16 h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
+              <div className="w-12 sm:w-16 h-12 sm:h-16 border-4 border-primary/20 border-t-primary rounded-full animate-spin"></div>
               <div className="absolute inset-0 flex items-center justify-center">
-                 <div className="w-8 h-8 bg-background rounded-full"></div>
+                 <div className="w-6 sm:w-8 h-6 sm:h-8 bg-background rounded-full"></div>
               </div>
             </div>
-            <p className="text-muted-foreground font-medium">Confirming availability with provider...</p>
+            <p className="text-muted-foreground font-medium text-sm">Confirming availability with provider...</p>
           </div>
         )}
 
         {step === 4 && (
-          <div className="flex flex-col items-center justify-center py-8 space-y-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
-            <div className="h-20 w-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center shadow-lg shadow-green-100/50">
-              <CheckCircle2 className="h-10 w-10" />
+          <div className="flex flex-col items-center justify-center py-6 sm:py-8 space-y-4 sm:space-y-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-500">
+            <div className="h-16 sm:h-20 w-16 sm:w-20 bg-green-100 text-green-600 rounded-full flex items-center justify-center shadow-lg shadow-green-100/50">
+              <CheckCircle2 className="h-8 sm:h-10 w-8 sm:h-10" />
             </div>
             <div className="space-y-2">
-              <h3 className="text-2xl font-serif font-bold text-foreground">Booking Confirmed!</h3>
-              <p className="text-muted-foreground">
+              <h3 className="text-xl sm:text-2xl font-serif font-bold text-foreground">Booking Confirmed!</h3>
+              <p className="text-muted-foreground text-sm">
                 Your appointment with <span className="font-medium text-foreground">{providerName}</span> is confirmed for:
               </p>
-              <div className="bg-secondary/30 py-2 px-4 rounded-full inline-flex items-center gap-2 mt-2 font-medium">
-                <CalendarIcon className="w-4 h-4" /> 
-                {date?.toLocaleDateString(undefined, { weekday: 'long', month: 'long', day: 'numeric' })} at {selectedTime}
+              <div className="bg-secondary/30 py-1.5 sm:py-2 px-3 sm:px-4 rounded-full inline-flex items-center gap-1.5 sm:gap-2 mt-2 font-medium text-sm">
+                <CalendarIcon className="w-3.5 sm:w-4 h-3.5 sm:h-4" /> 
+                <span className="text-xs sm:text-sm">{date?.toLocaleDateString(undefined, { weekday: 'short', month: 'short', day: 'numeric' })} at {selectedTime}</span>
               </div>
             </div>
-            <div className="w-full max-w-sm grid grid-cols-2 gap-3 pt-4">
+            <div className="w-full max-w-sm grid grid-cols-2 gap-2 sm:gap-3 pt-3 sm:pt-4">
                <Button variant="outline" onClick={reset}>Close</Button>
                <Button onClick={reset}>View Appointments</Button>
             </div>
@@ -454,17 +457,19 @@ const BookingModal = ({ provider, isOpen, onClose }: BookingModalProps) => {
         </div>
         
         {step < 3 && !isCheckingPending && (
-        <DialogFooter className="p-6 pt-0 sm:justify-between shrink-0 bg-background/80 backdrop-blur-md sticky bottom-0 border-t z-10">
+        <DialogFooter className="p-3 sm:p-4 md:p-6 md:pt-0 sm:justify-between shrink-0 bg-background/80 backdrop-blur-md sticky bottom-0 border-t z-10 flex gap-2">
           <Button variant="ghost" onClick={step === 1 ? onClose : () => setStep(step - 1)}>
             {step === 1 ? "Cancel" : "Back"}
           </Button>
           {hasPendingAppointment && step === 1 ? (
-            <Button variant="outline" onClick={onClose} className="min-w-[140px]">
+            <Button variant="outline" onClick={onClose} className="min-w-[100px] sm:min-w-[140px]">
               Close
             </Button>
           ) : (
-            <Button onClick={handleNext} className="min-w-[140px]">
-              {step === 1 ? "Next Details" : "Confirm Booking"} <ChevronRight className="w-4 h-4 ml-1" />
+            <Button onClick={handleNext} className="min-w-[100px] sm:min-w-[140px] gap-1 sm:gap-2">
+              <span className="hidden sm:inline">{step === 1 ? "Next Details" : "Confirm Booking"}</span>
+              <span className="sm:hidden">{step === 1 ? "Next" : "Confirm"}</span>
+              <ChevronRight className="w-3 sm:w-4 h-3 sm:h-4" />
             </Button>
           )}
         </DialogFooter>
@@ -499,20 +504,20 @@ const MessageModal = ({ provider, isOpen, onClose }: MessageModalProps) => {
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[425px] z-[60] overflow-visible">
+      <DialogContent className="sm:max-w-[425px] w-[95vw] z-[60] overflow-visible rounded-lg sm:rounded-lg gap-3 sm:gap-4">
         {!sent ? (
           <>
             <DialogHeader>
-              <DialogTitle>Message {providerName}</DialogTitle>
-              <DialogDescription>
+              <DialogTitle className="text-lg sm:text-xl">Message {providerName}</DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm">
                 Send a secure message. Average response time: 2 hours.
               </DialogDescription>
             </DialogHeader>
-            <div className="grid gap-4 py-4">
+            <div className="grid gap-3 sm:gap-4 py-3 sm:py-4">
               <div className="grid gap-2">
-                <Label>Subject</Label>
+                <Label className="text-sm">Subject</Label>
                 <Select>
-                  <SelectTrigger className="z-[70]">
+                  <SelectTrigger className="z-[70] text-sm h-9 sm:h-10">
                     <SelectValue placeholder="Select a topic" />
                   </SelectTrigger>
                   <SelectContent className="z-[100]">
@@ -524,28 +529,30 @@ const MessageModal = ({ provider, isOpen, onClose }: MessageModalProps) => {
                 </Select>
               </div>
               <div className="grid gap-2">
-                <Label>Message</Label>
+                <Label className="text-sm">Message</Label>
                 <Textarea 
                   placeholder="Type your message here..." 
-                  className="min-h-[150px]"
+                  className="min-h-[100px] sm:min-h-[150px] resize-none text-sm"
                 />
               </div>
             </div>
-            <DialogFooter>
+            <DialogFooter className="gap-2 flex">
               <Button variant="outline" onClick={onClose}>Cancel</Button>
-              <Button onClick={handleSend} className="gap-2">
-                <MessageSquare className="w-4 h-4" /> Send Message
+              <Button onClick={handleSend} className="gap-1.5 sm:gap-2">
+                <MessageSquare className="w-3 sm:w-4 h-3 sm:h-4" /> 
+                <span className="hidden sm:inline">Send Message</span>
+                <span className="sm:hidden">Send</span>
               </Button>
             </DialogFooter>
           </>
         ) : (
-          <div className="flex flex-col items-center justify-center py-10 space-y-4 text-center">
-            <div className="h-16 w-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center animate-in zoom-in duration-300">
-              <MessageSquare className="h-8 w-8" />
+          <div className="flex flex-col items-center justify-center py-8 sm:py-10 space-y-4 text-center">
+            <div className="h-14 sm:h-16 w-14 sm:w-16 bg-blue-100 text-blue-600 rounded-full flex items-center justify-center animate-in zoom-in duration-300">
+              <MessageSquare className="h-7 sm:h-8 w-7 sm:w-8" />
             </div>
             <div>
-              <h3 className="text-lg font-medium">Message Sent</h3>
-              <p className="text-muted-foreground text-sm mt-1">
+              <h3 className="text-base sm:text-lg font-medium">Message Sent</h3>
+              <p className="text-muted-foreground text-xs sm:text-sm mt-1">
                 {providerName} will receive your message shortly.
               </p>
             </div>
@@ -583,53 +590,53 @@ const ProviderCard = ({ provider, onLocationClick }: ProviderCardProps) => {
   return (
     <>
       <Card className="hover:shadow-md transition-all group overflow-hidden">
-        <CardContent className="p-0 flex">
-          <div className="w-24 bg-secondary/30 flex items-center justify-center shrink-0">
-            <Avatar className="w-16 h-16">
+        <CardContent className="p-0 flex flex-col sm:flex-row">
+          <div className="w-full sm:w-24 bg-secondary/30 flex items-center justify-center shrink-0 p-3 sm:p-0">
+            <Avatar className="w-14 sm:w-16 h-14 sm:h-16">
               <AvatarImage src={avatarUrl} alt={name} />
-              <AvatarFallback className="text-lg">{initials}</AvatarFallback>
+              <AvatarFallback className="text-base sm:text-lg">{initials}</AvatarFallback>
             </Avatar>
           </div>
-          <div className="p-4 flex-1 space-y-2">
-            <div className="flex justify-between items-start">
-              <div>
-                <h3 className="font-bold font-serif text-lg text-black">{name}</h3>
+          <div className="p-3 sm:p-4 flex-1 space-y-2">
+            <div className="flex justify-between items-start gap-2">
+              <div className="min-w-0 flex-1">
+                <h3 className="font-bold font-serif text-base sm:text-lg text-black truncate">{name}</h3>
                 {qualifications.length > 0 && (
-                  <p className="text-xs text-muted-foreground">{qualifications.slice(0, 2).join(', ')}</p>
+                  <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{qualifications.slice(0, 2).join(', ')}</p>
                 )}
                 <div className="flex flex-wrap gap-1 mt-1">
                   {specialties.slice(0, 2).map((s: string) => (
-                    <Badge key={s} variant="secondary" className="text-xs">
+                    <Badge key={s} variant="secondary" className="text-[10px] sm:text-xs">
                       {formatSpecialty(s)}
                     </Badge>
                   ))}
                 </div>
               </div>
               {isAvailable && (
-                <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100 font-bold border-green-200">
+                <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100 font-bold border-green-200 text-[10px] sm:text-xs shrink-0">
                   Available
                 </Badge>
               )}
             </div>
             
             <div className="flex flex-col gap-1">
-               <div className="flex items-center gap-4 text-sm font-medium text-gray-700">
+               <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm font-medium text-gray-700 flex-wrap">
                  {rating > 0 && (
                    <div className="flex items-center gap-1 text-amber-600">
-                     <Star className="w-3 h-3 fill-current" />
+                     <Star className="w-3 h-3 fill-current shrink-0" />
                      <span className="font-bold">{rating.toFixed(1)}</span>
-                     {ratingCount > 0 && <span className="text-muted-foreground text-xs">({ratingCount})</span>}
+                     {ratingCount > 0 && <span className="text-muted-foreground text-[10px] sm:text-xs">({ratingCount})</span>}
                    </div>
                  )}
                  {practice.name && (
-                   <span className="text-xs text-muted-foreground truncate">{practice.name}</span>
+                   <span className="text-[10px] sm:text-xs text-muted-foreground truncate">{practice.name}</span>
                  )}
                </div>
                
                {phone && (
-                 <div className="flex items-center gap-1.5 text-xs font-semibold text-blue-600 mt-1">
-                   <Phone className="w-3 h-3" />
-                   <span>{phone}</span>
+                 <div className="flex items-center gap-1.5 text-[10px] sm:text-xs font-semibold text-blue-600 mt-1">
+                   <Phone className="w-3 h-3 shrink-0" />
+                   <span className="truncate">{phone}</span>
                  </div>
                )}
             </div>
@@ -637,7 +644,7 @@ const ProviderCard = ({ provider, onLocationClick }: ProviderCardProps) => {
             {address && (
               <p 
                 className={cn(
-                  "text-xs font-medium text-gray-600 truncate max-w-[200px] flex items-center gap-1",
+                  "text-[10px] sm:text-xs font-medium text-gray-600 truncate flex items-center gap-1",
                   onLocationClick && provider.practice?.location?.coordinates?.length === 2 && "cursor-pointer hover:text-primary transition-colors"
                 )}
                 onClick={() => {
@@ -646,26 +653,26 @@ const ProviderCard = ({ provider, onLocationClick }: ProviderCardProps) => {
                   }
                 }}
               >
-                <MapPin className="w-3 h-3" /> {address}
+                <MapPin className="w-3 h-3 shrink-0" /> <span className="truncate">{address}</span>
               </p>
             )}
 
             {services.length > 0 && (
               <div className="flex flex-wrap gap-1">
                 {services.slice(0, 2).map((s: any, i: number) => (
-                  <Badge key={i} variant="outline" className="text-[10px]">
+                  <Badge key={i} variant="outline" className="text-[8px] sm:text-[10px]">
                     {s.name}
                   </Badge>
                 ))}
                 {services.length > 2 && (
-                  <Badge variant="outline" className="text-[10px]">+{services.length - 2} more</Badge>
+                  <Badge variant="outline" className="text-[8px] sm:text-[10px]">+{services.length - 2}</Badge>
                 )}
               </div>
             )}
 
             <div className="pt-2 flex gap-2">
-              <Button size="sm" className="flex-1 font-bold shadow-sm" onClick={() => setShowBooking(true)}>Book</Button>
-              <Button size="sm" variant="outline" className="flex-1 font-bold border-gray-300 text-gray-800 hover:text-black hover:bg-gray-100" onClick={() => setShowMessage(true)}>Message</Button>
+              <Button size="sm" className="flex-1 font-bold shadow-sm text-sm sm:text-base" onClick={() => setShowBooking(true)}>Book</Button>
+              <Button size="sm" variant="outline" className="flex-1 font-bold border-gray-300 text-gray-800 hover:text-black hover:bg-gray-100 text-sm sm:text-base" onClick={() => setShowMessage(true)}>Message</Button>
             </div>
           </div>
         </CardContent>
@@ -955,49 +962,49 @@ const ExpandedMapModal = ({ isOpen, onClose, providers, initialSelectedProviderI
           </MapContainer>
 
           {selectedProvider && (
-            <div className="absolute bottom-0 left-0 right-0 md:bottom-6 md:left-auto md:right-6 md:w-80 animate-in slide-in-from-bottom-10 fade-in duration-300 z-[400] pointer-events-auto p-4 md:p-0 bg-gradient-to-t from-black/20 to-transparent md:bg-none">
-              <Card className="shadow-2xl border-primary/20 backdrop-blur-md bg-white/95 max-h-[50vh] overflow-y-auto border-t md:border rounded-t-xl md:rounded-xl">
-                <CardHeader className="pb-2 flex flex-row items-start justify-between">
-                  <div>
-                    <CardTitle className="text-lg font-serif font-bold text-black">{getProviderName(selectedProvider)}</CardTitle>
-                    <p className="text-sm font-semibold text-gray-700">
+            <div className="absolute bottom-0 left-0 right-0 md:bottom-6 md:left-auto md:right-6 md:w-80 animate-in slide-in-from-bottom-10 fade-in duration-300 z-[400] pointer-events-auto p-2 sm:p-4 md:p-0 bg-gradient-to-t from-black/20 to-transparent md:bg-none">
+              <Card className="shadow-2xl border-primary/20 backdrop-blur-md bg-white/95 max-h-[50vh] sm:max-h-[60vh] overflow-y-auto border-t md:border rounded-t-2xl sm:rounded-t-xl md:rounded-xl">
+                <CardHeader className="pb-1.5 sm:pb-2 px-3 sm:px-6 pt-3 sm:pt-6 flex flex-row items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-base sm:text-lg font-serif font-bold text-black truncate">{getProviderName(selectedProvider)}</CardTitle>
+                    <p className="text-xs sm:text-sm font-semibold text-gray-700 truncate">
                       {selectedProvider.professionalInfo?.specialties?.[0] ? 
                         formatSpecialty(selectedProvider.professionalInfo.specialties[0]) : 
                         'Healthcare Provider'}
                     </p>
                   </div>
-                  <Button variant="ghost" size="icon" className="h-6 w-6 -mr-2 -mt-2 text-black hover:bg-gray-100 rounded-full" onClick={() => setSelectedProviderId(null)}>
+                  <Button variant="ghost" size="icon" className="shrink-0 text-black hover:bg-gray-100 rounded-full" onClick={() => setSelectedProviderId(null)}>
                     <X className="w-4 h-4" />
                   </Button>
                 </CardHeader>
-                <CardContent className="pb-2 space-y-3">
-                   <div className="flex items-center gap-4 text-sm font-medium text-gray-800">
+                <CardContent className="pb-2 px-3 sm:px-6 space-y-2 sm:space-y-3">
+                   <div className="flex items-center gap-2 sm:gap-4 text-xs sm:text-sm font-medium text-gray-800 flex-wrap">
                      {selectedProvider.ratings?.average > 0 && (
                        <div className="flex items-center gap-1 text-amber-600">
-                         <Star className="w-3 h-3 fill-current" />
+                         <Star className="w-3 h-3 fill-current shrink-0" />
                          <span className="font-bold">{selectedProvider.ratings.average.toFixed(1)}</span>
                        </div>
                      )}
                      {selectedProvider.availability?.acceptingNewPatients !== false ? (
-                       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-xs px-2 py-0 h-5 font-bold">Available</Badge>
+                       <Badge variant="outline" className="bg-green-50 text-green-700 border-green-200 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-0 h-5 font-bold shrink-0">Available</Badge>
                      ) : (
-                       <Badge variant="outline" className="bg-secondary text-gray-600 border-gray-200 text-xs px-2 py-0 h-5 font-bold">Busy</Badge>
+                       <Badge variant="outline" className="bg-secondary text-gray-600 border-gray-200 text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 sm:py-0 h-5 font-bold shrink-0">Busy</Badge>
                      )}
                    </div>
                    {selectedProvider.practice?.address && (
-                     <div className="flex items-start gap-2 text-xs font-medium text-gray-700 bg-secondary/30 p-2 rounded-md">
+                     <div className="flex items-start gap-2 text-[10px] sm:text-xs font-medium text-gray-700 bg-secondary/30 p-2 rounded-md">
                         <MapPin className="w-3 h-3 shrink-0 mt-0.5 text-black" />
-                        <span>{selectedProvider.practice.address.street}, {selectedProvider.practice.address.city}</span>
+                        <span className="leading-tight">{selectedProvider.practice.address.street}, {selectedProvider.practice.address.city}</span>
                      </div>
                    )}
                    {selectedProvider.practice?.phone && (
-                      <div className="flex items-center gap-2 text-xs font-bold text-blue-600 px-2">
-                        <Phone className="w-3 h-3" />
-                        <a href={`tel:${selectedProvider.practice.phone}`} className="hover:underline">{selectedProvider.practice.phone}</a>
+                      <div className="flex items-center gap-2 text-[10px] sm:text-xs font-bold text-blue-600 px-0.5 sm:px-2 truncate">
+                        <Phone className="w-3 h-3 shrink-0" />
+                        <a href={`tel:${selectedProvider.practice.phone}`} className="hover:underline truncate">{selectedProvider.practice.phone}</a>
                       </div>
                    )}
                 </CardContent>
-                <CardFooter className="pt-2 pb-4">
+                <CardFooter className="pt-2 pb-3 sm:pb-4 px-3 sm:px-6">
                   <Button className="w-full font-bold shadow-md" onClick={() => setShowBooking(true)}>
                     Book Appointment
                   </Button>
@@ -1124,40 +1131,42 @@ export default function Directory() {
   const showAiSection = user && !aiDismissed && (aiLoading || aiSuggestion || aiProviders.length > 0);
 
   return (
-    <div className="space-y-6 md:space-y-8 animate-in fade-in duration-500 max-w-5xl mx-auto pb-20 md:pb-0">
-      <div className="space-y-3 md:space-y-4 text-center max-w-2xl mx-auto px-2">
-        <h1 className="text-2xl md:text-4xl font-serif font-bold text-black">Find Help Near You</h1>
-        <p className="text-gray-800 font-medium text-base md:text-lg">
+    <div className="space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in duration-500 max-w-5xl mx-auto pb-20 md:pb-0 px-3 sm:px-4 md:px-0">
+      <div className="space-y-2 sm:space-y-3 md:space-y-4 text-center max-w-2xl mx-auto">
+        <h1 className="text-xl sm:text-2xl md:text-4xl font-serif font-bold text-black">Find Help Near You</h1>
+        <p className="text-gray-800 font-medium text-sm sm:text-base md:text-lg">
           Connect with certified health professionals, emergency services, and support networks.
         </p>
       </div>
 
       {user && !aiDismissed && (
-        <div className="flex items-center justify-center gap-4 px-2">
-          <div className="flex items-center gap-2 bg-secondary/30 rounded-full p-1">
+        <div className="flex items-center justify-center gap-2 sm:gap-4 px-2 overflow-x-auto">
+          <div className="flex items-center gap-1 sm:gap-2 bg-secondary/30 rounded-full p-1 shrink-0">
             <Button
               variant={viewMode === "ai" ? "default" : "ghost"}
               size="sm"
               className={cn(
-                "rounded-full gap-2 font-bold",
+                "rounded-full gap-1 sm:gap-2 font-bold text-xs sm:text-sm whitespace-nowrap",
                 viewMode === "ai" ? "" : "text-muted-foreground"
               )}
               onClick={() => setViewMode("ai")}
             >
-              <Sparkles className="w-4 h-4" />
-              AI Suggestions
+              <Sparkles className="w-3 sm:w-4 h-3 sm:h-4" />
+              <span className="hidden sm:inline">AI Suggestions</span>
+              <span className="sm:hidden">AI</span>
             </Button>
             <Button
               variant={viewMode === "browse" ? "default" : "ghost"}
               size="sm"
               className={cn(
-                "rounded-full gap-2 font-bold",
+                "rounded-full gap-1 sm:gap-2 font-bold text-xs sm:text-sm whitespace-nowrap",
                 viewMode === "browse" ? "" : "text-muted-foreground"
               )}
               onClick={() => setViewMode("browse")}
             >
-              <Search className="w-4 h-4" />
-              Browse All
+              <Search className="w-3 sm:w-4 h-3 sm:h-4" />
+              <span className="hidden sm:inline">Browse All</span>
+              <span className="sm:hidden">Browse</span>
             </Button>
           </div>
         </div>
@@ -1166,42 +1175,42 @@ export default function Directory() {
       {showAiSection && viewMode === "ai" && (
         <Collapsible open={aiExpanded} onOpenChange={setAiExpanded}>
           <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-transparent overflow-hidden">
-            <CardHeader className="pb-2">
-              <div className="flex items-start justify-between gap-2">
-                <div className="flex items-center gap-2">
-                  <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center">
-                    <Sparkles className="w-5 h-5 text-primary" />
+            <CardHeader className="pb-2 px-3 sm:px-6 pt-3 sm:pt-6">
+              <div className="flex items-start justify-between gap-2 flex-wrap">
+                <div className="flex items-start gap-2 sm:gap-3 min-w-0 flex-1">
+                  <div className="h-8 sm:h-10 w-8 sm:w-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0 mt-1">
+                    <Sparkles className="w-4 sm:w-5 h-4 sm:h-5 text-primary" />
                   </div>
-                  <div>
-                    <CardTitle className="text-lg font-bold text-black flex items-center gap-2">
-                      AI Recommended Providers
+                  <div className="min-w-0 flex-1">
+                    <CardTitle className="text-sm sm:text-lg font-bold text-black flex items-center gap-1 sm:gap-2 flex-wrap">
+                      <span>AI Recommended Providers</span>
                       {aiSuggestion?.urgency && (
-                        <Badge className={cn("text-xs font-bold", getUrgencyColor(aiSuggestion.urgency))}>
-                          <span className={cn("w-2 h-2 rounded-full mr-1.5", getUrgencyDotColor(aiSuggestion.urgency))} />
-                          {aiSuggestion.urgency.charAt(0).toUpperCase() + aiSuggestion.urgency.slice(1)} Priority
+                        <Badge className={cn("text-[10px] sm:text-xs font-bold shrink-0", getUrgencyColor(aiSuggestion.urgency))}>
+                          <span className={cn("w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full mr-1", getUrgencyDotColor(aiSuggestion.urgency))} />
+                          {aiSuggestion.urgency.charAt(0).toUpperCase() + aiSuggestion.urgency.slice(1)}
                         </Badge>
                       )}
                     </CardTitle>
-                    <CardDescription className="text-gray-600">
+                    <CardDescription className="text-gray-600 text-xs sm:text-sm mt-1">
                       Based on your wellbeing data
                       {wellbeingSnapshot?.overallScore && (
-                        <span className="ml-1 text-primary font-medium">
+                        <span className="block sm:inline sm:ml-1 text-primary font-medium">
                           (Score: {wellbeingSnapshot.overallScore}/100)
                         </span>
                       )}
                     </CardDescription>
                   </div>
                 </div>
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-0.5 shrink-0">
                   <CollapsibleTrigger asChild>
-                    <Button variant="ghost" size="icon" className="h-8 w-8 shrink-0">
+                    <Button variant="ghost" size="icon">
                       {aiExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                     </Button>
                   </CollapsibleTrigger>
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="h-8 w-8 shrink-0 text-muted-foreground hover:text-foreground"
+                    className="h-8 w-8 text-muted-foreground hover:text-foreground"
                     onClick={() => setAiDismissed(true)}
                   >
                     <X className="w-4 h-4" />
@@ -1289,41 +1298,43 @@ export default function Directory() {
         </Collapsible>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <div className="order-2 md:order-1 md:col-span-1 space-y-6">
-           <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-lg font-bold text-black">Search</CardTitle>
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 sm:gap-6">
+        <div className="order-2 md:order-1 md:col-span-1 space-y-4 sm:space-y-6">
+           <Card className="border">
+            <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
+              <CardTitle className="text-base sm:text-lg font-bold text-black">Search</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
-              <div className="relative">
-                <Search className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
-                <Input 
-                  placeholder="Name, specialty..." 
-                  className="pl-9 font-medium"
-                  value={search}
-                  onChange={(e) => setSearch(e.target.value)}
-                />
+            <CardContent className="space-y-3 sm:space-y-4 px-3 sm:px-6 pb-3 sm:pb-6">
+              <div className="space-y-2">
+                <div className="relative">
+                  <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                  <Input 
+                    placeholder="Name, specialty..." 
+                    className="pl-9 font-medium text-sm"
+                    value={search}
+                    onChange={(e) => setSearch(e.target.value)}
+                  />
+                </div>
               </div>
               <div className="space-y-2">
-                <Label className="font-bold text-black">Location</Label>
+                <Label className="font-bold text-black text-sm">Location</Label>
                 <div className="relative">
-                  <MapPin className="absolute left-3 top-3 h-4 w-4 text-gray-500" />
+                  <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
                   <Input 
                     placeholder="Enter City" 
-                    className="pl-9 font-medium" 
+                    className="pl-9 font-medium text-sm" 
                     value={city}
                     onChange={(e) => setCity(e.target.value)}
                   />
                 </div>
               </div>
               <div className="space-y-2">
-                <Label className="font-bold text-black">Specialty</Label>
+                <Label className="font-bold text-black text-sm">Specialty</Label>
                 <Select value={specialty} onValueChange={setSpecialty}>
-                  <SelectTrigger>
+                  <SelectTrigger className="text-sm z-[50]">
                     <SelectValue placeholder="All Specialties" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="z-[100]">
                     {SPECIALTIES.map(s => (
                       <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>
                     ))}
@@ -1335,47 +1346,47 @@ export default function Directory() {
 
            <Card className="bg-primary/5 border-primary/20 hidden md:block">
              <CardContent className="p-4 flex flex-col items-center text-center gap-2">
-               <ShieldCheck className="w-8 h-8 text-primary" />
-               <p className="font-bold text-sm text-black">Verified Practitioners</p>
-               <p className="text-xs text-gray-600 font-medium">All providers are vetted and licensed.</p>
+               <ShieldCheck className="w-6 sm:w-8 h-6 sm:h-8 text-primary" />
+               <p className="font-bold text-xs sm:text-sm text-black">Verified Practitioners</p>
+               <p className="text-[10px] sm:text-xs text-gray-600 font-medium">All providers are vetted and licensed.</p>
              </CardContent>
            </Card>
         </div>
 
-        <div className="order-1 md:order-2 md:col-span-2 space-y-6">
+        <div className="order-1 md:order-2 md:col-span-2 space-y-4 sm:space-y-6">
           <Card className="overflow-hidden border-2 border-primary/10 shadow-sm hover:shadow-md transition-shadow">
-            <div className="bg-secondary/10 h-48 md:h-64 relative flex items-center justify-center border-b group cursor-pointer w-full"
+            <div className="bg-secondary/10 h-40 sm:h-48 md:h-64 relative flex items-center justify-center border-b group cursor-pointer w-full"
               onClick={() => setIsMapOpen(true)}
             >
               {providers.length > 0 ? <MapPreview /> : (
                 <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                  <Navigation className="w-12 h-12" />
-                  <p className="text-sm font-medium">No provider locations available</p>
+                  <Navigation className="w-8 sm:w-12 h-8 sm:h-12" />
+                  <p className="text-xs sm:text-sm font-medium">No provider locations available</p>
                 </div>
               )}
               <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
 
-              <div className="absolute top-4 right-4 bg-white/95 p-2 rounded-lg shadow-sm z-20 border border-gray-200">
-                <Maximize2 className="w-5 h-5 text-black" />
+              <div className="absolute top-2 sm:top-4 right-2 sm:right-4 bg-white/95 p-1.5 sm:p-2 rounded-lg shadow-sm z-20 border border-gray-200">
+                <Maximize2 className="w-4 sm:w-5 h-4 sm:h-5 text-black" />
               </div>
 
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center space-y-2 z-20 p-4 bg-white/95 backdrop-blur-md rounded-xl shadow-lg border border-gray-200 animate-in fade-in zoom-in duration-300 w-[90%] md:w-auto">
-                <div className="flex items-center gap-2 justify-center text-black font-bold text-lg">
-                  <Navigation className="w-5 h-5" /> Interactive Map
+              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center space-y-1 sm:space-y-2 z-20 px-3 sm:px-4 py-2 sm:py-3 bg-white/95 backdrop-blur-md rounded-lg sm:rounded-xl shadow-lg border border-gray-200 animate-in fade-in zoom-in duration-300 w-[min(90%,280px)] sm:w-auto">
+                <div className="flex items-center gap-1.5 sm:gap-2 justify-center text-black font-bold text-sm sm:text-lg">
+                  <Navigation className="w-4 sm:w-5 h-4 sm:h-5" /> Interactive Map
                 </div>
-                <p className="text-xs font-semibold text-gray-700">Click to expand & view providers</p>
+                <p className="text-[10px] sm:text-xs font-semibold text-gray-700">Click to expand & view providers</p>
               </div>
             </div>
           </Card>
 
           <Tabs value={specialty} className="w-full" onValueChange={setSpecialty}>
-            <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-transparent gap-2 mb-4 no-scrollbar">
+            <TabsList className="w-full justify-start overflow-x-auto h-auto p-0.5 sm:p-1 bg-transparent gap-1 sm:gap-2 mb-4 no-scrollbar flex-wrap sm:flex-nowrap">
               {SPECIALTIES.slice(0, 5).map(tab => (
                 <TabsTrigger 
                   key={tab.id} 
                   value={tab.id}
                   className={cn(
-                    "rounded-full border px-4 py-2 font-bold whitespace-nowrap transition-colors",
+                    "rounded-full border px-2 sm:px-4 py-1.5 sm:py-2 font-bold whitespace-nowrap transition-colors text-xs sm:text-sm",
                     "text-gray-700 bg-white data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary"
                   )}
                 >
@@ -1384,7 +1395,7 @@ export default function Directory() {
               ))}
             </TabsList>
 
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               {isLoading ? (
                 <>
                   <ProviderCardSkeleton />
@@ -1392,25 +1403,25 @@ export default function Directory() {
                   <ProviderCardSkeleton />
                 </>
               ) : isError ? (
-                <Card className="p-6">
-                  <div className="flex flex-col items-center gap-4 text-center">
-                    <AlertCircle className="w-12 h-12 text-red-500" />
+                <Card className="p-4 sm:p-6">
+                  <div className="flex flex-col items-center gap-3 sm:gap-4 text-center">
+                    <AlertCircle className="w-10 sm:w-12 h-10 sm:h-12 text-red-500" />
                     <div>
-                      <h3 className="font-bold text-lg">Error Loading Providers</h3>
-                      <p className="text-muted-foreground text-sm">
+                      <h3 className="font-bold text-base sm:text-lg">Error Loading Providers</h3>
+                      <p className="text-muted-foreground text-xs sm:text-sm mt-1">
                         {(error as any)?.message || "Could not load providers. Please try again."}
                       </p>
                     </div>
-                    <Button onClick={() => window.location.reload()}>Retry</Button>
+                    <Button onClick={() => window.location.reload()} size="sm">Retry</Button>
                   </div>
                 </Card>
               ) : filteredProviders.length === 0 ? (
-                <Card className="p-6">
-                  <div className="flex flex-col items-center gap-4 text-center">
-                    <User className="w-12 h-12 text-muted-foreground" />
+                <Card className="p-4 sm:p-6">
+                  <div className="flex flex-col items-center gap-3 sm:gap-4 text-center">
+                    <User className="w-10 sm:w-12 h-10 sm:h-12 text-muted-foreground" />
                     <div>
-                      <h3 className="font-bold text-lg">No Providers Found</h3>
-                      <p className="text-muted-foreground text-sm">
+                      <h3 className="font-bold text-base sm:text-lg">No Providers Found</h3>
+                      <p className="text-muted-foreground text-xs sm:text-sm mt-1">
                         {search || city || specialty !== "all" 
                           ? "Try adjusting your search filters."
                           : "No providers are currently available."}

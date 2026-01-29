@@ -288,13 +288,13 @@ export default function Messages() {
 
   const ConversationList = () => (
     <>
-      <div className="p-4 border-b bg-background/50 backdrop-blur-sm sticky top-0 z-10">
-        <h3 className="font-semibold mb-3">Conversations</h3>
+      <div className="p-2 sm:p-4 border-b bg-background/50 backdrop-blur-sm sticky top-0 z-10">
+        <h3 className="font-semibold mb-2 sm:mb-3 text-sm sm:text-base">Conversations</h3>
         <div className="relative">
-          <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+          <Search className="absolute left-2.5 top-2.5 h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
           <Input 
-            placeholder="Search conversations..." 
-            className="pl-8 bg-background h-9 text-sm"
+            placeholder="Search..." 
+            className="pl-7 sm:pl-8 bg-background h-8 sm:h-9 text-xs sm:text-sm"
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
           />
@@ -304,18 +304,18 @@ export default function Messages() {
         <div className="flex flex-col p-2 gap-1">
           {loadingConversations ? (
             Array.from({ length: 3 }).map((_, i) => (
-              <div key={i} className="flex items-start gap-3 p-3">
-                <Skeleton className="h-10 w-10 rounded-full" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-4 w-24" />
-                  <Skeleton className="h-3 w-full" />
+              <div key={i} className="flex items-start gap-2 sm:gap-3 p-2 sm:p-3">
+                <Skeleton className="h-9 w-9 sm:h-10 sm:w-10 rounded-full flex-shrink-0" />
+                <div className="flex-1 space-y-2 min-w-0">
+                  <Skeleton className="h-3 w-20" />
+                  <Skeleton className="h-2.5 w-full" />
                 </div>
               </div>
             ))
           ) : filteredConversations.length === 0 ? (
-            <div className="p-6 text-center text-muted-foreground">
-              <MessageSquare className="h-10 w-10 mx-auto mb-2 opacity-50" />
-              <p className="text-sm">No conversations yet</p>
+            <div className="p-4 sm:p-6 text-center text-muted-foreground">
+              <MessageSquare className="h-8 w-8 sm:h-10 sm:w-10 mx-auto mb-2 opacity-50" />
+              <p className="text-xs sm:text-sm">No conversations yet</p>
             </div>
           ) : (
             filteredConversations.map((conv: Conversation) => {
@@ -325,7 +325,7 @@ export default function Messages() {
               return (
                 <button 
                   key={conv._id}
-                  className={`flex items-start gap-3 p-3 text-left transition-all rounded-lg group ${
+                  className={`flex items-start gap-2 sm:gap-3 p-2 sm:p-3 text-left transition-all rounded-lg group ${
                     selectedConversationId === conv._id 
                       ? 'bg-background shadow-sm ring-1 ring-border' 
                       : 'hover:bg-background/50 hover:shadow-sm'
@@ -336,21 +336,21 @@ export default function Messages() {
                   }}
                 >
                   <div className="relative shrink-0">
-                    <Avatar className="h-10 w-10 border border-border">
+                    <Avatar className="h-9 w-9 sm:h-10 sm:w-10 border border-border">
                       {getAvatarUrl(other) && <AvatarImage src={getAvatarUrl(other)} />}
-                      <AvatarFallback className="bg-primary/5 text-primary font-medium text-xs">
+                      <AvatarFallback className="bg-primary/5 text-primary font-medium text-[10px] sm:text-xs">
                         {getParticipantInitials(other)}
                       </AvatarFallback>
                     </Avatar>
                   </div>
                   <div className="flex-1 overflow-hidden min-w-0">
-                    <div className="flex items-center justify-between mb-0.5">
-                      <span className={`font-semibold text-sm truncate ${
+                    <div className="flex items-center justify-between mb-0.5 gap-1">
+                      <span className={`font-semibold text-xs sm:text-sm truncate ${
                         conv.unreadCount > 0 ? 'text-foreground' : 'text-foreground/80'
                       }`}>
                         {getDisplayName(other)}
                       </span>
-                      <span className="text-[10px] text-muted-foreground whitespace-nowrap ml-2">
+                      <span className="text-[9px] sm:text-[10px] text-muted-foreground whitespace-nowrap flex-shrink-0">
                         {conv.lastMessage?.createdAt ? formatTime(conv.lastMessage.createdAt) : ''}
                       </span>
                     </div>
@@ -361,8 +361,8 @@ export default function Messages() {
                     </p>
                   </div>
                   {conv.unreadCount > 0 && (
-                    <div className="flex h-full items-center pl-1">
-                      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-medium text-primary-foreground shadow-sm">
+                    <div className="flex h-full items-center pl-1 shrink-0">
+                      <span className="flex h-4 w-4 sm:h-5 sm:w-5 items-center justify-center rounded-full bg-primary text-[8px] sm:text-[10px] font-medium text-primary-foreground shadow-sm">
                         {conv.unreadCount}
                       </span>
                     </div>
@@ -377,26 +377,27 @@ export default function Messages() {
   );
 
   return (
-    <div className="space-y-6 animate-in fade-in duration-500 max-w-7xl mx-auto pb-20">
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 border-b border-border/40 pb-6">
-        <div>
+    <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-500 max-w-7xl mx-auto pb-20 px-2 sm:px-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 border-b border-border/40 pb-4 sm:pb-6">
+        <div className="min-w-0">
           <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-3xl font-serif font-bold text-foreground">
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">
               Messages
             </h1>
           </div>
-          <p className="text-muted-foreground">
+          <p className="text-xs sm:text-sm text-muted-foreground">
             Chat with your healthcare providers and support team.
           </p>
         </div>
         <Dialog open={isNewConversationOpen} onOpenChange={setIsNewConversationOpen}>
           <DialogTrigger asChild>
-            <Button>
-              <Plus className="w-4 h-4 mr-2" />
-              New Conversation
+            <Button size="sm">
+              <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">New Conversation</span>
+              <span className="sm:hidden">New Chat</span>
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="max-w-[90vw] sm:max-w-md w-full">
             <DialogHeader>
               <DialogTitle>Start New Conversation</DialogTitle>
               <DialogDescription>
@@ -456,7 +457,7 @@ export default function Messages() {
         </Dialog>
       </div>
 
-      <div className="h-[calc(100vh-250px)] min-h-[500px] mt-0">
+      <div className="h-[calc(100vh-280px)] sm:h-[calc(100vh-250px)] min-h-[400px] sm:min-h-[500px] mt-0">
         <Card className="h-full flex overflow-hidden border bg-card shadow-sm rounded-xl">
           <div className="hidden md:flex w-[320px] border-r bg-muted/10 flex-col shrink-0">
             <ConversationList />
@@ -464,21 +465,21 @@ export default function Messages() {
 
           <div className="flex-1 flex flex-col bg-background min-w-0">
             {!selectedConversationId ? (
-              <div className="flex-1 flex items-center justify-center text-center p-6">
+              <div className="flex-1 flex items-center justify-center text-center p-4 sm:p-6">
                 <div>
-                  <MessageSquare className="h-16 w-16 mx-auto mb-4 text-muted-foreground/30" />
-                  <h3 className="font-semibold text-lg mb-1">Select a conversation</h3>
-                  <p className="text-sm text-muted-foreground">
+                  <MessageSquare className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 text-muted-foreground/30" />
+                  <h3 className="font-semibold text-base sm:text-lg mb-1">Select a conversation</h3>
+                  <p className="text-xs sm:text-sm text-muted-foreground px-2">
                     Choose a conversation from the list to start messaging
                   </p>
                   <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
                     <SheetTrigger asChild>
-                      <Button variant="outline" className="mt-4 md:hidden">
+                      <Button variant="outline" size="sm" className="mt-3 sm:mt-4 md:hidden">
                         <Menu className="h-4 w-4 mr-2" />
-                        View Conversations
+                        View Chats
                       </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="p-0 w-[300px]">
+                    <SheetContent side="left" className="p-0 w-[260px] sm:w-[300px]">
                       <div className="flex flex-col h-full bg-muted/10">
                         <ConversationList />
                       </div>
@@ -488,39 +489,39 @@ export default function Messages() {
               </div>
             ) : (
               <>
-                <div className="p-4 border-b flex items-center gap-3 shadow-sm z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <div className="p-2 sm:p-4 border-b flex items-center gap-2 sm:gap-3 shadow-sm z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                   <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
                     <SheetTrigger asChild>
-                      <Button variant="ghost" size="icon" className="md:hidden -ml-2 mr-2">
-                        <Menu className="h-5 w-5" />
+                      <Button variant="ghost" size="icon" className="md:hidden -ml-2 mr-1">
+                        <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
                       </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="p-0 w-[300px]">
+                    <SheetContent side="left" className="p-0 w-[260px] sm:w-[300px]">
                       <div className="flex flex-col h-full bg-muted/10">
                         <ConversationList />
                       </div>
                     </SheetContent>
                   </Sheet>
 
-                  <Avatar className="h-10 w-10 border">
+                  <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border flex-shrink-0">
                     {getAvatarUrl(selectedOtherParticipant) && <AvatarImage src={getAvatarUrl(selectedOtherParticipant)} />}
-                    <AvatarFallback className="bg-primary/10 text-primary">
+                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
                       {getParticipantInitials(selectedOtherParticipant)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-sm truncate">
+                    <h4 className="font-bold text-xs sm:text-sm truncate">
                       {getDisplayName(selectedOtherParticipant)}
                     </h4>
                   </div>
-                  <div className="flex items-center gap-1">
+                  <div className="flex items-center gap-1 flex-shrink-0">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground">
+                        <Button variant="ghost" size="icon" className="text-muted-foreground">
                           <MoreVertical className="w-4 h-4" />
                         </Button>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent align="end" className="w-48">
+                      <DropdownMenuContent align="end" className="w-40 sm:w-48">
                         <DropdownMenuItem onClick={() => handleMenuAction("Clear chat")}>
                           <Trash2 className="w-4 h-4 mr-2" />
                           Clear chat
@@ -544,7 +545,7 @@ export default function Messages() {
                 </div>
 
                 <Dialog open={isReportDialogOpen} onOpenChange={setIsReportDialogOpen}>
-                  <DialogContent className="sm:max-w-md">
+                  <DialogContent className="max-w-[90vw] sm:max-w-md w-full">
                     <DialogHeader>
                       <DialogTitle className="flex items-center gap-2">
                         <Flag className="h-5 w-5 text-red-500" />
@@ -619,21 +620,21 @@ export default function Messages() {
                   </DialogContent>
                 </Dialog>
                
-                <ScrollArea className="flex-1 p-4 sm:p-6 bg-slate-50/50" ref={scrollRef}>
-                  <div className="space-y-6 max-w-3xl mx-auto">
+                <ScrollArea className="flex-1 p-2 sm:p-4 md:p-6 bg-slate-50/50" ref={scrollRef}>
+                  <div className="space-y-4 sm:space-y-6 max-w-3xl mx-auto">
                     {loadingMessages ? (
-                      <div className="flex justify-center py-8">
-                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                      <div className="flex justify-center py-6 sm:py-8">
+                        <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin text-muted-foreground" />
                       </div>
                     ) : messages.length === 0 ? (
-                      <div className="text-center py-8">
-                        <p className="text-sm text-muted-foreground">No messages yet. Start the conversation!</p>
+                      <div className="text-center py-6 sm:py-8">
+                        <p className="text-xs sm:text-sm text-muted-foreground">No messages yet. Start the conversation!</p>
                       </div>
                     ) : (
                       <>
                         <div className="text-center">
-                          <span className="text-xs font-medium text-muted-foreground bg-muted/50 px-3 py-1 rounded-full">
-                            {new Date(messages[0]?.createdAt).toLocaleDateString([], { month: 'long', day: 'numeric', year: 'numeric' })}
+                          <span className="text-[10px] sm:text-xs font-medium text-muted-foreground bg-muted/50 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full">
+                            {new Date(messages[0]?.createdAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' })}
                           </span>
                         </div>
                         {messages.map((msg: Message) => {
@@ -642,9 +643,9 @@ export default function Messages() {
                           
                           return (
                             <div key={msg._id} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'}`}>
-                              <div className={`flex flex-col gap-1 max-w-[85%] sm:max-w-[75%] ${isMe ? 'items-end' : 'items-start'}`}>
+                              <div className={`flex flex-col gap-0.5 max-w-[90%] sm:max-w-[80%] ${isMe ? 'items-end' : 'items-start'}`}>
                                 <div 
-                                  className={`px-4 py-2.5 shadow-sm text-sm leading-relaxed ${
+                                  className={`px-3 sm:px-4 py-2 sm:py-2.5 shadow-sm text-xs sm:text-sm leading-relaxed ${
                                     isMe 
                                       ? 'bg-primary text-primary-foreground rounded-2xl rounded-tr-sm' 
                                       : 'bg-white border text-foreground rounded-2xl rounded-tl-sm'
@@ -652,9 +653,9 @@ export default function Messages() {
                                 >
                                   {msg.content}
                                 </div>
-                                <span className="text-[10px] text-muted-foreground px-1 flex items-center gap-1">
+                                <span className="text-[8px] sm:text-[10px] text-muted-foreground px-1 flex items-center gap-0.5">
                                   {formatTime(msg.createdAt)}
-                                  {isMe && msg.read && <CheckCheck className="w-3 h-3 text-primary" />}
+                                  {isMe && msg.read && <CheckCheck className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-primary" />}
                                 </span>
                               </div>
                             </div>
@@ -665,19 +666,19 @@ export default function Messages() {
                   </div>
                 </ScrollArea>
 
-                <div className="p-3 sm:p-4 border-t bg-background mt-auto">
-                  <div className="max-w-3xl mx-auto flex items-end gap-2 bg-muted/30 p-2 rounded-2xl border focus-within:ring-1 focus-within:ring-primary/20 focus-within:border-primary/50 transition-all">
+                <div className="p-2 sm:p-4 border-t bg-background mt-auto">
+                  <div className="max-w-3xl mx-auto flex items-end gap-1.5 sm:gap-2 bg-muted/30 p-1.5 sm:p-2 rounded-2xl border focus-within:ring-1 focus-within:ring-primary/20 focus-within:border-primary/50 transition-all">
                     <Button 
                       variant="ghost" 
                       size="icon" 
-                      className="shrink-0 h-9 w-9 rounded-full text-muted-foreground hover:text-foreground hover:bg-background self-end mb-0.5 hidden sm:flex"
+                      className="shrink-0 rounded-full text-muted-foreground hover:text-foreground hover:bg-background self-end mb-0.5 hidden sm:flex"
                       onClick={handleAttachmentClick}
                     >
-                      <Paperclip className="w-5 h-5" />
+                      <Paperclip className="w-4 h-4 sm:w-5 sm:h-5" />
                     </Button>
                     <Textarea 
-                      placeholder="Type your message..." 
-                      className="flex-1 min-h-[40px] max-h-[120px] border-0 bg-transparent focus-visible:ring-0 resize-none py-2.5 px-2 text-sm" 
+                      placeholder="Type message..." 
+                      className="flex-1 min-h-[36px] sm:min-h-[40px] max-h-[120px] border-0 bg-transparent focus-visible:ring-0 resize-none py-2 sm:py-2.5 px-1.5 sm:px-2 text-xs sm:text-sm" 
                       rows={1}
                       value={inputText}
                       onChange={(e) => setInputText(e.target.value)}
@@ -686,14 +687,14 @@ export default function Messages() {
                     />
                     <Button 
                       size="icon" 
-                      className="rounded-xl shrink-0 h-9 w-9 self-end mb-0.5 shadow-sm" 
+                      className="rounded-xl shrink-0 self-end mb-0.5 shadow-sm" 
                       onClick={handleSendMessage}
                       disabled={!inputText.trim() || sendMessageMutation.isPending}
                     >
                       {sendMessageMutation.isPending ? (
-                        <Loader2 className="w-4 h-4 animate-spin" />
+                        <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
                       ) : (
-                        <Send className="w-4 h-4 ml-0.5" />
+                        <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-0.5" />
                       )}
                     </Button>
                   </div>

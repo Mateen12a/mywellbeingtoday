@@ -1054,42 +1054,26 @@ export default function AIKnowledgeAssistant() {
                       <div
                         key={msg.id}
                         className={cn(
-                          "flex gap-4 max-w-[85%]",
-                          msg.role === 'user' ? "ml-auto flex-row-reverse" : "mr-auto"
+                          "flex mb-3 sm:mb-4",
+                          msg.role === 'user' ? "justify-end" : "justify-start"
                         )}
                       >
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <div className={cn(
-                                "w-11 h-11 md:w-12 md:h-12 rounded-full flex items-center justify-center shrink-0 shadow-sm cursor-pointer",
-                                msg.role === 'assistant' ? "bg-primary/10 text-primary" : "bg-secondary text-secondary-foreground"
-                              )}>
-                                {msg.role === 'assistant' ? <Bot className="w-6 h-6 md:w-7 md:h-7" /> : <User className="w-6 h-6 md:w-7 md:h-7" />}
-                              </div>
-                            </TooltipTrigger>
-                            <TooltipContent>
-                              {msg.role === 'assistant' ? 'AI Assistant' : (user?.profile ? `${user.profile.firstName} ${user.profile.lastName}` : 'You')}
-                            </TooltipContent>
-                          </Tooltip>
-                        </TooltipProvider>
-                        
                         <div className={cn(
-                          "p-4 md:p-5 rounded-2xl shadow-sm text-base md:text-lg leading-relaxed",
+                          "max-w-[92%] sm:max-w-[80%] px-3 py-2 sm:px-4 sm:py-3 rounded-xl text-sm sm:text-base leading-relaxed",
                           msg.role === 'assistant' 
-                            ? "bg-white border border-gray-200 text-gray-900 font-medium rounded-tl-none" 
-                            : "bg-primary text-primary-foreground font-medium rounded-tr-none"
+                            ? "bg-card border shadow-sm text-foreground" 
+                            : "bg-primary text-primary-foreground"
                         )}>
                           {msg.role === 'assistant' ? (
-                            <div className="prose prose-base md:prose-lg max-w-none prose-p:my-2 prose-ul:my-2 prose-ol:my-2 prose-li:my-1 prose-headings:my-3 prose-headings:font-semibold">
+                            <div className="prose prose-sm sm:prose-base max-w-none prose-p:my-1 sm:prose-p:my-2 prose-ul:my-1 sm:prose-ul:my-2 prose-ol:my-1 sm:prose-ol:my-2 prose-li:my-0.5 sm:prose-li:my-1 prose-headings:my-2 sm:prose-headings:my-3 prose-headings:font-semibold">
                               <ReactMarkdown>{msg.content}</ReactMarkdown>
                             </div>
                           ) : (
                             <p className="whitespace-pre-wrap">{msg.content}</p>
                           )}
                           {msg.sources && msg.sources.length > 0 && (
-                            <div className="mt-4 pt-4 border-t border-gray-200 text-sm font-semibold text-gray-600 flex gap-2 items-center">
-                              <BookOpen className="w-4 h-4" />
+                            <div className="mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-gray-200 text-xs sm:text-sm font-semibold text-gray-600 flex gap-2 items-center">
+                              <BookOpen className="w-3 h-3 sm:w-4 sm:h-4" />
                               <span>Sources: {msg.sources.join(", ")}</span>
                             </div>
                           )}
@@ -1101,11 +1085,8 @@ export default function AIKnowledgeAssistant() {
                     ))
                   )}
                   {isTyping && (
-                    <div className="flex gap-4 mr-auto max-w-[85%] animate-pulse">
-                      <div className="w-10 h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                        <Bot className="w-6 h-6 text-primary" />
-                      </div>
-                      <div className="bg-white border p-4 rounded-2xl rounded-tl-none flex gap-1 items-center">
+                    <div className="flex mb-3 sm:mb-4 justify-start">
+                      <div className="bg-card border shadow-sm px-3 py-2 sm:px-4 sm:py-3 rounded-xl flex gap-1 items-center">
                         <span className="w-2 h-2 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}/>
                         <span className="w-2 h-2 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}/>
                         <span className="w-2 h-2 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}/>
@@ -1183,7 +1164,7 @@ export default function AIKnowledgeAssistant() {
                     placeholder="Ask about your mood, stress, activities, or wellbeing..."
                     className="flex-1 bg-white rounded-xl border-primary/20 focus-visible:ring-primary text-base md:text-lg h-12 md:h-14 px-4"
                   />
-                  <Button type="submit" size="icon" disabled={(!query.trim() && !attachment) || isTyping} className="rounded-xl shrink-0 h-12 w-12 md:h-14 md:w-14">
+                  <Button type="submit" size="icon" disabled={(!query.trim() && !attachment) || isTyping} className="rounded-xl shrink-0">
                     <Send className="w-5 h-5 md:w-6 md:h-6" />
                   </Button>
                 </form>

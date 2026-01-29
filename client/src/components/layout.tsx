@@ -195,7 +195,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
               </span>
 
               {/* Mobile/Tablet Title with Typing Effect */}
-              <div className="xl:hidden h-6 flex items-center">
+              <div className="xl:hidden h-6 flex items-center max-w-[140px] sm:max-w-[180px] overflow-hidden">
                 <AnimatePresence>
                   {(showMobileTitle || !isAuthenticated) && (
                     <motion.span
@@ -203,7 +203,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                       animate={{ opacity: 1, width: "auto" }}
                       exit={{ opacity: 0, width: 0 }}
                       transition={{ duration: 0.8, ease: "easeOut" }}
-                      className="font-serif font-bold text-lg text-primary tracking-tight overflow-hidden whitespace-nowrap"
+                      className="font-serif font-bold text-sm sm:text-base text-primary tracking-tight overflow-hidden whitespace-nowrap"
                     >
                       mywellbeingtoday
                     </motion.span>
@@ -360,19 +360,19 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </nav>
 
           {/* Mobile/Tablet Menu */}
-          <div className="xl:hidden flex items-center gap-2">
+          <div className="xl:hidden flex items-center gap-1 shrink-0">
             {isAuthenticated && (
               <Popover>
                 <PopoverTrigger asChild>
                   <Button 
                     variant="ghost" 
                     size="icon" 
-                    className="relative"
+                    className="relative h-9 w-9"
                     data-testid="button-notifications-mobile"
                   >
-                    <Bell className="h-5 w-5" />
+                    <Bell className="h-4 w-4" />
                     {unreadCount > 0 && (
-                      <span className="absolute -top-1 -right-1 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center text-[9px] font-bold text-white">
+                      <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center text-[8px] font-bold text-white">
                         {unreadCount > 9 ? '9+' : unreadCount}
                       </span>
                     )}

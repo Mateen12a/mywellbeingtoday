@@ -623,15 +623,15 @@ export default function History() {
 
   return (
     <TooltipProvider>
-      <div className="space-y-8 animate-in fade-in duration-500 max-w-6xl mx-auto">
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div className="space-y-2">
-            <h1 className="text-3xl md:text-4xl font-serif font-bold text-foreground">Wellbeing History</h1>
-            <p className="text-muted-foreground text-lg">Track your trends and patterns over time.</p>
+      <div className="space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in duration-500 max-w-6xl mx-auto px-3 sm:px-4">
+        <div className="flex flex-col gap-4">
+          <div className="space-y-1">
+            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-foreground">Wellbeing History</h1>
+            <p className="text-xs sm:text-sm text-muted-foreground">Track your trends and patterns over time.</p>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" size="sm" onClick={() => window.print()}>
-              <Printer className="mr-2 h-4 w-4" /> Print
+          <div className="flex flex-wrap gap-2">
+            <Button variant="outline" size="sm" onClick={() => window.print()} className="text-xs sm:text-sm">
+              <Printer className="mr-2 h-3 w-3 sm:h-4 sm:w-4" /> Print
             </Button>
             <ReportDownloadButton size="sm" />
           </div>
@@ -646,8 +646,8 @@ export default function History() {
             </TabsList>
             
             <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-[180px]">
-                <CalendarIcon className="mr-2 h-4 w-4" />
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <CalendarIcon className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                 <SelectValue placeholder="Select Range" />
               </SelectTrigger>
               <SelectContent>
@@ -1047,15 +1047,15 @@ export default function History() {
                       </div>
                     </div>
                   </CardHeader>
-                  <CardContent>
-                    <div className="h-[300px]">
+                  <CardContent className="overflow-x-auto">
+                    <div className="h-[250px] sm:h-[300px] md:h-[350px] w-full">
                       {isLoading ? (
                         <div className="flex items-center justify-center h-full">
                           <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                         </div>
                       ) : chartData.length > 0 ? (
                         <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={chartData}>
+                          <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
                             <defs>
                               <linearGradient id="colorMood" x1="0" y1="0" x2="0" y2="1">
                                 <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
@@ -1066,8 +1066,8 @@ export default function History() {
                                 <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
                               </linearGradient>
                             </defs>
-                            <XAxis dataKey="date" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                            <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} domain={[0, 10]} tickFormatter={(value) => `${value}`} />
+                            <XAxis dataKey="date" stroke="#888888" fontSize={window.innerWidth < 640 ? 10 : 12} tickLine={false} axisLine={false} />
+                            <YAxis stroke="#888888" fontSize={window.innerWidth < 640 ? 10 : 12} tickLine={false} axisLine={false} domain={[0, 10]} tickFormatter={(value) => `${value}`} width={window.innerWidth < 640 ? 20 : 30} />
                             <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.2} />
                             <RechartsTooltip 
                               contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
@@ -1109,7 +1109,7 @@ export default function History() {
                       <CardDescription>Comprehensive breakdown of your wellbeing metrics with explanations</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
                         <div className="p-4 rounded-lg bg-green-50 border border-green-100">
                           <div className="flex items-center gap-2 mb-2">
                             <span className={`${moodTrendDisplay.color}`}>{moodTrendDisplay.icon}</span>
@@ -1224,15 +1224,15 @@ export default function History() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="h-[400px]">
+              <CardContent className="overflow-x-auto">
+                <div className="h-[250px] sm:h-[350px] md:h-[400px] w-full">
                   {isLoading ? (
                     <div className="flex items-center justify-center h-full">
                       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
                   ) : chartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart data={chartData}>
+                      <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
                         <defs>
                           <linearGradient id="colorMoodDetailed" x1="0" y1="0" x2="0" y2="1">
                             <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
@@ -1243,8 +1243,8 @@ export default function History() {
                             <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
-                        <XAxis dataKey="date" stroke="#888888" fontSize={12} tickLine={false} axisLine={false} />
-                        <YAxis stroke="#888888" fontSize={12} tickLine={false} axisLine={false} domain={[0, 10]} />
+                        <XAxis dataKey="date" stroke="#888888" fontSize={window.innerWidth < 640 ? 10 : 12} tickLine={false} axisLine={false} />
+                        <YAxis stroke="#888888" fontSize={window.innerWidth < 640 ? 10 : 12} tickLine={false} axisLine={false} domain={[0, 10]} width={window.innerWidth < 640 ? 20 : 30} />
                         <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.2} />
                         <RechartsTooltip 
                           contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
@@ -1262,18 +1262,18 @@ export default function History() {
                   )}
                 </div>
                 {chartData.length > 0 && (
-                  <div className="mt-4 grid md:grid-cols-2 gap-4">
-                    <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
+                  <div className="mt-3 sm:mt-4 grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
+                    <div className="p-2 sm:p-3 bg-purple-50 rounded-lg border border-purple-100">
                       <div className="flex items-start gap-2">
-                        <Heart className="h-4 w-4 text-purple-500 mt-0.5" />
+                        <Heart className="h-3 w-3 sm:h-4 sm:w-4 text-purple-500 mt-0.5 flex-shrink-0" />
                         <div className="text-xs text-purple-700">
                           <span className="font-medium">Understanding Mood:</span> Your mood score (purple) reflects your overall emotional state. Scores above 7 indicate positive emotions, while scores below 4 may suggest you need extra self-care.
                         </div>
                       </div>
                     </div>
-                    <div className="p-3 bg-cyan-50 rounded-lg border border-cyan-100">
+                    <div className="p-2 sm:p-3 bg-cyan-50 rounded-lg border border-cyan-100">
                       <div className="flex items-start gap-2">
-                        <Zap className="h-4 w-4 text-cyan-500 mt-0.5" />
+                        <Zap className="h-3 w-3 sm:h-4 sm:w-4 text-cyan-500 mt-0.5 flex-shrink-0" />
                         <div className="text-xs text-cyan-700">
                           <span className="font-medium">Understanding Energy:</span> Your energy level (cyan) shows how physically and mentally energized you feel. Low energy might indicate need for rest or physical activity.
                         </div>
@@ -1305,20 +1305,20 @@ export default function History() {
                   </div>
                 </div>
               </CardHeader>
-              <CardContent>
-                <div className="h-[400px]">
+              <CardContent className="overflow-x-auto">
+                <div className="h-[250px] sm:h-[350px] md:h-[400px] w-full">
                   {isLoading ? (
                     <div className="flex items-center justify-center h-full">
                       <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
                     </div>
                   ) : activityChartData.length > 0 ? (
                     <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={activityChartData} layout="vertical" margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                      <BarChart data={activityChartData} layout="vertical" margin={{ top: 5, right: 10, left: window.innerWidth < 640 ? 60 : 100, bottom: 5 }}>
                         <CartesianGrid strokeDasharray="3 3" horizontal={true} vertical={false} opacity={0.2}/>
                         <XAxis type="number" hide />
-                        <YAxis dataKey="name" type="category" width={100} tick={{fontSize: 14}} interval={0} />
+                        <YAxis dataKey="name" type="category" width={window.innerWidth < 640 ? 60 : 100} tick={{fontSize: window.innerWidth < 640 ? 11 : 14}} interval={0} />
                         <RechartsTooltip cursor={{fill: 'transparent'}} contentStyle={{ borderRadius: '8px' }} />
-                        <Bar dataKey="value" fill="#f59e0b" radius={[0, 4, 4, 0]} barSize={30} name="Sessions" />
+                        <Bar dataKey="value" fill="#f59e0b" radius={[0, 4, 4, 0]} barSize={window.innerWidth < 640 ? 20 : 30} name="Sessions" />
                       </BarChart>
                     </ResponsiveContainer>
                   ) : (
@@ -1329,9 +1329,9 @@ export default function History() {
                   )}
                 </div>
                 {activityChartData.length > 0 && (
-                  <div className="mt-4 p-3 bg-amber-50 rounded-lg border border-amber-100">
+                  <div className="mt-3 sm:mt-4 p-2 sm:p-3 bg-amber-50 rounded-lg border border-amber-100">
                     <div className="flex items-start gap-2">
-                      <Activity className="h-4 w-4 text-amber-500 mt-0.5" />
+                      <Activity className="h-3 w-3 sm:h-4 sm:w-4 text-amber-500 mt-0.5 flex-shrink-0" />
                       <div className="text-xs text-amber-700">
                         <span className="font-medium">Activity Insights:</span> A balanced mix of different activities (exercise, social, relaxation) typically leads to better overall wellbeing. Try to include variety in your daily routine for optimal health benefits.
                       </div>

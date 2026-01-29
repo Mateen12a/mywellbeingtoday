@@ -151,18 +151,20 @@ const ContactSupportSection = () => {
           ) : ticketsData && ticketsData.length > 0 ? (
             <div className="space-y-4">
               {ticketsData.map((ticket: any) => (
-                <div key={ticket._id} className="border rounded-lg p-4 space-y-2">
-                  <div className="flex items-start justify-between gap-4">
+                <div key={ticket._id} className="border rounded-lg p-3 sm:p-4 space-y-2">
+                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-medium truncate">{ticket.subject}</h4>
-                      <p className="text-sm text-muted-foreground line-clamp-2">{ticket.message}</p>
+                      <h4 className="font-medium truncate text-sm sm:text-base">{ticket.subject}</h4>
+                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{ticket.message}</p>
                     </div>
-                    {getStatusBadge(ticket.status)}
+                    <div className="flex-shrink-0">
+                      {getStatusBadge(ticket.status)}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                    <span>Created: {new Date(ticket.createdAt).toLocaleDateString()}</span>
+                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-4 text-xs text-muted-foreground">
+                    <span className="whitespace-nowrap">Created: {new Date(ticket.createdAt).toLocaleDateString()}</span>
                     {ticket.responses?.length > 0 && (
-                      <span>{ticket.responses.length} response(s)</span>
+                      <span className="whitespace-nowrap">{ticket.responses.length} response(s)</span>
                     )}
                   </div>
                   {ticket.responses?.length > 0 && (
@@ -217,32 +219,32 @@ const SubscriptionPlan = ({
   };
 
   return (
-    <Card className={`relative flex flex-col ${popular ? 'border-primary shadow-lg scale-105 z-10' : 'border-border'}`}>
+    <Card className={`relative flex flex-col transition-transform ${popular ? 'border-primary shadow-lg sm:scale-105 sm:z-10' : 'border-border'}`}>
       {popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-3 py-1 rounded-full">
+        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 sm:px-3 py-1 rounded-full whitespace-nowrap">
           Most Popular
         </div>
       )}
-      <CardHeader>
-        <CardTitle className="text-xl">{title}</CardTitle>
+      <CardHeader className="pb-3 sm:pb-4">
+        <CardTitle className="text-lg sm:text-xl">{title}</CardTitle>
         <div className="mt-2">
-          <span className="text-3xl font-bold">{formatPrice(price, currency)}</span>
-          <span className="text-muted-foreground">/month</span>
+          <span className="text-2xl sm:text-3xl font-bold">{formatPrice(price, currency)}</span>
+          <span className="text-muted-foreground text-sm">/month</span>
         </div>
         {current && <Badge variant="secondary" className="w-fit mt-2">Current Plan</Badge>}
       </CardHeader>
-      <CardContent className="flex-1 space-y-4">
+      <CardContent className="flex-1 space-y-3 sm:space-y-4 px-4 sm:px-6 py-0">
         <ul className="space-y-2">
           {features.map((feature, i) => (
-            <li key={i} className="flex items-start gap-2 text-sm">
-              <Check className="h-4 w-4 text-green-500 mt-0.5 shrink-0" />
+            <li key={i} className="flex items-start gap-2 text-xs sm:text-sm">
+              <Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 mt-0.5 shrink-0" />
               <span>{feature}</span>
             </li>
           ))}
         </ul>
       </CardContent>
-      <CardFooter>
-        <Button className="w-full" variant={current ? "outline" : popular ? "default" : "secondary"}>
+      <CardFooter className="pt-3 sm:pt-4 px-4 sm:px-6">
+        <Button className="w-full" size="sm" variant={current ? "outline" : popular ? "default" : "secondary"}>
           {current ? "Manage Plan" : "Upgrade"}
         </Button>
       </CardFooter>
@@ -761,7 +763,7 @@ export default function Settings() {
                   <div className="flex flex-col">
                     <Label 
                       htmlFor="picture" 
-                      className={`cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 h-10 px-4 py-2 w-fit ${isUploadingAvatar ? 'opacity-50 pointer-events-none' : ''}`}
+                      className={`cursor-pointer inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 bg-primary text-primary-foreground hover:bg-primary/90 ${isUploadingAvatar ? 'opacity-50 pointer-events-none' : ''}`}
                     >
                       {isUploadingAvatar ? (
                         <>
@@ -1084,14 +1086,14 @@ export default function Settings() {
               <CardDescription>Customize your experience.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid md:grid-cols-2 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                 <div className="space-y-2">
-                  <Label>Language</Label>
+                  <Label className="text-sm">Language</Label>
                   <Select 
                     value={preferences.language}
                     onValueChange={(value) => setPreferences(prev => ({ ...prev, language: value }))}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="text-sm">
                       <SelectValue placeholder="Select Language" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1103,12 +1105,12 @@ export default function Settings() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Theme</Label>
+                  <Label className="text-sm">Theme</Label>
                   <Select 
                     value={preferences.theme}
                     onValueChange={(value) => setPreferences(prev => ({ ...prev, theme: value }))}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="text-sm">
                       <SelectValue placeholder="Select Theme" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1119,12 +1121,12 @@ export default function Settings() {
                   </Select>
                 </div>
                 <div className="space-y-2">
-                  <Label>Timezone</Label>
+                  <Label className="text-sm">Timezone</Label>
                   <Select 
                     value={preferences.timezone}
                     onValueChange={(value) => setPreferences(prev => ({ ...prev, timezone: value }))}
                   >
-                    <SelectTrigger>
+                    <SelectTrigger className="text-sm">
                       <SelectValue placeholder="Select Timezone" />
                     </SelectTrigger>
                     <SelectContent>
@@ -1138,7 +1140,7 @@ export default function Settings() {
                 </div>
               </div>
               <div className="pt-4 flex justify-end">
-                <Button onClick={handleSavePreferences} disabled={updateSettingsMutation.isPending}>
+                <Button size="sm" onClick={handleSavePreferences} disabled={updateSettingsMutation.isPending}>
                   {updateSettingsMutation.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Save Preferences
                 </Button>
@@ -1147,11 +1149,11 @@ export default function Settings() {
           </Card>
         </TabsContent>
 
-        <TabsContent value="billing" className="space-y-6">
-           <div className="flex justify-end items-center gap-3">
-              <Label className="text-muted-foreground">Currency:</Label>
+        <TabsContent value="billing" className="space-y-4 sm:space-y-6">
+           <div className="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2 sm:gap-3">
+              <Label className="text-muted-foreground text-sm">Currency:</Label>
               <Select value={currency} onValueChange={setCurrency}>
-                <SelectTrigger className="w-[100px]">
+                <SelectTrigger className="w-full sm:w-[120px]">
                    <Globe className="h-3 w-3 mr-2" />
                    <SelectValue />
                 </SelectTrigger>
@@ -1164,7 +1166,7 @@ export default function Settings() {
               </Select>
            </div>
 
-           <div className="grid md:grid-cols-3 gap-6 items-end">
+           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 items-end">
               <SubscriptionPlan 
                 title="Free"
                 price={0}
@@ -1205,14 +1207,14 @@ export default function Settings() {
               />
            </div>
 
-           <Card className="mt-8 bg-muted/30 border-dashed">
-              <CardContent className="p-6">
-                <div className="flex flex-col md:flex-row items-center justify-between gap-4">
+           <Card className="mt-6 sm:mt-8 bg-muted/30 border-dashed">
+              <CardContent className="p-3 sm:p-6">
+                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
                    <div className="space-y-1">
-                      <h4 className="font-medium">Need Enterprise Access?</h4>
-                      <p className="text-sm text-muted-foreground">For organizations, schools, and healthcare providers.</p>
+                      <h4 className="font-medium text-sm sm:text-base">Need Enterprise Access?</h4>
+                      <p className="text-xs sm:text-sm text-muted-foreground">For organizations, schools, and healthcare providers.</p>
                    </div>
-                   <Button variant="outline">Contact Sales</Button>
+                   <Button variant="outline" size="sm" className="w-full sm:w-auto">Contact Sales</Button>
                 </div>
               </CardContent>
            </Card>
@@ -1258,19 +1260,19 @@ export default function Settings() {
         setShowPasswordDialog(open);
         if (!open) setVerifyPasswordInput('');
       }}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[95vw] sm:max-w-md p-4 sm:p-6 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <Lock className="h-5 w-5" />
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <Lock className="h-4 sm:h-5 w-4 sm:w-5" />
               Verify Your Identity
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="text-xs sm:text-sm">
               Are you sure you want to edit your personal information? Please enter your password to unlock the fields for 5 minutes.
             </DialogDescription>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <Label htmlFor="verifyPassword">Password</Label>
+              <Label htmlFor="verifyPassword" className="text-sm">Password</Label>
               <Input
                 id="verifyPassword"
                 type="password"
@@ -1284,10 +1286,11 @@ export default function Settings() {
                 }}
                 disabled={isVerifyingPassword}
                 autoFocus
+                className="text-sm"
               />
             </div>
           </div>
-          <DialogFooter className="flex gap-2 sm:gap-0">
+          <DialogFooter className="flex flex-col-reverse gap-2 sm:flex-row sm:gap-2 sm:justify-end">
             <Button 
               variant="outline" 
               onClick={() => {
@@ -1295,21 +1298,25 @@ export default function Settings() {
                 setVerifyPasswordInput('');
               }}
               disabled={isVerifyingPassword}
+              size="sm"
+              className="w-full sm:w-auto"
             >
               Cancel
             </Button>
             <Button 
               onClick={handleVerifyPassword}
               disabled={isVerifyingPassword || !verifyPasswordInput}
+              size="sm"
+              className="w-full sm:w-auto"
             >
               {isVerifyingPassword ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-3 sm:h-4 w-3 sm:w-4 animate-spin" />
                   Verifying...
                 </>
               ) : (
                 <>
-                  <LockOpen className="mr-2 h-4 w-4" />
+                  <LockOpen className="mr-2 h-3 sm:h-4 w-3 sm:w-4" />
                   Unlock Fields
                 </>
               )}

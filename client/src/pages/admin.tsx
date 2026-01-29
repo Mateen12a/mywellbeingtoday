@@ -1166,7 +1166,7 @@ export default function AdminDashboard() {
                                       </td>
                                       <td className="px-6 py-4 text-muted-foreground">
                                         {log.details && Object.keys(log.details).length > 0 ? (
-                                          <Button variant="ghost" size="sm" className="h-6 px-2">
+                                          <Button variant="ghost" size="sm">
                                             <Eye className="h-3 w-3 mr-1" />
                                             {expandedLogId === log._id ? <ChevronUp className="h-3 w-3" /> : <ChevronDown className="h-3 w-3" />}
                                           </Button>

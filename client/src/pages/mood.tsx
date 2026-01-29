@@ -319,12 +319,12 @@ export default function MoodTracker() {
     MOOD_TYPES.find((m) => m.id === moodId) || MOOD_TYPES[0];
 
   return (
-    <div className="max-w-4xl mx-auto space-y-12 animate-in fade-in duration-500 pb-20 relative">
-      <div className="text-center space-y-4 max-w-2xl mx-auto pt-4 md:pt-0">
-        <h1 className="text-3xl md:text-4xl font-serif font-bold text-foreground">
+    <div className="max-w-4xl mx-auto space-y-8 sm:space-y-10 md:space-y-12 animate-in fade-in duration-500 pb-20 relative px-4 sm:px-6">
+      <div className="text-center space-y-2 sm:space-y-3 max-w-2xl mx-auto pt-2 md:pt-0">
+        <h1 className="text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-foreground leading-tight">
           How are you feeling today?
         </h1>
-        <p className="text-lg text-muted-foreground">
+        <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
           Track your emotional and physical state to help us support you better.
         </p>
       </div>
@@ -338,22 +338,22 @@ export default function MoodTracker() {
       </div>
 
       <Card className="border-none shadow-none bg-transparent">
-        <CardContent className="space-y-8 pt-6">
+        <CardContent className="space-y-4 sm:space-y-6 pt-4 sm:pt-6">
           <div className="flex justify-center">
             <div
               className={cn(
-                "h-24 w-24 rounded-full bg-white shadow-xl flex items-center justify-center transition-all duration-300",
+                "h-20 sm:h-24 w-20 sm:w-24 rounded-full bg-white shadow-xl flex items-center justify-center transition-all duration-300",
                 moodData.color
               )}
             >
-              <MoodIcon className="w-12 h-12" />
+              <MoodIcon className="w-10 sm:w-12 h-10 sm:h-12" />
             </div>
           </div>
           <div className="text-center">
-            <h2 className={cn("text-2xl font-bold font-serif mb-2", moodData.color)}>
+            <h2 className={cn("text-xl sm:text-2xl font-bold font-serif mb-1 sm:mb-2", moodData.color)}>
               {moodData.text}
             </h2>
-            <p className="text-muted-foreground">Level {moodScore[0]}/10</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">Level {moodScore[0]}/10</p>
           </div>
           <div className="max-w-md mx-auto space-y-2">
             <Slider
@@ -372,12 +372,12 @@ export default function MoodTracker() {
         </CardContent>
       </Card>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div className="flex items-center gap-2">
-          <Heart className="w-5 h-5 text-primary" />
-          <h2 className="text-xl font-serif font-bold">Select Your Mood</h2>
+          <Heart className="w-4 sm:w-5 h-4 sm:h-5 text-primary" />
+          <h2 className="text-lg sm:text-xl font-serif font-bold">Select Your Mood</h2>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
+        <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-3">
           {MOOD_TYPES.map((mood) => {
             const Icon = mood.icon;
             const isSelected = selectedMood === mood.id;
@@ -385,15 +385,16 @@ export default function MoodTracker() {
               <button
                 key={mood.id}
                 onClick={() => setSelectedMood(mood.id)}
+                data-testid={`button-mood-${mood.id}`}
                 className={cn(
-                  "p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-2",
+                  "p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-1 sm:gap-2 min-h-[80px] sm:min-h-[100px] touch-manipulation",
                   isSelected
                     ? `${mood.color} ring-2 ring-offset-2 ring-primary`
                     : "border-gray-200 hover:border-gray-300 bg-white"
                 )}
               >
-                <Icon className={cn("w-6 h-6", isSelected ? "" : "text-gray-400")} />
-                <span className="text-sm font-medium">{mood.label}</span>
+                <Icon className={cn("w-5 sm:w-6 h-5 sm:h-6", isSelected ? "" : "text-gray-400")} />
+                <span className="text-xs sm:text-sm font-medium text-center leading-tight">{mood.label}</span>
               </button>
             );
           })}
@@ -415,12 +416,12 @@ export default function MoodTracker() {
         )}
       </div>
 
-      <div className="grid md:grid-cols-2 gap-8 max-w-4xl mx-auto">
+      <div className="grid md:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
         <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-serif">Energy Level</CardTitle>
+          <CardHeader className="pb-2 sm:pb-4">
+            <CardTitle className="text-base sm:text-lg font-serif">Energy Level</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <Slider
               value={energyLevel}
               onValueChange={setEnergyLevel}
@@ -429,7 +430,7 @@ export default function MoodTracker() {
               step={1}
               className="py-2"
             />
-            <div className="flex justify-between text-xs text-muted-foreground mt-2">
+            <div className="flex justify-between text-xs sm:text-sm text-muted-foreground">
               <span>Low Energy</span>
               <span className="font-medium">{energyLevel[0]}/10</span>
               <span>High Energy</span>
@@ -437,10 +438,10 @@ export default function MoodTracker() {
           </CardContent>
         </Card>
         <Card>
-          <CardHeader className="pb-4">
-            <CardTitle className="text-lg font-serif">Stress Level</CardTitle>
+          <CardHeader className="pb-2 sm:pb-4">
+            <CardTitle className="text-base sm:text-lg font-serif">Stress Level</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-3">
             <Slider
               value={stressLevel}
               onValueChange={setStressLevel}
@@ -449,7 +450,7 @@ export default function MoodTracker() {
               step={1}
               className="py-2"
             />
-            <div className="flex justify-between text-xs text-muted-foreground mt-2">
+            <div className="flex justify-between text-xs sm:text-sm text-muted-foreground">
               <span>Relaxed</span>
               <span className="font-medium">{stressLevel[0]}/10</span>
               <span>Stressed</span>
@@ -458,18 +459,19 @@ export default function MoodTracker() {
         </Card>
       </div>
 
-      <div className="space-y-6">
+      <div className="space-y-4 sm:space-y-6">
         <div className="flex items-center gap-2">
-          <Activity className="w-5 h-5 text-primary" />
-          <h2 className="text-xl font-serif font-bold">Contributing Factors</h2>
+          <Activity className="w-4 sm:w-5 h-4 sm:h-5 text-primary" />
+          <h2 className="text-lg sm:text-xl font-serif font-bold">Contributing Factors</h2>
         </div>
         <div className="flex flex-wrap gap-2">
           {FACTORS.map((factor) => (
             <button
               key={factor.id}
               onClick={() => handleFactorToggle(factor.id)}
+              data-testid={`button-factor-${factor.id}`}
               className={cn(
-                "px-4 py-2 rounded-full border transition-all duration-200 text-sm font-medium",
+                "px-3 sm:px-4 py-2 rounded-full border transition-all duration-200 text-xs sm:text-sm font-medium min-h-[36px] touch-manipulation flex items-center",
                 selectedFactors.includes(factor.id)
                   ? "bg-primary text-primary-foreground border-primary"
                   : "bg-white border-gray-200 hover:border-gray-300 text-gray-700"
@@ -496,9 +498,9 @@ export default function MoodTracker() {
         )}
       </div>
 
-      <div className="space-y-4">
-        <Label htmlFor="notes" className="text-lg font-serif font-bold flex items-center gap-2">
-          <Brain className="w-5 h-5 text-primary" />
+      <div className="space-y-3 sm:space-y-4">
+        <Label htmlFor="notes" className="text-base sm:text-lg font-serif font-bold flex items-center gap-2">
+          <Brain className="w-4 sm:w-5 h-4 sm:h-5 text-primary" />
           Additional Notes
         </Label>
         <div className="relative">
@@ -508,7 +510,7 @@ export default function MoodTracker() {
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}
-            className="pr-12"
+            className="pr-12 text-sm sm:text-base"
           />
           <Button
             type="button"
@@ -520,23 +522,24 @@ export default function MoodTracker() {
             )}
             onClick={() => startVoiceInput(setNotes, notes)}
             title={isRecording ? "Recording..." : "Voice input"}
+            data-testid="button-voice-notes"
           >
             {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
           </Button>
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row justify-end pt-8 gap-4">
+      <div className="flex flex-col sm:flex-row justify-end pt-6 sm:pt-8 gap-3 sm:gap-4">
         <Link href="/history" className="sm:hidden w-full">
-          <Button variant="outline" size="lg" className="w-full">
+          <Button variant="outline">
             View History
           </Button>
         </Link>
         <Button
-          size="lg"
-          className="rounded-xl px-12 w-full sm:w-auto"
+          className="rounded-xl"
           disabled={!selectedMood || createMutation.isPending}
           onClick={handleSubmit}
+          data-testid="button-save-mood"
         >
           {createMutation.isPending ? (
             <>
@@ -550,13 +553,13 @@ export default function MoodTracker() {
       </div>
 
       <Dialog open={showFeedbackDialog} onOpenChange={setShowFeedbackDialog}>
-        <DialogContent className="sm:max-w-md max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <div className="mx-auto h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
-              <Heart className="h-6 w-6 text-green-600" />
+        <DialogContent className="w-[95vw] max-w-md max-h-[85vh] overflow-y-auto rounded-xl">
+          <DialogHeader className="space-y-3 sm:space-y-4">
+            <div className="mx-auto h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-green-100 flex items-center justify-center">
+              <Heart className="h-5 sm:h-6 w-5 sm:w-6 text-green-600" />
             </div>
-            <DialogTitle className="text-center text-xl font-serif">Mood Logged Successfully!</DialogTitle>
-            <DialogDescription className="text-center">
+            <DialogTitle className="text-center text-lg sm:text-xl font-serif">Mood Logged Successfully!</DialogTitle>
+            <DialogDescription className="text-center text-sm sm:text-base">
               Thank you for checking in. Here's some personalized feedback for you.
             </DialogDescription>
           </DialogHeader>
@@ -629,7 +632,7 @@ export default function MoodTracker() {
           )}
           
           <DialogFooter>
-            <Button className="w-full" onClick={() => setShowFeedbackDialog(false)}>
+            <Button onClick={() => setShowFeedbackDialog(false)}>
               Close
             </Button>
           </DialogFooter>

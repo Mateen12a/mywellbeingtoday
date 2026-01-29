@@ -499,28 +499,28 @@ export default function ActivityLog() {
   const suggestion = savedActivity ? getActivitySuggestion(savedActivity.category, savedActivity.description) : null;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8 animate-in slide-in-from-bottom-4 duration-500">
-      <div className="space-y-2">
-        <h1 className="text-3xl font-serif font-bold text-foreground">Log Activity</h1>
-        <p className="text-muted-foreground">Record your daily habits, thoughts, and small wins.</p>
+    <div className="max-w-2xl mx-auto space-y-6 sm:space-y-8 animate-in slide-in-from-bottom-4 duration-500 px-4 sm:px-6">
+      <div className="space-y-1 sm:space-y-2">
+        <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">Log Activity</h1>
+        <p className="text-sm sm:text-base text-muted-foreground">Record your daily habits, thoughts, and small wins.</p>
       </div>
 
       <Card className="border-secondary/50 shadow-lg">
-        <CardHeader>
-          <CardTitle>New Entry</CardTitle>
-          <CardDescription>What have you been up to today?</CardDescription>
+        <CardHeader className="pb-4 sm:pb-6">
+          <CardTitle className="text-lg sm:text-xl">New Entry</CardTitle>
+          <CardDescription className="text-xs sm:text-sm">What have you been up to today?</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
+        <CardContent className="space-y-4 sm:space-y-6">
           
           <div className="grid sm:grid-cols-2 gap-4">
             <div className="flex flex-col space-y-2">
-              <Label>Date</Label>
+              <Label className="text-sm sm:text-base">Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-full pl-3 text-left font-normal rounded-xl border-input",
+                      "w-full pl-3 text-left font-normal rounded-xl border-input text-sm sm:text-base",
                       !date && "text-muted-foreground"
                     )}
                   >
@@ -543,23 +543,23 @@ export default function ActivityLog() {
             </div>
 
             <div className="flex flex-col space-y-2">
-              <Label>Time</Label>
+              <Label className="text-sm sm:text-base">Time</Label>
               <Input 
                 type="time" 
                 value={time} 
                 onChange={(e) => setTime(e.target.value)} 
-                className="rounded-xl"
+                className="rounded-xl text-sm sm:text-base"
               />
             </div>
           </div>
 
           <div className="flex flex-col space-y-2">
-            <Label>Category</Label>
+            <Label className="text-sm sm:text-base">Category</Label>
             <Select value={category} onValueChange={(val) => {
               setCategory(val);
               if (val !== 'other') setCustomCategory("");
             }}>
-              <SelectTrigger className="w-full rounded-xl">
+              <SelectTrigger className="w-full rounded-xl text-sm sm:text-base">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
@@ -576,44 +576,47 @@ export default function ActivityLog() {
 
           {category === 'other' && (
             <div className="flex flex-col space-y-2 animate-in fade-in slide-in-from-top-2">
-              <Label>Please specify</Label>
+              <Label className="text-sm sm:text-base">Please specify</Label>
               <Input 
                 placeholder="Enter custom category..." 
                 value={customCategory}
                 onChange={(e) => setCustomCategory(e.target.value)}
-                className="rounded-xl"
+                className="rounded-xl text-sm sm:text-base"
               />
             </div>
           )}
 
           <div className="flex flex-col space-y-2">
-            <Label>Activity Title</Label>
+            <Label className="text-sm sm:text-base">Activity Title</Label>
             <Input 
               placeholder="e.g., Morning yoga, Team meeting, etc." 
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="rounded-xl"
+              className="rounded-xl text-sm sm:text-base"
+              data-testid="input-activity-title"
             />
           </div>
 
           <div className="space-y-2">
-            <Label>Description / Notes</Label>
+            <Label className="text-sm sm:text-base">Description / Notes</Label>
             <div className="relative">
               <Textarea 
                 placeholder="Describe your experience..." 
-                className="min-h-[150px] rounded-xl resize-none pr-12"
+                className="min-h-[120px] sm:min-h-[150px] rounded-xl resize-none pr-12 text-sm sm:text-base"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
+                data-testid="textarea-activity-description"
               />
               <Button
                 size="icon"
                 variant={isRecording ? "destructive" : "secondary"}
                 className={cn(
-                  "absolute bottom-4 right-4 rounded-full transition-all duration-300",
+                  "absolute bottom-2 sm:bottom-4 right-2 sm:right-4 rounded-full transition-all duration-300",
                   isRecording && "animate-pulse"
                 )}
                 onClick={() => toggleVoice(false)}
                 title="Voice Input"
+                data-testid="button-voice-activity"
               >
                 <Mic className="h-4 w-4" />
               </Button>
@@ -623,11 +626,12 @@ export default function ActivityLog() {
             )}
           </div>
 
-          <div className="pt-4 flex justify-end">
+          <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row justify-end gap-2">
             <Button 
               onClick={handleSave} 
               disabled={!title || !date || !category || createMutation.isPending} 
-              className="w-full sm:w-auto min-w-[140px]"
+              className="w-full sm:w-auto"
+              data-testid="button-save-activity"
             >
               {createMutation.isPending ? (
                 <>
@@ -644,13 +648,13 @@ export default function ActivityLog() {
       </Card>
 
       <Dialog open={showSuccessDialog} onOpenChange={handleDialogClose}>
-        <DialogContent className="sm:max-w-lg max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <div className="mx-auto h-12 w-12 rounded-full bg-green-100 flex items-center justify-center mb-4">
-              <CheckCircle className="h-6 w-6 text-green-600" />
+        <DialogContent className="w-[95vw] max-w-lg max-h-[85vh] overflow-y-auto rounded-xl">
+          <DialogHeader className="space-y-3 sm:space-y-4">
+            <div className="mx-auto h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-green-100 flex items-center justify-center">
+              <CheckCircle className="h-5 sm:h-6 w-5 sm:w-6 text-green-600" />
             </div>
-            <DialogTitle className="text-center text-xl font-serif">Entry Saved Successfully!</DialogTitle>
-            <DialogDescription className="text-center">
+            <DialogTitle className="text-center text-lg sm:text-xl font-serif">Entry Saved Successfully!</DialogTitle>
+            <DialogDescription className="text-center text-sm sm:text-base">
               Great job logging your activity. Keeping track is the first step to improvement.
             </DialogDescription>
           </DialogHeader>
@@ -748,23 +752,24 @@ export default function ActivityLog() {
           )}
 
           {moodFlowState === 'idle' && (
-            <div className="space-y-3 pt-2 border-t mt-4 animate-in fade-in duration-300">
+            <div className="space-y-2 sm:space-y-3 pt-2 border-t mt-4 animate-in fade-in duration-300">
               <div className="text-center">
-                <h4 className="font-semibold text-foreground text-sm">Quick Mood Check</h4>
+                <h4 className="font-semibold text-foreground text-xs sm:text-sm">Quick Mood Check</h4>
                 <p className="text-xs text-muted-foreground mt-1">How are you feeling right now?</p>
               </div>
-              <div className="grid grid-cols-3 gap-2">
+              <div className="grid grid-cols-3 gap-1 sm:gap-2">
                 {MOOD_OPTIONS.map((mood) => (
                   <button
                     key={mood.value}
                     onClick={() => handleMoodSelect(mood)}
+                    data-testid={`button-mood-quick-${mood.value}`}
                     className={cn(
-                      "flex flex-col items-center gap-1 p-3 rounded-xl border-2 transition-all duration-200 hover:scale-105 active:scale-95",
+                      "flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl border-2 transition-all duration-200 min-h-[80px] sm:min-h-[90px] touch-manipulation active:scale-95",
                       mood.color
                     )}
                   >
-                    <span className="text-2xl">{mood.emoji}</span>
-                    <span className="text-xs font-medium">{mood.label}</span>
+                    <span className="text-xl sm:text-2xl">{mood.emoji}</span>
+                    <span className="text-xs font-medium text-center leading-tight">{mood.label}</span>
                   </button>
                 ))}
               </div>
@@ -888,24 +893,24 @@ export default function ActivityLog() {
           <DialogFooter className="flex-col sm:flex-col gap-2 mt-4">
             {moodFlowState === 'complete' ? (
               <>
-                <Button className="w-full gap-2" onClick={() => { handleDialogClose(false); setLocation("/dashboard"); }}>
+                <Button className="gap-2" onClick={() => { handleDialogClose(false); setLocation("/dashboard"); }}>
                   <FileText className="w-4 h-4" /> View Full Dashboard
                 </Button>
                 {!reportData?.seekHelpRecommended && (
                   <Button 
                     variant="outline" 
-                    className="w-full gap-2" 
+                    className="gap-2" 
                     onClick={() => { handleDialogClose(false); setLocation("/directory"); }}
                   >
                     <Users className="w-4 h-4" /> Browse Providers
                   </Button>
                 )}
-                <Button variant="ghost" className="w-full" onClick={() => handleDialogClose(false)}>
+                <Button variant="ghost" onClick={() => handleDialogClose(false)}>
                   Done
                 </Button>
               </>
             ) : moodFlowState === 'idle' ? (
-              <Button variant="ghost" className="w-full text-muted-foreground" onClick={() => handleDialogClose(false)}>
+              <Button variant="ghost" className="text-muted-foreground" onClick={() => handleDialogClose(false)}>
                 Skip for now
               </Button>
             ) : null}
@@ -948,23 +953,23 @@ export default function ActivityLog() {
       </AlertDialog>
 
       <Dialog open={showEditDialog} onOpenChange={setShowEditDialog}>
-        <DialogContent className="sm:max-w-md">
+        <DialogContent className="w-[95vw] max-w-md rounded-xl">
           <DialogHeader>
-            <DialogTitle>Edit Activity</DialogTitle>
-            <DialogDescription>
+            <DialogTitle className="text-lg sm:text-xl">Edit Activity</DialogTitle>
+            <DialogDescription className="text-sm sm:text-base">
               Update your activity details
             </DialogDescription>
           </DialogHeader>
-          <div className="space-y-4">
-            <div className="grid sm:grid-cols-2 gap-4">
+          <div className="space-y-3 sm:space-y-4">
+            <div className="grid sm:grid-cols-2 gap-3 sm:gap-4">
               <div className="flex flex-col space-y-2">
-                <Label>Date</Label>
+                <Label className="text-sm sm:text-base">Date</Label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <Button
                       variant={"outline"}
                       className={cn(
-                        "w-full pl-3 text-left font-normal rounded-xl border-input",
+                        "w-full pl-3 text-left font-normal rounded-xl border-input text-sm sm:text-base",
                         !editDate && "text-muted-foreground"
                       )}
                     >
@@ -983,23 +988,23 @@ export default function ActivityLog() {
                 </Popover>
               </div>
               <div className="flex flex-col space-y-2">
-                <Label>Time</Label>
+                <Label className="text-sm sm:text-base">Time</Label>
                 <Input 
                   type="time" 
                   value={editTime} 
                   onChange={(e) => setEditTime(e.target.value)} 
-                  className="rounded-xl"
+                  className="rounded-xl text-sm sm:text-base"
                 />
               </div>
             </div>
 
             <div className="flex flex-col space-y-2">
-              <Label>Category</Label>
+              <Label className="text-sm sm:text-base">Category</Label>
               <Select value={editCategory} onValueChange={(val) => {
                 setEditCategory(val);
                 if (val !== 'other') setEditCustomCategory("");
               }}>
-                <SelectTrigger className="w-full rounded-xl">
+                <SelectTrigger className="w-full rounded-xl text-sm sm:text-base">
                   <SelectValue placeholder="Select category" />
                 </SelectTrigger>
                 <SelectContent>
@@ -1016,32 +1021,32 @@ export default function ActivityLog() {
 
             {editCategory === 'other' && (
               <div className="flex flex-col space-y-2 animate-in fade-in slide-in-from-top-2">
-                <Label>Please specify</Label>
+                <Label className="text-sm sm:text-base">Please specify</Label>
                 <Input 
                   placeholder="Enter custom category..." 
                   value={editCustomCategory}
                   onChange={(e) => setEditCustomCategory(e.target.value)}
-                  className="rounded-xl"
+                  className="rounded-xl text-sm sm:text-base"
                 />
               </div>
             )}
 
             <div className="flex flex-col space-y-2">
-              <Label>Activity Title</Label>
+              <Label className="text-sm sm:text-base">Activity Title</Label>
               <Input 
                 placeholder="e.g., Morning yoga" 
                 value={editTitle}
                 onChange={(e) => setEditTitle(e.target.value)}
-                className="rounded-xl"
+                className="rounded-xl text-sm sm:text-base"
               />
             </div>
 
             <div className="space-y-2">
-              <Label>Description</Label>
+              <Label className="text-sm sm:text-base">Description</Label>
               <div className="relative">
                 <Textarea 
                   placeholder="Describe your experience..." 
-                  className="min-h-[100px] rounded-xl resize-none pr-12"
+                  className="min-h-[100px] sm:min-h-[120px] rounded-xl resize-none pr-12 text-sm sm:text-base"
                   value={editDescription}
                   onChange={(e) => setEditDescription(e.target.value)}
                 />
@@ -1049,7 +1054,7 @@ export default function ActivityLog() {
                   size="icon"
                   variant={isEditRecording ? "destructive" : "secondary"}
                   className={cn(
-                    "absolute bottom-4 right-4 rounded-full transition-all duration-300",
+                    "absolute bottom-2 sm:bottom-4 right-2 sm:right-4 rounded-full transition-all duration-300",
                     isEditRecording && "animate-pulse"
                   )}
                   onClick={() => toggleVoice(true)}
@@ -1085,8 +1090,8 @@ export default function ActivityLog() {
         </DialogContent>
       </Dialog>
 
-      <div id="recent" ref={recentActivityRef} className="space-y-4 pt-4 scroll-mt-4">
-        <h2 className="text-xl font-serif font-bold text-foreground px-1">Recent Activity</h2>
+      <div id="recent" ref={recentActivityRef} className="space-y-4 pt-4 scroll-mt-4 px-4 sm:px-6">
+        <h2 className="text-lg sm:text-xl font-serif font-bold text-foreground">Recent Activity</h2>
         
         {isLoading ? (
           <div className="grid gap-4">

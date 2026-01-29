@@ -1085,7 +1085,7 @@ export default function ProviderDashboard() {
                  </div>
                  <Popover>
                     <PopoverTrigger asChild>
-                    <Button variant="outline" size="icon" className="relative h-8 w-8 sm:h-9 sm:w-9 rounded-full">
+                    <Button variant="outline" size="icon" className="relative rounded-full">
                       <Bell className="h-4 w-4 sm:h-5 sm:w-5 text-gray-600" />
                       {pendingAppointments.length > 0 && (
                         <span className="absolute top-0 right-0 h-2 w-2 sm:h-2.5 sm:w-2.5 bg-red-500 rounded-full border-2 border-background shadow-sm animate-pulse" />
@@ -1243,7 +1243,6 @@ export default function ProviderDashboard() {
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-8 w-8"
                             onClick={(e) => {
                               e.stopPropagation();
                               refetchAiInsights();
@@ -1428,7 +1427,7 @@ export default function ProviderDashboard() {
                                 <CardDescription>Frequently used tasks</CardDescription>
                             </CardHeader>
                             <CardContent className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                                <Button className="w-full h-auto py-3 px-4 flex items-center justify-start" variant="outline" onClick={() => setActiveTab("messages")}>
+                                <Button className="w-full flex items-center justify-start" variant="outline" onClick={() => setActiveTab("messages")}>
                                     <div className="bg-primary/10 p-2.5 rounded-full text-primary shrink-0 flex items-center justify-center">
                                         <MessageSquare className="h-5 w-5" />
                                     </div>
@@ -1437,7 +1436,7 @@ export default function ProviderDashboard() {
                                         <div className="text-xs text-muted-foreground truncate">View patient inquiries</div>
                                     </div>
                                 </Button>
-                                <Button className="w-full h-auto py-3 px-4 flex items-center justify-start" variant="outline" onClick={() => setActiveTab("reports")}>
+                                <Button className="w-full flex items-center justify-start" variant="outline" onClick={() => setActiveTab("reports")}>
                                     <div className="bg-primary/10 p-2.5 rounded-full text-primary shrink-0 flex items-center justify-center">
                                         <FileText className="h-5 w-5" />
                                     </div>
@@ -1446,7 +1445,7 @@ export default function ProviderDashboard() {
                                         <div className="text-xs text-muted-foreground truncate">Shared wellbeing reports</div>
                                     </div>
                                 </Button>
-                                <Button className="w-full h-auto py-3 px-4 flex items-center justify-start" variant="outline" onClick={() => setActiveTab("profile")}>
+                                <Button className="w-full flex items-center justify-start" variant="outline" onClick={() => setActiveTab("profile")}>
                                     <div className="bg-primary/10 p-2.5 rounded-full text-primary shrink-0 flex items-center justify-center">
                                         <User className="h-5 w-5" />
                                     </div>
@@ -1455,7 +1454,7 @@ export default function ProviderDashboard() {
                                         <div className="text-xs text-muted-foreground truncate">Edit your details</div>
                                     </div>
                                 </Button>
-                                <Button className="w-full h-auto py-3 px-4 flex items-center justify-start" variant="outline" onClick={() => setActiveTab("certificates")}>
+                                <Button className="w-full flex items-center justify-start" variant="outline" onClick={() => setActiveTab("certificates")}>
                                     <div className="bg-primary/10 p-2.5 rounded-full text-primary shrink-0 flex items-center justify-center">
                                         <Award className="h-5 w-5" />
                                     </div>
@@ -1749,7 +1748,7 @@ export default function ProviderDashboard() {
                              <div className="flex gap-1">
                                 <DropdownMenu>
                                    <DropdownMenuTrigger asChild>
-                                      <Button variant="ghost" size="icon" className="h-8 w-8"><MoreVertical className="h-4 w-4" /></Button>
+                                      <Button variant="ghost" size="icon"><MoreVertical className="h-4 w-4" /></Button>
                                    </DropdownMenuTrigger>
                                    <DropdownMenuContent align="end">
                                       <DropdownMenuItem onClick={() => toast({ title: "Clear chat", description: "This feature is coming soon." })}>
@@ -2155,7 +2154,7 @@ export default function ProviderDashboard() {
                                    >
                                      {getTicketStatusLabel(ticket.status)}
                                    </Badge>
-                                   <Button variant="ghost" size="icon" className="h-8 w-8">
+                                   <Button variant="ghost" size="icon">
                                      <Eye className="h-4 w-4" />
                                    </Button>
                                  </div>

@@ -202,17 +202,17 @@ export default function Landing() {
           <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-green-100 to-primary/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
         </div>
 
-        <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-16 py-8 md:py-16 animate-in slide-in-from-bottom-4 duration-700">
+        <div className="flex flex-col lg:flex-row items-center gap-6 sm:gap-8 lg:gap-16 py-4 md:py-8 animate-in slide-in-from-bottom-4 duration-700 px-1">
           {/* Left Content */}
-          <div className="flex-1 z-10 space-y-8">
+          <div className="flex-1 z-10 space-y-3 sm:space-y-4 md:space-y-6 text-center lg:text-left">
             {/* Badge */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2 px-4 py-2 bg-primary/10 rounded-full text-primary text-sm font-semibold"
+              className="inline-flex items-center gap-2 px-3 sm:px-4 py-1.5 sm:py-2 bg-primary/10 rounded-full text-primary text-xs sm:text-sm font-semibold"
             >
-              <Heart className="w-4 h-4 fill-primary animate-heartbeat" />
+              <Heart className="w-3 h-3 sm:w-4 sm:h-4 fill-primary animate-heartbeat" />
               Your personal wellness companion
             </motion.div>
 
@@ -221,9 +221,9 @@ export default function Landing() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.1 }}
-              className="space-y-4"
+              className="space-y-3 sm:space-y-4"
             >
-              <h1 className="text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 leading-tight">
+              <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 leading-tight">
                 Your Wellbeing,{" "}
                 <span className="text-primary relative">
                   Understood
@@ -241,9 +241,9 @@ export default function Landing() {
                   </svg>
                 </span>
               </h1>
-              <p className="text-xl md:text-2xl text-slate-600 max-w-lg leading-relaxed">
-                Monitor your daily activities, track your mood, and connect with
-                healthcare professionals, all in one intelligent platform.
+              <p className="text-base sm:text-xl md:text-2xl text-slate-600 max-w-lg leading-relaxed mx-auto lg:mx-0">
+                Monitor your activities, track your mood, and connect with
+                healthcare professionals.
               </p>
             </motion.div>
 
@@ -252,19 +252,19 @@ export default function Landing() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="flex flex-wrap gap-4"
+              className="flex flex-wrap gap-2 sm:gap-4 justify-center lg:justify-start"
             >
               {[
-                { icon: Activity, text: "Smart Activity Tracking" },
+                { icon: Activity, text: "Activity Tracking" },
                 { icon: Heart, text: "Mood Analysis" },
                 { icon: Users, text: "Expert Network" },
               ].map((item, i) => (
                 <div
                   key={i}
-                  className="flex items-center gap-2 bg-white/80 backdrop-blur-sm px-4 py-2 rounded-xl shadow-sm border border-slate-100"
+                  className="flex items-center gap-1.5 sm:gap-2 bg-white/80 backdrop-blur-sm px-2 sm:px-4 py-1.5 sm:py-2 rounded-lg sm:rounded-xl shadow-sm border border-slate-100"
                 >
-                  <item.icon className="w-5 h-5 text-primary" />
-                  <span className="text-sm font-medium text-slate-700">
+                  <item.icon className="w-4 h-4 sm:w-5 sm:h-5 text-primary" />
+                  <span className="text-xs sm:text-sm font-medium text-slate-700">
                     {item.text}
                   </span>
                 </div>
@@ -276,23 +276,23 @@ export default function Landing() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-4 pt-4"
+              className="flex flex-col sm:flex-row gap-3 sm:gap-4 pt-3 sm:pt-4 justify-center lg:justify-start"
             >
               <Link href="/auth/register">
                 <Button
-                  size="lg"
-                  className="w-full sm:w-auto shadow-lg shadow-primary/25 h-14 px-8 text-lg font-semibold group"
+                  size="default"
+                  className="w-full sm:w-auto shadow-lg shadow-primary/25 h-11 sm:h-14 px-6 sm:px-8 text-sm sm:text-lg font-semibold group"
                   data-testid="button-get-started-hero"
                 >
                   Get Started Free
-                  <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
+                  <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5 group-hover:translate-x-1 transition-transform" />
                 </Button>
               </Link>
               <Link href="/auth/login">
                 <Button
-                  size="lg"
+                  size="default"
                   variant="outline"
-                  className="w-full sm:w-auto h-14 px-8 text-lg font-semibold bg-white/80 hover:bg-white border-2 border-slate-200 hover:border-primary/30"
+                  className="w-full sm:w-auto h-11 sm:h-14 px-6 sm:px-8 text-sm sm:text-lg font-semibold bg-white/80 hover:bg-white border-2 border-slate-200 hover:border-primary/30"
                   data-testid="button-signin-hero"
                 >
                   Sign In
@@ -305,15 +305,15 @@ export default function Landing() {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="flex items-center gap-6 pt-6 border-t border-slate-200"
+              className="flex items-center gap-4 sm:gap-6 pt-4 sm:pt-6 border-t border-slate-200 justify-center lg:justify-start"
             >
-              <div className="flex items-center gap-3">
-                <ShieldCheck className="w-6 h-6 text-primary" />
-                <div className="text-sm">
+              <div className="flex items-center gap-2 sm:gap-3">
+                <ShieldCheck className="w-5 h-5 sm:w-6 sm:h-6 text-primary shrink-0" />
+                <div className="text-xs sm:text-sm">
                   <p className="font-semibold text-slate-800">
                     Trusted by healthcare professionals
                   </p>
-                  <p className="text-slate-500">
+                  <p className="text-slate-500 hidden sm:block">
                     Secure, private, and verified
                   </p>
                 </div>

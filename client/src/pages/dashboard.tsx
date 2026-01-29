@@ -649,15 +649,15 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-8 animate-in fade-in duration-500">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8 animate-in fade-in duration-500">
       {userStatus === "suspended" && (
-        <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-900 shadow-sm">
-          <AlertCircle className="h-4 w-4" />
-          <AlertTitle className="font-bold ml-2">Account Suspended</AlertTitle>
-          <AlertDescription className="ml-6 mt-1">
+        <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-900 shadow-sm p-3 sm:p-4">
+          <AlertCircle className="h-4 w-4 mt-0.5" />
+          <AlertTitle className="font-bold ml-2 text-sm sm:text-base">Account Suspended</AlertTitle>
+          <AlertDescription className="ml-6 mt-1 text-xs sm:text-sm">
             Your account has been suspended. Please contact support for more information.
             <div className="mt-3">
-              <Button size="sm" variant="outline" className="bg-white border-red-200 text-red-700 hover:bg-red-50 h-8">
+              <Button size="sm" variant="outline" className="bg-white border-red-200 text-red-700 hover:bg-red-50 text-xs sm:text-sm">
                 Contact Support
               </Button>
             </div>
@@ -673,39 +673,43 @@ export default function Dashboard() {
             variant="ghost"
             size="icon"
             onClick={dismissPrompt}
-            className="absolute top-3 right-3 h-8 w-8 rounded-full hover:bg-white/50 z-10"
+            className="absolute top-3 right-3 rounded-full hover:bg-white/50 z-10"
           >
             <X className="h-4 w-4 text-gray-500" />
           </Button>
-          <CardContent className="p-6 relative z-10">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-              <div className="h-12 w-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
-                <Bell className="h-6 w-6 text-primary" />
+          <CardContent className="p-3 sm:p-4 lg:p-6 relative z-10">
+            <div className="flex flex-col gap-3 sm:gap-4">
+              <div className="flex items-start gap-3 sm:gap-4">
+                <div className="h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
+                  <Bell className="h-5 sm:h-6 w-5 sm:w-6 text-primary" />
+                </div>
+                <div className="flex-1">
+                  <h3 className="font-bold text-base sm:text-lg text-black mb-1">
+                    You haven't logged today yet!
+                  </h3>
+                  <p className="text-gray-700 text-xs sm:text-sm">
+                    Take a moment to track your {!hasLoggedMoodToday && !hasLoggedActivityToday 
+                      ? "mood and activities" 
+                      : !hasLoggedMoodToday 
+                        ? "mood" 
+                        : "activities"} to stay on top of your wellbeing.
+                  </p>
+                </div>
               </div>
-              <div className="flex-1">
-                <h3 className="font-bold text-lg text-black mb-1">
-                  You haven't logged today yet!
-                </h3>
-                <p className="text-gray-700 text-sm">
-                  Take a moment to track your {!hasLoggedMoodToday && !hasLoggedActivityToday 
-                    ? "mood and activities" 
-                    : !hasLoggedMoodToday 
-                      ? "mood" 
-                      : "activities"} to stay on top of your wellbeing.
-                </p>
-              </div>
-              <div className="flex gap-2 w-full sm:w-auto">
+              <div className="flex gap-2 w-full">
                 {!hasLoggedMoodToday && (
-                  <Link href="/mood" className="flex-1 sm:flex-none">
-                    <Button className="w-full rounded-full shadow-sm">
-                      <Heart className="w-4 h-4 mr-2" /> Log Mood
+                  <Link href="/mood" className="flex-1 min-w-0">
+                    <Button size="sm" className="w-full rounded-full shadow-sm text-xs sm:text-sm">
+                      <Heart className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2 shrink-0" />
+                      <span className="truncate">Log Mood</span>
                     </Button>
                   </Link>
                 )}
                 {!hasLoggedActivityToday && (
-                  <Link href="/activity" className="flex-1 sm:flex-none">
-                    <Button variant="outline" className="w-full rounded-full border-primary/30">
-                      <Activity className="w-4 h-4 mr-2" /> Log Activity
+                  <Link href="/activity" className="flex-1 min-w-0">
+                    <Button variant="outline" size="sm" className="w-full rounded-full border-primary/30 text-xs sm:text-sm">
+                      <Activity className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2 shrink-0" />
+                      <span className="truncate">Log Activity</span>
                     </Button>
                   </Link>
                 )}
@@ -717,44 +721,48 @@ export default function Dashboard() {
 
       {wellbeingScore !== null && (
         <Card className={`${getWellbeingStatus(wellbeingScore).bgColor} ${getWellbeingStatus(wellbeingScore).borderColor} border shadow-sm`}>
-          <CardContent className="p-6">
-            <div className="flex flex-col md:flex-row items-start md:items-center gap-6">
-              <div className="flex items-center gap-4 flex-1">
-                <div className={`h-16 w-16 rounded-2xl ${getWellbeingStatus(wellbeingScore).indicatorColor} flex items-center justify-center shadow-sm`}>
-                  <TrendingUp className="h-8 w-8 text-white" />
+          <CardContent className="p-3 sm:p-4 lg:p-6">
+            <div className="flex flex-col gap-4 sm:gap-6">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:gap-4 flex-1">
+                <div className={`h-12 sm:h-16 w-12 sm:w-16 rounded-lg sm:rounded-2xl ${getWellbeingStatus(wellbeingScore).indicatorColor} flex items-center justify-center shadow-sm shrink-0`}>
+                  <TrendingUp className="h-6 sm:h-8 w-6 sm:w-8 text-white" />
                 </div>
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h3 className="font-bold text-lg text-black">Your Wellbeing Status</h3>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 mb-1 flex-wrap">
+                    <h3 className="font-bold text-base sm:text-lg text-black">Your Wellbeing Status</h3>
                   </div>
-                  <div className="flex items-center gap-3">
-                    <span className={`text-3xl font-bold ${getWellbeingStatus(wellbeingScore).color}`}>
-                      {wellbeingScore}
-                    </span>
-                    <span className="text-gray-500 text-sm">/100</span>
-                    <span className={`px-3 py-1 rounded-full text-sm font-semibold ${getWellbeingStatus(wellbeingScore).bgColor} ${getWellbeingStatus(wellbeingScore).color} border ${getWellbeingStatus(wellbeingScore).borderColor}`}>
+                  <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                    <div className="flex items-baseline gap-1 sm:gap-2">
+                      <span className={`text-2xl sm:text-3xl font-bold ${getWellbeingStatus(wellbeingScore).color}`}>
+                        {wellbeingScore}
+                      </span>
+                      <span className="text-gray-500 text-xs sm:text-sm">/100</span>
+                    </div>
+                    <span className={`px-2 sm:px-3 py-1 rounded-full text-xs sm:text-sm font-semibold ${getWellbeingStatus(wellbeingScore).bgColor} ${getWellbeingStatus(wellbeingScore).color} border ${getWellbeingStatus(wellbeingScore).borderColor} whitespace-nowrap`}>
                       {getWellbeingStatus(wellbeingScore).text}
                     </span>
                   </div>
                 </div>
               </div>
-              <div className="w-full md:w-auto md:max-w-xs">
-                <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Tips for you</p>
-                <ul className="space-y-1">
-                  {getWellbeingTips(wellbeingScore).map((tip, i) => (
-                    <li key={i} className="flex items-start gap-2 text-sm text-gray-700">
-                      <Lightbulb className="h-4 w-4 text-amber-500 shrink-0 mt-0.5" />
-                      <span>{tip}</span>
-                    </li>
-                  ))}
-                </ul>
-              </div>
-              <div className="flex items-center shrink-0">
-                <ReportDownloadButton 
-                  variant="outline" 
-                  size="sm"
-                  className="bg-white/80 hover:bg-white border-gray-300"
-                />
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                <div className="order-last sm:order-first">
+                  <p className="text-xs font-semibold text-gray-500 uppercase mb-2">Tips for you</p>
+                  <ul className="space-y-1">
+                    {getWellbeingTips(wellbeingScore).map((tip, i) => (
+                      <li key={i} className="flex items-start gap-2 text-xs sm:text-sm text-gray-700">
+                        <Lightbulb className="h-3 sm:h-4 w-3 sm:w-4 text-amber-500 shrink-0 mt-0.5" />
+                        <span>{tip}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+                <div className="flex justify-end">
+                  <ReportDownloadButton 
+                    variant="outline" 
+                    size="sm"
+                    className="bg-white/80 hover:bg-white border-gray-300 text-xs sm:text-sm"
+                  />
+                </div>
               </div>
             </div>
           </CardContent>
@@ -762,65 +770,69 @@ export default function Dashboard() {
       )}
 
       {/* Welcome Header */}
-      <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 flex-wrap">
-        <div className="flex items-center gap-4">
-          <Avatar className="h-12 w-12 border-2 border-primary/20">
+      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 sm:gap-4">
+        <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
+          <Avatar className="h-10 sm:h-12 w-10 sm:w-12 border-2 border-primary/20 shrink-0">
             <AvatarImage src={avatarUrl} alt={firstName} />
-            <AvatarFallback className="bg-primary/10 text-primary font-bold">
+            <AvatarFallback className="bg-primary/10 text-primary font-bold text-xs sm:text-sm">
               {userInitials || "U"}
             </AvatarFallback>
           </Avatar>
-          <div>
-            <h1 className="text-3xl font-serif font-bold text-black">
-              {greeting}, {firstName}
+          <div className="flex-1 min-w-0">
+            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-black truncate">
+              {greeting}, <span className="truncate">{firstName}</span>
             </h1>
-            <p className="text-gray-800 font-medium">
+            <p className="text-gray-800 font-medium text-xs sm:text-sm line-clamp-2">
               {dynamicGreetingMessage}
             </p>
           </div>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full text-sm font-bold text-secondary-foreground shrink-0 border border-secondary">
-            <Calendar className="w-4 h-4" />
-            <span>
-              {new Date().toLocaleDateString(undefined, {
-                weekday: "long",
-                month: "long",
-                day: "numeric",
-              })}
-            </span>
-          </div>
+        <div className="flex items-center gap-2 bg-secondary/50 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold text-secondary-foreground shrink-0 border border-secondary whitespace-nowrap">
+          <Calendar className="w-3 sm:w-4 h-3 sm:h-4" />
+          <span className="hidden sm:inline">
+            {new Date().toLocaleDateString(undefined, {
+              weekday: "short",
+              month: "short",
+              day: "numeric",
+            })}
+          </span>
+          <span className="sm:hidden">
+            {new Date().toLocaleDateString(undefined, {
+              month: "short",
+              day: "numeric",
+            })}
+          </span>
         </div>
       </div>
 
       {/* Mood Check-in Card */}
       <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/30 overflow-hidden relative shadow-sm">
-        <div className="absolute top-0 right-0 w-64 h-64 bg-primary/10 rounded-full blur-3xl -mr-32 -mt-32 pointer-events-none" />
-        <CardContent className="p-8 flex flex-col md:flex-row items-center justify-between gap-6 relative z-10">
-          <div className="space-y-4 max-w-lg">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/80 text-xs font-bold text-primary tracking-wide uppercase border border-primary/20">
-              <Sun className="w-3 h-3" /> Daily Check-in
+        <div className="absolute top-0 right-0 w-40 sm:w-64 h-40 sm:h-64 bg-primary/10 rounded-full blur-2xl sm:blur-3xl -mr-20 sm:-mr-32 -mt-20 sm:-mt-32 pointer-events-none" />
+        <CardContent className="p-3 sm:p-4 lg:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-6 relative z-10">
+          <div className="space-y-2 sm:space-y-4">
+            <div className="inline-flex items-center gap-1.5 sm:gap-2 px-2 sm:px-3 py-0.5 sm:py-1 rounded-full bg-white/80 text-xs font-bold text-primary tracking-wide uppercase border border-primary/20">
+              <Sun className="w-2.5 sm:w-3 h-2.5 sm:h-3" /> Daily Check-in
             </div>
-            <h2 className="text-2xl font-serif font-bold text-black">
+            <h2 className="text-lg sm:text-2xl font-serif font-bold text-black">
               How are you feeling right now?
             </h2>
-            <p className="text-gray-800 font-medium">
+            <p className="text-gray-800 font-medium text-xs sm:text-sm">
               Taking a moment to reflect can help you understand your patterns better.
             </p>
           </div>
-          <Link href="/mood">
+          <Link href="/mood" className="w-full sm:w-auto">
             <Button
-              size="lg"
-              className="rounded-full px-8 shadow-lg shadow-primary/20 hover:scale-105 transition-transform font-bold"
+              size="sm"
+              className="w-full sm:w-auto rounded-full shadow-lg shadow-primary/20 hover:scale-105 transition-transform font-bold text-xs sm:text-sm"
             >
-              <Heart className="mr-2 w-5 h-5" /> Log Mood
+              <Heart className="mr-1 sm:mr-2 w-3 sm:w-5 h-3 sm:h-5" /> Log Mood
             </Button>
           </Link>
         </CardContent>
       </Card>
 
       {/* Quick Actions Grid */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4">
         {[
           {
             title: "Log Activity",
@@ -853,13 +865,13 @@ export default function Dashboard() {
         ].map((action, i) => (
           <Link key={i} href={action.href}>
             <Card className="hover:shadow-md transition-all cursor-pointer border-transparent hover:border-gray-200 h-full group bg-white border border-gray-100">
-              <CardContent className="p-6 flex flex-col items-center text-center gap-3">
+              <CardContent className="p-3 sm:p-4 lg:p-6 flex flex-col items-center text-center gap-2 sm:gap-3">
                 <div
-                  className={`h-12 w-12 rounded-2xl ${action.bg} ${action.color} flex items-center justify-center group-hover:scale-110 transition-transform border border-transparent`}
+                  className={`h-10 sm:h-12 w-10 sm:w-12 rounded-lg sm:rounded-2xl ${action.bg} ${action.color} flex items-center justify-center group-hover:scale-110 transition-transform border border-transparent`}
                 >
-                  <action.icon className="w-6 h-6 stroke-[2.5px]" />
+                  <action.icon className="w-5 sm:w-6 h-5 sm:h-6 stroke-[2.5px]" />
                 </div>
-                <span className="font-bold text-black">{action.title}</span>
+                <span className="font-bold text-black text-xs sm:text-sm">{action.title}</span>
               </CardContent>
             </Card>
           </Link>
@@ -868,21 +880,21 @@ export default function Dashboard() {
 
       {/* Personalized Suggestions For You */}
       <div>
-        <h2 className="text-xl font-serif font-bold text-black mb-4 flex items-center gap-2">
-          <Lightbulb className="w-5 h-5 text-amber-500" /> Suggestions for You
+        <h2 className="text-lg sm:text-xl font-serif font-bold text-black mb-3 sm:mb-4 flex items-center gap-2">
+          <Lightbulb className="w-4 sm:w-5 h-4 sm:h-5 text-amber-500" /> Suggestions for You
         </h2>
-        <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
           {reportsLoading || moodsLoading || activitiesLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
               <Card key={i} className="bg-gray-50 border-gray-100">
-                <CardContent className="p-5 space-y-3">
-                  <div className="flex items-center gap-3">
-                    <Skeleton className="h-10 w-10 rounded-xl" />
-                    <Skeleton className="h-5 w-3/4" />
+                <CardContent className="p-3 sm:p-5 space-y-2 sm:space-y-3">
+                  <div className="flex items-center gap-2 sm:gap-3">
+                    <Skeleton className="h-8 sm:h-10 w-8 sm:w-10 rounded-lg sm:rounded-xl" />
+                    <Skeleton className="h-4 sm:h-5 w-2/3 sm:w-3/4" />
                   </div>
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-4 w-2/3" />
-                  <Skeleton className="h-9 w-full mt-2" />
+                  <Skeleton className="h-3 sm:h-4 w-full" />
+                  <Skeleton className="h-3 sm:h-4 w-2/3" />
+                  <Skeleton className="h-8 sm:h-9 w-full mt-2" />
                 </CardContent>
               </Card>
             ))
@@ -894,26 +906,26 @@ export default function Dashboard() {
                   key={suggestion.id} 
                   className={`bg-gradient-to-br ${suggestion.gradient} ${suggestion.borderColor} hover:shadow-md transition-all`}
                 >
-                  <CardContent className="p-5">
-                    <div className="flex items-start gap-3 mb-3">
-                      <div className={`h-10 w-10 rounded-xl ${suggestion.gradient.replace('from-', 'bg-').split(' ')[0]} flex items-center justify-center shrink-0`}>
-                        <IconComponent className={`w-5 h-5 ${suggestion.textColor}`} />
+                  <CardContent className="p-3 sm:p-5">
+                    <div className="flex items-start gap-2 sm:gap-3 mb-2 sm:mb-3">
+                      <div className={`h-8 sm:h-10 w-8 sm:w-10 rounded-lg sm:rounded-xl ${suggestion.gradient.replace('from-', 'bg-').split(' ')[0]} flex items-center justify-center shrink-0`}>
+                        <IconComponent className={`w-4 sm:w-5 h-4 sm:h-5 ${suggestion.textColor}`} />
                       </div>
-                      <h3 className={`font-bold ${suggestion.textColor} text-sm leading-tight`}>
+                      <h3 className={`font-bold ${suggestion.textColor} text-xs sm:text-sm leading-tight`}>
                         {suggestion.title}
                       </h3>
                     </div>
-                    <p className={`text-sm ${suggestion.textColor.replace('900', '800')} mb-4 line-clamp-2`}>
+                    <p className={`text-xs sm:text-sm ${suggestion.textColor.replace('900', '800')} mb-3 sm:mb-4 line-clamp-2`}>
                       {suggestion.description}
                     </p>
                     <Link href={suggestion.href}>
                       <Button 
                         size="sm" 
                         variant="outline" 
-                        className={`w-full ${suggestion.buttonBorderColor} ${suggestion.buttonTextColor} ${suggestion.buttonHoverBg} font-medium`}
+                        className={`w-full ${suggestion.buttonBorderColor} ${suggestion.buttonTextColor} ${suggestion.buttonHoverBg} font-medium text-xs sm:text-sm`}
                       >
                         {suggestion.buttonText}
-                        <ChevronRight className="w-4 h-4 ml-1" />
+                        <ChevronRight className="w-3 sm:w-4 h-3 sm:h-4 ml-1" />
                       </Button>
                     </Link>
                   </CardContent>
@@ -925,48 +937,48 @@ export default function Dashboard() {
       </div>
 
       {/* Stats / Recent Activity */}
-      <div className="grid md:grid-cols-2 gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
         <Card className="border-gray-200">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-lg font-serif font-bold text-black">
+          <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2 min-h-0">
+            <CardTitle className="text-base sm:text-lg font-serif font-bold text-black truncate">
               Recent Activity
             </CardTitle>
             <Link href="/activity#recent">
               <Button
                 variant="ghost"
                 size="sm"
-                className="font-semibold text-primary"
+                className="font-semibold text-primary h-8 text-xs sm:text-sm shrink-0"
               >
-                View All <ChevronRight className="w-4 h-4 ml-1" />
+                View All <ChevronRight className="w-3 sm:w-4 h-3 sm:h-4 ml-1" />
               </Button>
             </Link>
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 sm:p-4 lg:p-6">
             {activitiesLoading ? (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {Array.from({ length: 3 }).map((_, i) => (
-                  <div key={i} className="flex items-center gap-4 pb-4 border-b last:border-0 last:pb-0">
-                    <Skeleton className="h-10 w-10 rounded-full" />
-                    <div className="flex-1 space-y-2">
-                      <Skeleton className="h-4 w-3/4" />
-                      <Skeleton className="h-3 w-1/2" />
+                  <div key={i} className="flex items-center gap-3 sm:gap-4 pb-3 sm:pb-4 border-b last:border-0 last:pb-0">
+                    <Skeleton className="h-8 sm:h-10 w-8 sm:w-10 rounded-full shrink-0" />
+                    <div className="flex-1 space-y-1.5 sm:space-y-2 min-w-0">
+                      <Skeleton className="h-3 sm:h-4 w-2/3" />
+                      <Skeleton className="h-2.5 sm:h-3 w-1/2" />
                     </div>
                   </div>
                 ))}
               </div>
             ) : recentActivities.length > 0 ? (
-              <div className="space-y-4">
+              <div className="space-y-3 sm:space-y-4">
                 {recentActivities.slice(0, 3).map((activity: any) => (
                   <div
                     key={activity._id}
-                    className="flex items-center gap-4 pb-4 border-b last:border-0 last:pb-0"
+                    className="flex items-center gap-3 sm:gap-4 pb-3 sm:pb-4 border-b last:border-0 last:pb-0 min-w-0"
                   >
-                    <div className="h-10 w-10 rounded-full bg-secondary/50 flex items-center justify-center text-xs font-bold text-gray-700 border border-secondary">
+                    <div className="h-8 sm:h-10 w-8 sm:w-10 rounded-full bg-secondary/50 flex items-center justify-center text-xs font-bold text-gray-700 border border-secondary shrink-0">
                       {activity.name?.[0]?.toUpperCase() || activity.activityType?.[0]?.toUpperCase() || "A"}
                     </div>
-                    <div className="flex-1">
-                      <p className="font-bold text-sm text-black">{activity.name || activity.activityType}</p>
-                      <p className="text-xs font-medium text-gray-600">
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-xs sm:text-sm text-black truncate">{activity.name || activity.activityType}</p>
+                      <p className="text-xs font-medium text-gray-600 truncate">
                         {activity.category} • {new Date(activity.createdAt).toLocaleDateString()}
                       </p>
                     </div>
@@ -974,17 +986,18 @@ export default function Dashboard() {
                 ))}
               </div>
             ) : (
-              <div className="text-center py-8 text-muted-foreground">
-                <Activity className="w-12 h-12 mx-auto mb-3 opacity-30" />
-                <p className="text-sm">No activities logged yet</p>
+              <div className="text-center py-6 sm:py-8 text-muted-foreground">
+                <Activity className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-2 sm:mb-3 opacity-30" />
+                <p className="text-xs sm:text-sm">No activities logged yet</p>
               </div>
             )}
-            <Link href="/activity" className="block mt-4">
+            <Link href="/activity" className="block mt-3 sm:mt-4">
               <Button
                 variant="outline"
-                className="w-full border-dashed border-gray-300 font-semibold text-gray-700 hover:text-black"
+                size="sm"
+                className="w-full border-dashed border-gray-300 font-semibold text-gray-700 hover:text-black text-xs sm:text-sm"
               >
-                <Plus className="w-4 h-4 mr-2" /> Add New Entry
+                <Plus className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2" /> Add New Entry
               </Button>
             </Link>
           </CardContent>
@@ -992,21 +1005,21 @@ export default function Dashboard() {
 
         {/* Weekly Mood Chart */}
         <Card className="border-gray-200">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-lg font-serif font-bold text-black">
+          <CardHeader className="flex flex-row items-center justify-between gap-2 pb-2 min-h-0">
+            <CardTitle className="text-base sm:text-lg font-serif font-bold text-black truncate">
               Weekly Mood
             </CardTitle>
             <Link href="/history">
               <Button
                 variant="link"
                 size="sm"
-                className="h-auto p-0 font-medium text-gray-600 hover:text-black"
+                className="h-auto p-0 font-medium text-gray-600 hover:text-black text-xs sm:text-sm shrink-0"
               >
                 View History
               </Button>
             </Link>
           </CardHeader>
-          <CardContent className="h-[300px]">
+          <CardContent className="h-[250px] sm:h-[300px] p-3 sm:p-4 lg:p-6">
             {moodStatsLoading || moodsLoading ? (
               <div className="h-full flex items-center justify-center">
                 <Loader2 className="w-6 h-6 animate-spin text-primary" />

@@ -453,7 +453,7 @@ export default function AdminUsersPage() {
                           <td className="px-6 py-4 text-right">
                             <DropdownMenu>
                               <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" className="h-8 w-8" data-testid={`button-user-actions-${user._id}`}>
+                                <Button variant="ghost" size="icon" data-testid={`button-user-actions-${user._id}`}>
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>

@@ -219,10 +219,10 @@ function ConversationList({
                       autoFocus
                       onClick={(e) => e.stopPropagation()}
                     />
-                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); saveEdit(); }}>
+                    <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); saveEdit(); }}>
                       <Check className="h-4 w-4" />
                     </Button>
-                    <Button size="icon" variant="ghost" className="h-7 w-7" onClick={(e) => { e.stopPropagation(); cancelEdit(); }}>
+                    <Button size="icon" variant="ghost" onClick={(e) => { e.stopPropagation(); cancelEdit(); }}>
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
@@ -290,44 +290,39 @@ function ChatMessage({ message }: { message: Message }) {
   };
 
   return (
-    <div className={cn("flex gap-3 mb-6", isUser ? "justify-end" : "justify-start")}>
-      {!isUser && (
-        <div className="flex-shrink-0 w-9 h-9 rounded-full bg-primary/10 flex items-center justify-center">
-          <Bot className="h-5 w-5 text-primary" />
-        </div>
-      )}
-      <div className="flex flex-col gap-1 max-w-[85%]">
+    <div className={cn("flex mb-3 sm:mb-4", isUser ? "justify-end" : "justify-start")}>
+      <div className="flex flex-col gap-1 max-w-[92%] sm:max-w-[80%]">
         <div
           className={cn(
-            "rounded-xl px-5 py-4",
+            "rounded-xl px-3 py-2 sm:px-5 sm:py-4",
             isUser
               ? "bg-primary text-primary-foreground"
               : "bg-card border shadow-sm"
           )}
         >
           {isUser ? (
-            <p className="text-base leading-relaxed whitespace-pre-wrap">{message.content}</p>
+            <p className="text-sm sm:text-base leading-relaxed whitespace-pre-wrap">{message.content}</p>
           ) : (
-            <div className="prose prose-base dark:prose-invert max-w-none leading-relaxed text-foreground">
+            <div className="prose prose-sm sm:prose-base dark:prose-invert max-w-none leading-relaxed text-foreground">
               <ReactMarkdown
                 components={{
-                  p: ({ children }) => <p className="mb-3 last:mb-0 text-[15px] leading-7">{children}</p>,
-                  ul: ({ children }) => <ul className="list-disc pl-5 mb-3 space-y-1">{children}</ul>,
-                  ol: ({ children }) => <ol className="list-decimal pl-5 mb-3 space-y-1">{children}</ol>,
-                  li: ({ children }) => <li className="text-[15px] leading-7 pl-1">{children}</li>,
+                  p: ({ children }) => <p className="mb-2 sm:mb-3 last:mb-0 text-sm sm:text-[15px] leading-6 sm:leading-7">{children}</p>,
+                  ul: ({ children }) => <ul className="list-disc pl-4 sm:pl-5 mb-2 sm:mb-3 space-y-1">{children}</ul>,
+                  ol: ({ children }) => <ol className="list-decimal pl-4 sm:pl-5 mb-2 sm:mb-3 space-y-1">{children}</ol>,
+                  li: ({ children }) => <li className="text-sm sm:text-[15px] leading-6 sm:leading-7 pl-1">{children}</li>,
                   strong: ({ children }) => <strong className="font-bold text-foreground">{children}</strong>,
                   em: ({ children }) => <em className="italic">{children}</em>,
-                  h1: ({ children }) => <h1 className="text-xl font-bold mb-3 mt-4 first:mt-0">{children}</h1>,
-                  h2: ({ children }) => <h2 className="text-lg font-bold mb-2 mt-3 first:mt-0">{children}</h2>,
-                  h3: ({ children }) => <h3 className="text-base font-bold mb-2 mt-3 first:mt-0">{children}</h3>,
+                  h1: ({ children }) => <h1 className="text-lg sm:text-xl font-bold mb-2 sm:mb-3 mt-3 sm:mt-4 first:mt-0">{children}</h1>,
+                  h2: ({ children }) => <h2 className="text-base sm:text-lg font-bold mb-2 mt-2 sm:mt-3 first:mt-0">{children}</h2>,
+                  h3: ({ children }) => <h3 className="text-sm sm:text-base font-bold mb-2 mt-2 sm:mt-3 first:mt-0">{children}</h3>,
                   code: ({ children }) => (
-                    <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">{children}</code>
+                    <code className="bg-muted px-1 sm:px-1.5 py-0.5 rounded text-xs sm:text-sm font-mono">{children}</code>
                   ),
                   pre: ({ children }) => (
-                    <pre className="bg-muted p-3 rounded-lg overflow-x-auto mb-3 text-sm">{children}</pre>
+                    <pre className="bg-muted p-2 sm:p-3 rounded-lg overflow-x-auto mb-2 sm:mb-3 text-xs sm:text-sm">{children}</pre>
                   ),
                   blockquote: ({ children }) => (
-                    <blockquote className="border-l-4 border-primary/30 pl-4 italic my-3">{children}</blockquote>
+                    <blockquote className="border-l-4 border-primary/30 pl-3 sm:pl-4 italic my-2 sm:my-3">{children}</blockquote>
                   ),
                 }}
               >
@@ -602,54 +597,63 @@ export default function ProviderAIAssistant() {
             </div>
 
             <div className="flex-1 flex flex-col">
-              <div className="flex items-center gap-2 sm:gap-3 p-3 sm:p-4 border-b bg-white dark:bg-background">
-                <SidebarTrigger className="shrink-0" />
-                
+              <div className="flex items-center justify-between gap-2 p-2 sm:p-4 border-b bg-white dark:bg-background">
                 <div className="flex items-center gap-2 min-w-0">
-                  <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                    <Bot className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+                  <SidebarTrigger className="shrink-0" />
+                  <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <Bot className="h-4 w-4 text-primary" />
                   </div>
                   <div className="min-w-0">
-                    <h1 className="font-semibold text-base sm:text-lg truncate">AI Assistant</h1>
-                    <p className="text-xs sm:text-sm text-muted-foreground truncate hidden sm:block">Your provider workflow assistant</p>
+                    <h1 className="font-semibold text-sm sm:text-lg truncate">AI Assistant</h1>
+                    <p className="text-xs text-muted-foreground truncate hidden sm:block">Your provider workflow assistant</p>
                   </div>
                 </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="md:hidden shrink-0 text-xs"
+                  onClick={() => createConversation.mutate()}
+                  disabled={createConversation.isPending}
+                >
+                  <Plus className="h-3 w-3 mr-1" />
+                  New
+                </Button>
               </div>
 
-              <ScrollArea className="flex-1 p-4 bg-muted/10">
+              <ScrollArea className="flex-1 p-2 sm:p-4 bg-muted/10">
                 {!selectedConversationId && messages.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center h-full text-center px-4">
-                    <div className="w-16 h-16 rounded-full bg-primary/10 flex items-center justify-center mb-4">
-                      <Sparkles className="h-8 w-8 text-primary" />
+                  <div className="flex flex-col items-center justify-center h-full text-center px-2 sm:px-4">
+                    <div className="w-12 h-12 sm:w-16 sm:h-16 rounded-full bg-primary/10 flex items-center justify-center mb-3 sm:mb-4">
+                      <Sparkles className="h-6 w-6 sm:h-8 sm:w-8 text-primary" />
                     </div>
-                    <h2 className="text-xl font-semibold mb-2">Welcome to Your AI Assistant</h2>
-                    <p className="text-muted-foreground max-w-md mb-6">
-                      I can help you with patient communications, appointment templates, auto-responses, and platform guidance. What would you like assistance with?
+                    <h2 className="text-lg sm:text-xl font-semibold mb-2">Welcome to Your AI Assistant</h2>
+                    <p className="text-sm sm:text-base text-muted-foreground max-w-md mb-4 sm:mb-6">
+                      I can help with patient communications, templates, and platform guidance.
                     </p>
-                    <div className="grid gap-2 max-w-md">
+                    <div className="grid gap-2 w-full max-w-md">
                       <Button 
                         variant="outline" 
-                        className="justify-start text-left h-auto py-3"
+                        className="justify-start text-left h-auto py-2 sm:py-3 text-xs sm:text-sm"
                         onClick={() => setInputValue("Create an appointment confirmation template")}
                       >
-                        <MessageSquare className="h-4 w-4 mr-2 shrink-0" />
-                        Create an appointment confirmation template
+                        <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-2 shrink-0" />
+                        <span className="truncate">Appointment confirmation template</span>
                       </Button>
                       <Button 
                         variant="outline" 
-                        className="justify-start text-left h-auto py-3"
+                        className="justify-start text-left h-auto py-2 sm:py-3 text-xs sm:text-sm"
                         onClick={() => setInputValue("Help me write a follow-up message for a patient")}
                       >
-                        <MessageSquare className="h-4 w-4 mr-2 shrink-0" />
-                        Help me write a follow-up message for a patient
+                        <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-2 shrink-0" />
+                        <span className="truncate">Write patient follow-up message</span>
                       </Button>
                       <Button 
                         variant="outline" 
-                        className="justify-start text-left h-auto py-3"
+                        className="justify-start text-left h-auto py-2 sm:py-3 text-xs sm:text-sm"
                         onClick={() => setInputValue("What platform features can help me manage my practice?")}
                       >
-                        <MessageSquare className="h-4 w-4 mr-2 shrink-0" />
-                        What platform features can help me manage my practice?
+                        <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 mr-2 shrink-0" />
+                        <span className="truncate">Platform features for my practice</span>
                       </Button>
                     </div>
                   </div>
@@ -665,14 +669,11 @@ export default function ProviderAIAssistant() {
                       <ChatMessage key={msg.id} message={msg} />
                     ))}
                     {sendMessage.isPending && (
-                      <div className="flex gap-3 mb-4">
-                        <div className="flex-shrink-0 w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center">
-                          <Loader2 className="h-5 w-5 text-primary animate-spin" />
-                        </div>
-                        <div className="bg-muted rounded-lg px-4 py-3">
+                      <div className="flex mb-3 sm:mb-4 justify-start">
+                        <div className="bg-muted rounded-xl px-3 py-2 sm:px-4 sm:py-3">
                           <div className="flex items-center gap-2">
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                            <span className="text-sm text-muted-foreground">Thinking...</span>
+                            <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin" />
+                            <span className="text-xs sm:text-sm text-muted-foreground">Thinking...</span>
                           </div>
                         </div>
                       </div>
@@ -682,16 +683,16 @@ export default function ProviderAIAssistant() {
                 )}
               </ScrollArea>
 
-              <div className="p-4 border-t bg-white dark:bg-background">
+              <div className="p-2 sm:p-4 border-t bg-white dark:bg-background">
                 <div className="flex gap-2 max-w-4xl mx-auto">
-                  <div className="flex-1 flex gap-2 items-center bg-muted/50 border rounded-lg px-3">
+                  <div className="flex-1 flex gap-2 items-center bg-muted/50 border rounded-lg px-2 sm:px-3">
                     <Input
                       ref={inputRef}
                       value={inputValue}
                       onChange={(e) => setInputValue(e.target.value)}
                       onKeyDown={handleKeyDown}
-                      placeholder="Ask about patient communications, templates, or platform features..."
-                      className="border-0 focus-visible:ring-0 flex-1 text-base bg-transparent"
+                      placeholder="Ask me anything..."
+                      className="border-0 focus-visible:ring-0 flex-1 text-sm sm:text-base bg-transparent"
                       disabled={sendMessage.isPending}
                       data-testid="input-message"
                     />

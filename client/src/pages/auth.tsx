@@ -245,27 +245,27 @@ export function Register() {
         <TabsContent value="user">
           <p className="text-xs text-center text-muted-foreground mb-4">Create a personal account to track your wellbeing.</p>
         </TabsContent>
-        <TabsContent value="provider" className="space-y-4 animate-in fade-in slide-in-from-right-4">
-           <div className="bg-primary/5 p-6 rounded-xl border border-primary/10 text-center space-y-4">
-             <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary">
-               <Stethoscope className="w-6 h-6" />
+        <TabsContent value="provider" className="space-y-3 sm:space-y-4 animate-in fade-in slide-in-from-right-4">
+           <div className="bg-primary/5 p-4 sm:p-6 rounded-xl border border-primary/10 text-center space-y-3 sm:space-y-4">
+             <div className="mx-auto w-10 h-10 sm:w-12 sm:h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary">
+               <Stethoscope className="w-5 h-5 sm:w-6 sm:h-6" />
              </div>
              <div>
-               <h3 className="font-bold text-lg font-serif">Join our Provider Network</h3>
-               <p className="text-sm text-muted-foreground mt-1">
-                 Register your practice, pharmacy, or service to reach thousands of users.
+               <h3 className="font-bold text-base sm:text-lg font-serif">Join our Provider Network</h3>
+               <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                 Register your practice to reach users.
                </p>
              </div>
-             <ul className="text-sm text-left space-y-2 py-2 px-4">
-               <li className="flex gap-2"><Shield className="w-4 h-4 text-green-600" /> Verified Profile Badge</li>
-               <li className="flex gap-2"><FileText className="w-4 h-4 text-blue-600" /> Issue Digital Certificates</li>
-               <li className="flex gap-2"><Building className="w-4 h-4 text-orange-600" /> Manage Your Practice</li>
+             <ul className="text-xs sm:text-sm text-left space-y-1.5 sm:space-y-2 py-2 px-2 sm:px-4">
+               <li className="flex gap-2 items-center"><Shield className="w-3 h-3 sm:w-4 sm:h-4 text-green-600 shrink-0" /> Verified Profile Badge</li>
+               <li className="flex gap-2 items-center"><FileText className="w-3 h-3 sm:w-4 sm:h-4 text-blue-600 shrink-0" /> Issue Digital Certificates</li>
+               <li className="flex gap-2 items-center"><Building className="w-3 h-3 sm:w-4 sm:h-4 text-orange-600 shrink-0" /> Manage Your Practice</li>
              </ul>
              <Link href="/auth/register-provider">
-               <Button className="w-full" size="lg">Continue to Provider Registration</Button>
+               <Button className="w-full text-sm sm:text-base" size="default">Continue to Provider Registration</Button>
              </Link>
            </div>
-           <div className="text-center text-xs text-muted-foreground">
+           <div className="text-center text-[10px] sm:text-xs text-muted-foreground">
              Registration requires professional license verification.
            </div>
         </TabsContent>
