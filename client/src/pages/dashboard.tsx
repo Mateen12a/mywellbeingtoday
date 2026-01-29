@@ -641,7 +641,45 @@ export default function Dashboard() {
   }
 
   return (
-    <div className="space-y-6 sm:space-y-8 lg:space-y-10 animate-in fade-in duration-500">
+    <div className="space-y-4 sm:space-y-6 lg:space-y-8 animate-in fade-in duration-500">
+      {/* Welcome Header - FIRST on mobile */}
+      <div className="flex flex-col gap-3 sm:gap-4">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-3 sm:gap-4">
+          <div className="flex items-start sm:items-center gap-3 sm:gap-4 min-w-0">
+            <Avatar className="hidden sm:flex h-12 w-12 border-2 border-primary/20 shrink-0">
+              <AvatarImage src={avatarUrl} alt={firstName} />
+              <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">
+                {userInitials || "U"}
+              </AvatarFallback>
+            </Avatar>
+            <div className="flex-1 min-w-0">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-black leading-tight">
+                {greeting}, {firstName}
+              </h1>
+              <p className="text-gray-800 font-medium text-xs sm:text-sm md:text-base line-clamp-2 mt-0.5 sm:mt-1">
+                {dynamicGreetingMessage}
+              </p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2 bg-secondary/50 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold text-secondary-foreground shrink-0 border border-secondary whitespace-nowrap self-start sm:self-auto">
+            <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
+            <span className="hidden sm:inline">
+              {new Date().toLocaleDateString(undefined, {
+                weekday: "short",
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+            <span className="sm:hidden">
+              {new Date().toLocaleDateString(undefined, {
+                month: "short",
+                day: "numeric",
+              })}
+            </span>
+          </div>
+        </div>
+      </div>
+
       {userStatus === "suspended" && (
         <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-900 shadow-sm p-3 sm:p-4">
           <AlertCircle className="h-4 w-4 mt-0.5" />
@@ -649,7 +687,7 @@ export default function Dashboard() {
           <AlertDescription className="ml-6 mt-1 text-xs sm:text-sm">
             Your account has been suspended. Please contact support for more information.
             <div className="mt-3">
-              <Button size="sm" variant="outline" className="bg-white border-red-200 text-red-700 hover:bg-red-50 text-xs sm:text-sm">
+              <Button size="sm" variant="outline" className="bg-white border-red-200 text-red-700 text-xs sm:text-sm">
                 Contact Support
               </Button>
             </div>
@@ -665,22 +703,23 @@ export default function Dashboard() {
             variant="ghost"
             size="icon"
             onClick={dismissPrompt}
-            className="absolute top-3 right-3 rounded-full hover:bg-white/50 z-10"
+            className="absolute top-2 right-2 sm:top-3 sm:right-3 rounded-full bg-white/70 border border-gray-200 shadow-sm z-10"
+            data-testid="button-dismiss-prompt"
           >
-            <X className="h-4 w-4 text-gray-500" />
+            <X className="h-4 w-4 text-gray-600" />
           </Button>
-          <CardContent className="p-3 sm:p-4 lg:p-6 relative z-10">
-            <div className="flex flex-col gap-3 sm:gap-4">
-              <div className="flex items-start gap-3 sm:gap-4">
-                <div className="h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-primary/20 flex items-center justify-center shrink-0 mt-0.5">
-                  <Bell className="h-5 sm:h-6 w-5 sm:w-6 text-primary" />
+          <CardContent className="p-3 sm:p-4 lg:p-6 relative z-10 pr-12 sm:pr-14">
+            <div className="flex flex-col gap-3">
+              <div className="flex items-start gap-3">
+                <div className="h-9 sm:h-11 w-9 sm:w-11 rounded-full bg-primary/20 flex items-center justify-center shrink-0">
+                  <Bell className="h-4 sm:h-5 w-4 sm:w-5 text-primary" />
                 </div>
-                <div className="flex-1">
-                  <h3 className="font-bold text-base sm:text-lg text-black mb-1">
+                <div className="flex-1 min-w-0">
+                  <h3 className="font-bold text-sm sm:text-base text-black mb-0.5">
                     You haven't logged today yet!
                   </h3>
-                  <p className="text-gray-700 text-xs sm:text-sm">
-                    Take a moment to track your {!hasLoggedMoodToday && !hasLoggedActivityToday 
+                  <p className="text-gray-700 text-xs sm:text-sm leading-snug">
+                    Track your {!hasLoggedMoodToday && !hasLoggedActivityToday 
                       ? "mood and activities" 
                       : !hasLoggedMoodToday 
                         ? "mood" 
@@ -691,17 +730,17 @@ export default function Dashboard() {
               <div className="flex gap-2 w-full">
                 {!hasLoggedMoodToday && (
                   <Link href="/mood" className="flex-1 min-w-0">
-                    <Button size="sm" className="w-full rounded-full shadow-sm text-xs sm:text-sm">
-                      <Heart className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2 shrink-0" />
-                      <span className="truncate">Log Mood</span>
+                    <Button size="sm" className="w-full rounded-full shadow-sm text-xs sm:text-sm h-9">
+                      <Heart className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                      <span>Log Mood</span>
                     </Button>
                   </Link>
                 )}
                 {!hasLoggedActivityToday && (
                   <Link href="/activity" className="flex-1 min-w-0">
-                    <Button variant="outline" size="sm" className="w-full rounded-full border-primary/30 text-xs sm:text-sm">
-                      <Activity className="w-3 sm:w-4 h-3 sm:h-4 mr-1 sm:mr-2 shrink-0" />
-                      <span className="truncate">Log Activity</span>
+                    <Button variant="outline" size="sm" className="w-full rounded-full border-primary/30 text-xs sm:text-sm h-9">
+                      <Activity className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                      <span>Log Activity</span>
                     </Button>
                   </Link>
                 )}
@@ -760,42 +799,6 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       )}
-
-      {/* Welcome Header */}
-      <div className="flex flex-col sm:flex-row sm:justify-between sm:items-end gap-4 sm:gap-4">
-        <div className="flex items-start sm:items-center gap-4 min-w-0">
-          <Avatar className="hidden sm:flex h-12 w-12 border-2 border-primary/20 shrink-0">
-            <AvatarImage src={avatarUrl} alt={firstName} />
-            <AvatarFallback className="bg-primary/10 text-primary font-bold text-sm">
-              {userInitials || "U"}
-            </AvatarFallback>
-          </Avatar>
-          <div className="flex-1 min-w-0">
-            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-black truncate">
-              {greeting}, <span className="truncate">{firstName}</span>
-            </h1>
-            <p className="text-gray-800 font-medium text-sm sm:text-base line-clamp-2 mt-1">
-              {dynamicGreetingMessage}
-            </p>
-          </div>
-        </div>
-        <div className="flex items-center gap-2 bg-secondary/50 px-4 py-2 rounded-full text-sm font-bold text-secondary-foreground shrink-0 border border-secondary whitespace-nowrap">
-          <Calendar className="w-4 h-4" />
-          <span className="hidden sm:inline">
-            {new Date().toLocaleDateString(undefined, {
-              weekday: "short",
-              month: "short",
-              day: "numeric",
-            })}
-          </span>
-          <span className="sm:hidden">
-            {new Date().toLocaleDateString(undefined, {
-              month: "short",
-              day: "numeric",
-            })}
-          </span>
-        </div>
-      </div>
 
       {/* Mood Check-in Card */}
       <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/30 overflow-hidden relative shadow-sm">

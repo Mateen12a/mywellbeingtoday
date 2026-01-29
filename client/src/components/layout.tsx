@@ -64,41 +64,71 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [showMobileTitle, setShowMobileTitle] = useState(false);
   const { isAuthenticated, logout, user } = useAuth();
   
-  const [notifications, setNotifications] = useState<Notification[]>([
-    {
-      id: '1',
-      title: 'Welcome to mywellbeingtoday',
-      message: 'Start tracking your mood and activities to get personalized insights.',
-      time: '2 hours ago',
-      read: false,
-      type: 'info'
-    },
-    {
-      id: '2',
-      title: 'Daily Check-in Reminder',
-      message: "Don't forget to log your mood today for better wellbeing tracking.",
-      time: '5 hours ago',
-      read: false,
-      type: 'info'
-    },
-    {
-      id: '3',
-      title: 'Weekly Report Ready',
-      message: 'Your wellbeing report for last week is now available.',
-      time: '1 day ago',
-      read: true,
-      type: 'success'
+  // Load notifications with read status from localStorage
+  const [notifications, setNotifications] = useState<Notification[]>(() => {
+    const defaultNotifications: Notification[] = [
+      {
+        id: '1',
+        title: 'Welcome to mywellbeingtoday',
+        message: 'Start tracking your mood and activities to get personalized insights.',
+        time: '2 hours ago',
+        read: false,
+        type: 'info'
+      },
+      {
+        id: '2',
+        title: 'Daily Check-in Reminder',
+        message: "Don't forget to log your mood today for better wellbeing tracking.",
+        time: '5 hours ago',
+        read: false,
+        type: 'info'
+      },
+      {
+        id: '3',
+        title: 'Weekly Report Ready',
+        message: 'Your wellbeing report for last week is now available.',
+        time: '1 day ago',
+        read: true,
+        type: 'success'
+      }
+    ];
+    
+    // Check localStorage for read status
+    try {
+      const savedReadStatus = localStorage.getItem('notification_read_status');
+      if (savedReadStatus) {
+        const readIds = JSON.parse(savedReadStatus) as string[];
+        return defaultNotifications.map(n => ({
+          ...n,
+          read: readIds.includes(n.id) || n.read
+        }));
+      }
+    } catch (e) {
+      console.error('Error loading notification status:', e);
     }
-  ]);
+    return defaultNotifications;
+  });
   
   const unreadCount = notifications.filter(n => !n.read).length;
   
   const markAsRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    setNotifications(prev => {
+      const updated = prev.map(n => n.id === id ? { ...n, read: true } : n);
+      // Save to localStorage
+      const readIds = updated.filter(n => n.read).map(n => n.id);
+      localStorage.setItem('notification_read_status', JSON.stringify(readIds));
+      return updated;
+    });
   };
   
   const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    setNotifications(prev => {
+      const updated = prev.map(n => ({ ...n, read: true }));
+      // Save to localStorage
+      const readIds = updated.map(n => n.id);
+      localStorage.setItem('notification_read_status', JSON.stringify(readIds));
+      return updated;
+    });
   };
 
   const isAdmin = location.startsWith("/admin/") || location === "/admin";
@@ -348,7 +378,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => logout()}
-                      className="cursor-pointer text-destructive focus:bg-destructive/10 focus:text-destructive"
+                      className="cursor-pointer bg-destructive/10 text-destructive font-medium focus:bg-destructive/20 focus:text-destructive"
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Logout</span>
@@ -432,18 +462,18 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   <Menu className="w-6 h-6" />
                 </Button>
               </SheetTrigger>
-              <SheetContent side="right" className="w-[300px] sm:w-[400px]">
-                <div className="flex flex-col gap-6 mt-6">
-                  <div className="flex items-center gap-2 px-2">
+              <SheetContent side="right" className="w-[280px] sm:w-[350px] p-0 flex flex-col h-full">
+                <div className="flex flex-col h-full">
+                  <div className="flex items-center gap-2 px-4 py-4 border-b shrink-0">
                     <div className="bg-primary/20 p-1.5 rounded-lg">
                       <img src={logo} alt="Logo" className="h-6 w-6" />
                     </div>
-                    <span className="font-serif font-bold text-primary">
+                    <span className="font-serif font-bold text-primary text-sm">
                       mywellbeingtoday
                     </span>
                   </div>
 
-                  <div className="flex flex-col gap-2 overflow-y-auto max-h-[calc(100vh-120px)] pb-8 px-1">
+                  <div className="flex-1 overflow-y-auto overscroll-contain px-3 py-3">
                     {!isAuthenticated ? (
                       <>
                         <Link href="/" onClick={() => setIsOpen(false)}>
@@ -517,20 +547,27 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         <NavLink href="/settings" icon={Settings}>
                           Settings
                         </NavLink>
-                        <Button
-                          variant="ghost"
-                          className="w-full justify-start text-destructive hover:text-destructive hover:bg-destructive/10 mt-2"
-                          onClick={() => {
-                            setIsOpen(false);
-                            logout();
-                          }}
-                        >
-                          <LogOut className="w-4 h-4 mr-2" />
-                          Sign Out
-                        </Button>
                       </>
                     )}
                   </div>
+                  
+                  {/* Logout button - fixed at bottom for visibility */}
+                  {isAuthenticated && (
+                    <div className="shrink-0 border-t p-3 bg-background">
+                      <Button
+                        variant="destructive"
+                        className="w-full justify-center gap-2 h-11 font-semibold"
+                        onClick={() => {
+                          setIsOpen(false);
+                          logout();
+                        }}
+                        data-testid="button-logout-mobile"
+                      >
+                        <LogOut className="w-4 h-4" />
+                        Sign Out
+                      </Button>
+                    </div>
+                  )}
                 </div>
               </SheetContent>
             </Sheet>
@@ -545,54 +582,52 @@ export default function Layout({ children }: { children: React.ReactNode }) {
 
       {/* Footer */}
       <footer className="border-t bg-secondary/30">
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 py-6 sm:py-8">
           {isAuthenticated ? (
-            <div className="flex flex-col md:flex-row justify-between items-center gap-4 text-xs text-muted-foreground">
-              <div className="text-center md:text-left">
-                © 2026 mywellbeingtoday. All rights reserved. Not a substitute
-                for professional medical advice.
-              </div>
-              <div className="flex items-center gap-4">
+            <div className="flex flex-col items-center gap-3 sm:gap-4 text-xs text-muted-foreground text-center">
+              <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
                 <Link href="/privacy" className="hover:text-foreground hover:underline">Privacy Policy</Link>
                 <Link href="/terms" className="hover:text-foreground hover:underline">Terms of Service</Link>
-                <span>
-                  Built by{" "}
-                  <span className="font-medium text-foreground">
-                    Airfns Softwares
-                  </span>
+              </div>
+              <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
+                <span>© 2026 mywellbeingtoday. All rights reserved.</span>
+                <span className="hidden sm:inline">•</span>
+                <span>Not a substitute for professional medical advice.</span>
+              </div>
+              <div className="text-[10px] sm:text-xs">
+                Built by{" "}
+                <span className="font-medium text-foreground">
+                  Airfns Softwares
                 </span>
               </div>
             </div>
           ) : (
             <>
-              <div className="flex flex-col md:flex-row justify-between items-center gap-6">
-                <div className="flex flex-col items-center md:items-start gap-2">
-                  <div className="flex items-center gap-2">
-                    <span className="font-serif font-semibold text-muted-foreground">
-                      mywellbeingtoday
-                    </span>
-                  </div>
-                  <p className="text-sm text-muted-foreground max-w-xs text-center md:text-left">
+              <div className="flex flex-col items-center gap-4 sm:gap-6 md:flex-row md:justify-between">
+                <div className="flex flex-col items-center md:items-start gap-2 text-center md:text-left">
+                  <span className="font-serif font-semibold text-muted-foreground">
+                    mywellbeingtoday
+                  </span>
+                  <p className="text-xs sm:text-sm text-muted-foreground max-w-xs">
                     Empowering your journey to wellness with daily support and
                     insights.
                   </p>
                 </div>
 
-                <div className="flex flex-col items-center md:items-end gap-1 text-sm text-muted-foreground">
-                  <div>
-                    Built by{" "}
-                    <span className="font-medium text-foreground">
-                      Airfns Softwares
-                    </span>
-                  </div>
+                <div className="text-xs sm:text-sm text-muted-foreground text-center md:text-right">
+                  Built by{" "}
+                  <span className="font-medium text-foreground">
+                    Airfns Softwares
+                  </span>
                 </div>
               </div>
 
-              <div className="mt-8 pt-4 border-t border-border/50 flex flex-col md:flex-row items-center justify-between gap-2 text-xs text-muted-foreground">
-                <span>
-                  © {new Date().getFullYear()} mywellbeingtoday. All rights
-                  reserved. Not a substitute for professional medical advice.
-                </span>
+              <div className="mt-6 sm:mt-8 pt-4 border-t border-border/50 flex flex-col items-center gap-3 sm:gap-2 text-xs text-muted-foreground text-center md:flex-row md:justify-between">
+                <div className="flex flex-col sm:flex-row items-center gap-1 sm:gap-2">
+                  <span>© {new Date().getFullYear()} mywellbeingtoday. All rights reserved.</span>
+                  <span className="hidden sm:inline">•</span>
+                  <span>Not a substitute for professional medical advice.</span>
+                </div>
                 <div className="flex items-center gap-4">
                   <Link href="/privacy" className="hover:text-foreground hover:underline">Privacy Policy</Link>
                   <Link href="/terms" className="hover:text-foreground hover:underline">Terms of Service</Link>

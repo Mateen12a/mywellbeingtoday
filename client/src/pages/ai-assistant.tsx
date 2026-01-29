@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect, useRef } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import ReactMarkdown from "react-markdown";
@@ -682,6 +682,12 @@ export default function AIKnowledgeAssistant() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  
+  const handleVoiceTranscriptMain = useCallback((text: string) => {
+    setQuery(prev => prev ? `${prev} ${text}` : text);
+  }, []);
+  
+  const { isListening: isListeningMain, isSupported: isVoiceSupported, toggleListening: toggleListeningMain } = useVoiceInput(handleVoiceTranscriptMain);
 
   const MAX_FILE_SIZE = 5 * 1024 * 1024;
   const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
@@ -1013,7 +1019,7 @@ export default function AIKnowledgeAssistant() {
         </TabsList>
 
         <TabsContent value="chat">
-          <div className="flex gap-4 h-[600px]">
+          <div className="flex gap-4 h-[calc(100dvh-220px)] sm:h-[600px]">
             {/* Desktop Sidebar */}
             <div className="hidden md:block w-64 bg-white border rounded-xl overflow-hidden shrink-0">
               {sidebarContent}
@@ -1164,7 +1170,32 @@ export default function AIKnowledgeAssistant() {
                     placeholder="Ask about your mood, stress, activities, or wellbeing..."
                     className="flex-1 bg-white rounded-xl border-primary/20 focus-visible:ring-primary text-base md:text-lg h-12 md:h-14 px-4"
                   />
-                  <Button type="submit" size="icon" disabled={(!query.trim() && !attachment) || isTyping} className="rounded-xl shrink-0">
+                  {isVoiceSupported && (
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            type="button"
+                            variant={isListeningMain ? "destructive" : "outline"}
+                            size="icon"
+                            onClick={toggleListeningMain}
+                            disabled={isTyping}
+                            className={cn(
+                              "rounded-xl shrink-0 h-12 w-12 md:h-14 md:w-14 bg-white",
+                              isListeningMain && "animate-pulse"
+                            )}
+                            data-testid="button-voice-input"
+                          >
+                            <Mic className={cn("w-5 h-5 md:w-6 md:h-6", isListeningMain && "text-white")} />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {isListeningMain ? "Stop recording" : "Voice input"}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  )}
+                  <Button type="submit" size="icon" disabled={(!query.trim() && !attachment) || isTyping} className="rounded-xl shrink-0 h-12 w-12 md:h-14 md:w-14">
                     <Send className="w-5 h-5 md:w-6 md:h-6" />
                   </Button>
                 </form>

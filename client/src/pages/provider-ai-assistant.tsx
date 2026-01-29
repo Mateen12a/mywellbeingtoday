@@ -574,7 +574,7 @@ export default function ProviderAIAssistant() {
         </Sidebar>
 
         <SidebarInset className="flex-1 overflow-hidden">
-          <div className="flex h-screen">
+          <div className="flex h-[100dvh]">
             <div className="hidden md:flex w-72 border-r bg-white dark:bg-background flex-col">
               {loadingConversations ? (
                 <div className="p-4 space-y-2 w-full">

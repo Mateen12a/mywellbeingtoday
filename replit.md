@@ -70,3 +70,26 @@ The project structure separates frontend (`client/`) and backend (`server/`) for
   - Dashboard quick actions using hover-elevate utility instead of custom hover states
   - Removed all custom hover effects (scale, shadow, border changes) to comply with design system
   - Better card padding and section spacing throughout dashboard
+- **Dashboard Mobile Layout (iPhone 15 optimized)**:
+  - Greeting and date section now appears FIRST before alerts and daily prompt
+  - X button on daily prompt now has visible white background with border for clarity
+  - Firstname displays fully without truncation (reduced font sizes on mobile)
+  - Tighter spacing on mobile (space-y-4) for less cluttered feel
+- **Mobile Navigation Improvements**:
+  - Navigation menu is now scrollable on small screens
+  - Logout button fixed at bottom with prominent styling (always visible)
+  - Narrower sheet width on mobile (280px) for better fit
+- **Notification System**:
+  - Read/unread status now persists across page refreshes using localStorage
+- **AI Assistant Voice Input**:
+  - Voice input microphone button added to both user and provider AI assistant chat interfaces
+  - Uses Web Speech API for speech-to-text transcription
+  - Shows pulsing red animation when actively listening
+  - Appends transcribed text to current message input
+- **Footer Mobile Alignment**:
+  - Footer now properly centered on mobile with stacked layout
+  - Copyright and disclaimer text centered with proper gaps
+  - Links use flex-wrap for better text wrapping on small screens
+- **AI Assistant Mobile Chat**:
+  - Chat area uses dynamic viewport height (100dvh) for better mobile keyboard handling
+  - Input stays visible above keyboard when typing on iOS/mobile
