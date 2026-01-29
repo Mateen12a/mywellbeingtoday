@@ -4,32 +4,36 @@ This guide explains how to deploy MyWellbeingToday with separate frontend and ba
 
 ## Architecture Overview
 
-- **Frontend**: Static site deployed on Vercel or Render Static
-- **Backend**: Node.js/Express API deployed on Render Web Services
+- **Frontend**: Static React/Vite site (Vercel, Netlify, or Render Static)
+- **Backend**: Node.js/Express API (Render Web Services, Railway, or Heroku)
 - **Database**: MongoDB Atlas (already configured)
+
+Both folders have their own `package.json` and run independently.
+
+---
 
 ## Backend Deployment (Render Web Services)
 
 ### 1. Prepare the Backend
 
-The backend is located in the `server/` directory and uses Express.js with MongoDB.
+The backend is in the `server/` folder. It's pure JavaScript - no build step required.
 
 ### 2. Create a Render Web Service
 
 1. Go to [Render Dashboard](https://dashboard.render.com/)
 2. Click "New" → "Web Service"
 3. Connect your GitHub/GitLab repository
-4. Configure the service:
+4. Configure:
 
    | Setting | Value |
    |---------|-------|
    | **Name** | `mywellbeingtoday-api` |
    | **Region** | Choose closest to your users |
    | **Branch** | `main` |
-   | **Root Directory** | Leave empty (uses project root) |
+   | **Root Directory** | `server` |
    | **Runtime** | Node |
-   | **Build Command** | `npm install && npm run build` |
-   | **Start Command** | `npm run start` |
+   | **Build Command** | `npm install` |
+   | **Start Command** | `npm start` |
 
 ### 3. Set Backend Environment Variables
 
@@ -38,12 +42,12 @@ Add these environment variables in Render:
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `NODE_ENV` | Environment mode | `production` |
-| `PORT` | Server port | `5000` |
-| `MONGODB_URI` | MongoDB connection string | `mongodb+srv://...` |
+| `PORT` | Server port (Render sets this automatically) | `5000` |
+| `MONGO_URI` | MongoDB connection string | `mongodb+srv://...` |
 | `JWT_SECRET` | Secret for JWT tokens | Random 64-character string |
 | `JWT_REFRESH_SECRET` | Secret for refresh tokens | Random 64-character string |
 | `RESEND_API_KEY` | Resend email API key | `re_...` |
-| `GOOGLE_AI_API_KEY` | Google Gemini AI key | `AIza...` |
+| `GEMINI_API_KEY` | Google Gemini AI key | `AIza...` |
 | `ALLOWED_ORIGINS` | Frontend URL(s) for CORS | `https://your-frontend.vercel.app` |
 
 **Important**: Set `ALLOWED_ORIGINS` to your frontend URL. For multiple origins, separate with commas:
@@ -61,7 +65,7 @@ Click "Create Web Service" and wait for deployment. Note your backend URL (e.g.,
 
 ### 1. Prepare the Frontend
 
-The frontend is a Vite React application in the `client/` directory.
+The frontend is in the `client/` folder. It uses Vite and builds to static files.
 
 ### 2. Create a Vercel Project
 
@@ -164,24 +168,48 @@ Render's free tier has cold starts. The frontend's health check helps, but first
 
 ## Environment Variables Summary
 
-### Backend (Render Web Service)
+### Backend (server folder)
 
 ```env
 NODE_ENV=production
 PORT=5000
-MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/dbname
+MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/dbname
 JWT_SECRET=your-64-char-jwt-secret
 JWT_REFRESH_SECRET=your-64-char-refresh-secret
 RESEND_API_KEY=re_your_resend_key
-GOOGLE_AI_API_KEY=AIzaSy...
+GEMINI_API_KEY=AIzaSy...
 ALLOWED_ORIGINS=https://your-frontend.vercel.app
 ```
 
-### Frontend (Vercel/Render Static)
+### Frontend (client folder)
 
 ```env
 VITE_API_URL=https://your-backend.onrender.com
 ```
+
+---
+
+## Local Development
+
+To run frontend and backend separately in development:
+
+### Backend
+```bash
+cd server
+npm install
+npm start
+```
+Runs on http://localhost:5000
+
+### Frontend
+```bash
+cd client
+npm install
+npm run dev
+```
+Runs on http://localhost:5000 (change port in vite.config.ts if needed)
+
+Set `VITE_API_URL=http://localhost:5000` for local development or configure vite proxy.
 
 ---
 

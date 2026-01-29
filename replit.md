@@ -196,9 +196,43 @@ The system employs JWT-based authentication with both access and refresh tokens.
 - Prevention message with emphasis on early warning signs
 
 ### Separate Deployment Support (January 2026)
+- Frontend and backend now have separate `package.json` files for independent deployment
+- Frontend (`client/`) deploys as static site (Vercel, Render Static)
+- Backend (`server/`) deploys as Node.js web service (Render, Railway)
+- Backend runs pure JavaScript - no build step required (`node index.js`)
 - VITE_API_URL environment variable for frontend-backend connection
 - CORS configuration with ALLOWED_ORIGINS for cross-origin requests
 - Health check endpoint at `/api/health` for backend monitoring
 - Frontend health ping every 5 minutes to keep backend alive
+- Vite proxy forwards `/api` requests to backend on port 3000 in development
 - DEPLOYMENT.md with full instructions for Vercel/Render deployment
 - User header navigation uses xl breakpoint (1280px+) for desktop menu
+
+## Project Structure
+
+```
+/
+├── client/                 # Frontend (React/Vite)
+│   ├── package.json       # Frontend dependencies
+│   ├── vite.config.ts     # Vite config with API proxy
+│   ├── tsconfig.json      # TypeScript config
+│   └── src/               # React source files
+│
+├── server/                 # Backend (Express/Node.js)
+│   ├── package.json       # Backend dependencies
+│   ├── index.js           # Server entry point
+│   ├── config/            # Database config
+│   ├── controllers/       # Route handlers
+│   ├── models/            # Mongoose models
+│   ├── routes/            # API routes
+│   └── services/          # Business logic
+│
+├── shared/                 # Shared code between frontend/backend
+├── DEPLOYMENT.md          # Deployment instructions
+└── replit.md              # This file
+```
+
+## Development Workflows
+
+- **Backend Server**: Runs on port 3000 (`cd server && node index.js`)
+- **Frontend Dev**: Runs on port 5000 with Vite, proxies /api to backend
