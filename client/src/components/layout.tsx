@@ -378,7 +378,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     <DropdownMenuSeparator />
                     <DropdownMenuItem
                       onClick={() => logout()}
-                      className="cursor-pointer bg-destructive/10 text-destructive font-medium focus:bg-destructive/20 focus:text-destructive"
+                      className="cursor-pointer bg-red-100 text-red-600 font-semibold focus:bg-red-200 focus:text-red-700 dark:bg-red-950 dark:text-red-400 dark:focus:bg-red-900"
                     >
                       <LogOut className="mr-2 h-4 w-4" />
                       <span>Logout</span>
