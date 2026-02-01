@@ -38,6 +38,7 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
+import { ReportDownloadButton } from "@/components/report-download-button";
 
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList;
@@ -1318,28 +1319,44 @@ export default function AIKnowledgeAssistant() {
                          <span className="text-xs text-muted-foreground">Mood</span>
                          {getTrendIcon(latestReport.analysis?.trends?.mood)}
                        </div>
-                       <span className="text-sm font-semibold capitalize">{latestReport.analysis?.trends?.mood || 'N/A'}</span>
+                       <div className="text-2xl font-bold text-primary">
+                         {latestReport.dataPoints?.averageMoodScore?.toFixed(1) || '—'}
+                         <span className="text-xs text-muted-foreground font-normal">/10</span>
+                       </div>
+                       <span className="text-xs text-muted-foreground capitalize">{latestReport.analysis?.trends?.mood || 'N/A'}</span>
                      </div>
                      <div className="p-3 bg-white rounded-lg border">
                        <div className="flex items-center justify-between mb-1">
                          <span className="text-xs text-muted-foreground">Activity</span>
                          {getTrendIcon(latestReport.analysis?.trends?.activity)}
                        </div>
-                       <span className="text-sm font-semibold capitalize">{latestReport.analysis?.trends?.activity || 'N/A'}</span>
+                       <div className="text-2xl font-bold text-primary">
+                         {latestReport.dataPoints?.totalActivityMinutes || 0}
+                         <span className="text-xs text-muted-foreground font-normal"> mins</span>
+                       </div>
+                       <span className="text-xs text-muted-foreground capitalize">{latestReport.analysis?.trends?.activity || 'N/A'}</span>
                      </div>
                      <div className="p-3 bg-white rounded-lg border">
                        <div className="flex items-center justify-between mb-1">
-                         <span className="text-xs text-muted-foreground">Sleep</span>
+                         <span className="text-xs text-muted-foreground">Energy</span>
                          {getTrendIcon(latestReport.analysis?.trends?.sleep)}
                        </div>
-                       <span className="text-sm font-semibold capitalize">{latestReport.analysis?.trends?.sleep || 'N/A'}</span>
+                       <div className="text-2xl font-bold text-primary">
+                         {latestReport.dataPoints?.averageEnergyLevel?.toFixed(1) || '—'}
+                         <span className="text-xs text-muted-foreground font-normal">/10</span>
+                       </div>
+                       <span className="text-xs text-muted-foreground capitalize">{latestReport.analysis?.trends?.sleep || 'N/A'}</span>
                      </div>
                      <div className="p-3 bg-white rounded-lg border">
                        <div className="flex items-center justify-between mb-1">
                          <span className="text-xs text-muted-foreground">Stress</span>
                          {getTrendIcon(latestReport.analysis?.trends?.stress)}
                        </div>
-                       <span className="text-sm font-semibold capitalize">{latestReport.analysis?.trends?.stress || 'N/A'}</span>
+                       <div className="text-2xl font-bold text-primary">
+                         {latestReport.dataPoints?.averageStressLevel?.toFixed(1) || '—'}
+                         <span className="text-xs text-muted-foreground font-normal">/10</span>
+                       </div>
+                       <span className="text-xs text-muted-foreground capitalize">{latestReport.analysis?.trends?.stress || 'N/A'}</span>
                      </div>
                    </div>
 
@@ -1388,6 +1405,10 @@ export default function AIKnowledgeAssistant() {
                        <div className="text-2xl font-bold text-primary">{latestReport.dataPoints?.totalActivityMinutes || 0}</div>
                        <div className="text-xs text-muted-foreground">Active Mins</div>
                      </div>
+                   </div>
+
+                   <div className="pt-4 border-t flex justify-center">
+                     <ReportDownloadButton variant="default" size="default" />
                    </div>
                 </CardContent>
              </Card>

@@ -93,3 +93,8 @@ The project structure separates frontend (`client/`) and backend (`server/`) for
 - **AI Assistant Mobile Chat**:
   - Chat area uses dynamic viewport height (100dvh) for better mobile keyboard handling
   - Input stays visible above keyboard when typing on iOS/mobile
+- **AI Assistant Analytics Display** (February 2026):
+  - Wellbeing analytics grid now shows actual numeric scores (averageMoodScore, totalActivityMinutes, averageEnergyLevel, averageStressLevel) instead of just trend text
+  - Each metric displays score with units (/10 or mins) alongside trend indicators (improving/stable/declining)
+  - Added ReportDownloadButton to analytics section for PDF report download
+  - Energy label updated (was previously labeled "Sleep")
