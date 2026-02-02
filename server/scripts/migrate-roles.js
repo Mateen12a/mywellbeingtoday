@@ -8,8 +8,8 @@ const MONGODB_URI = process.env.MONGO_URI || process.env.MONGODB_URI || process.
 async function migrateRoles() {
   try {
     console.log('Connecting to MongoDB...');
-    await mongoose.connect(MONGODB_URI);
-    console.log('Connected to MongoDB');
+    await mongoose.connect(MONGODB_URI, { dbName: 'Wellbeing' });
+    console.log('Connected to MongoDB (database: Wellbeing)');
 
     const db = mongoose.connection.db;
     const usersCollection = db.collection('users');

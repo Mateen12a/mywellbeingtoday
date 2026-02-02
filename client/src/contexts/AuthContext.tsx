@@ -37,6 +37,29 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   useEffect(() => {
     const initAuth = async () => {
+      // Check app version - force logout if version changed
+      try {
+        const versionResponse = await fetch('/api/version');
+        if (versionResponse.ok) {
+          const versionData = await versionResponse.json();
+          const storedVersion = localStorage.getItem('appVersion');
+          
+          if (storedVersion && storedVersion !== versionData.version) {
+            // Version changed - clear all cached data and force re-login
+            console.log('[Session] App version changed, clearing session');
+            api.clearTokens();
+            invalidateAllQueries();
+            localStorage.setItem('appVersion', versionData.version);
+            setIsLoading(false);
+            return;
+          }
+          
+          localStorage.setItem('appVersion', versionData.version);
+        }
+      } catch {
+        // Version check failed - continue with normal auth flow
+      }
+
       if (api.isAuthenticated()) {
         try {
           const response = await api.getProfile();
@@ -89,7 +112,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   const logout = async () => {
-    await api.logout();
+    try {
+      await api.logout();
+    } catch {
+      // Ignore errors - local tokens already cleared
+    }
     setUser(null);
     invalidateAllQueries();
     setLocation('/');

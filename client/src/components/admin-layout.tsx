@@ -120,7 +120,11 @@ export default function AdminLayout({ children, title = "Admin Dashboard" }: Adm
   ];
 
   const handleLogout = async () => {
-    await api.logout();
+    try {
+      await api.logout();
+    } catch {
+      // Ignore errors - logout already cleared local tokens
+    }
     toast({
       title: "Logged Out",
       description: "You have been successfully logged out.",

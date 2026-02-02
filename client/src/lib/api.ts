@@ -196,10 +196,16 @@ class ApiClient {
   }
 
   async logout() {
+    // Always clear local tokens first, then try to notify the server
+    this.clearTokens();
     try {
-      await this.request('/auth/logout', { method: 'POST' });
-    } finally {
-      this.clearTokens();
+      // Try to notify server but don't fail if it doesn't work
+      await fetch(`${API_BASE}/auth/logout`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+    } catch {
+      // Ignore server errors - local logout is what matters
     }
   }
 

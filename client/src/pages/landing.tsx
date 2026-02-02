@@ -177,8 +177,8 @@ export default function Landing() {
 
   useEffect(() => {
     if (!isLoading && isAuthenticated && user) {
-      if (user.role === "admin" || user.role === "super_admin") {
-        setLocation("/admin");
+      if (user.role === "admin" || user.role === "manager") {
+        setLocation("/admin/dashboard");
       } else if (user.role === "provider") {
         setLocation("/provider-dashboard");
       } else {
