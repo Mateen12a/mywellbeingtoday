@@ -42,7 +42,7 @@ app.use(cors({
 }));
 
 // App version - increment this to force all users to re-login after a push
-const APP_VERSION = '2026.02.02.1';
+const APP_VERSION = '2026.02.02.2';
 
 app.get('/api/health', (_req, res) => {
   res.status(200).json({

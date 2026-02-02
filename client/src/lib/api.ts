@@ -418,8 +418,11 @@ class ApiClient {
   }
 
   async getAdminUsers(params?: any) {
-    const query = new URLSearchParams(params as any).toString();
-    return this.request<{ users: any[]; pagination: any }>(`/admin/users?${query}`);
+    const filteredParams = params ? Object.fromEntries(
+      Object.entries(params).filter(([_, v]) => v !== undefined && v !== null && v !== '')
+    ) : {};
+    const query = new URLSearchParams(filteredParams as any).toString();
+    return this.request<{ users: any[]; pagination: any }>(`/admin/users${query ? `?${query}` : ''}`);
   }
 
   async updateAdminUser(id: string, data: any) {
@@ -430,8 +433,11 @@ class ApiClient {
   }
 
   async getAdminProviders(params?: any) {
-    const query = new URLSearchParams(params as any).toString();
-    return this.request<{ providers: any[]; pagination: any }>(`/admin/providers?${query}`);
+    const filteredParams = params ? Object.fromEntries(
+      Object.entries(params).filter(([_, v]) => v !== undefined && v !== null && v !== '')
+    ) : {};
+    const query = new URLSearchParams(filteredParams as any).toString();
+    return this.request<{ providers: any[]; pagination: any }>(`/admin/providers${query ? `?${query}` : ''}`);
   }
 
   async verifyProvider(id: string) {

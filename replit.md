@@ -80,6 +80,13 @@ The project structure separates frontend (`client/`) and backend (`server/`) for
 - User and provider management pages now correctly display data
 - Provider verification workflow works properly
 - All admin dashboard sections functioning correctly
+- **Fixed URL Parameter Encoding Bug**: API client now filters out undefined/null/empty values before creating URLSearchParams to prevent "undefined" string from being passed as search regex
+
+### Version-Based Session Invalidation
+- **App Version Endpoint**: Added `/api/version` endpoint returning current app version
+- **Automatic Session Refresh**: Frontend checks version on app load, clears session if version changed
+- **Force Re-login**: Increment `APP_VERSION` in `server/index.js` to force all users to re-authenticate
+- Ensures users always have fresh data after deployments
 
 ### Dashboard UX Improvements
 - **Reduced Repetition**: "How are you feeling right now?" card is hidden when daily prompt is showing
