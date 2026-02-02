@@ -13,7 +13,7 @@ export default function AdminDashboardPage() {
   const [, setLocation] = useLocation();
   const [aiInsightsOpen, setAiInsightsOpen] = useState(true);
   const currentUser = api.getUser();
-  const isSuperAdmin = currentUser?.role === 'super_admin';
+  const isSuperAdmin = currentUser?.role === 'admin';
 
   const { data: aiInsightsData, isLoading: aiInsightsLoading, refetch: refetchAiInsights } = useQuery({
     queryKey: ["admin", "ai-insights"],

@@ -25,7 +25,13 @@ MongoDB is used as the database, accessed via Mongoose ODM, and connects to a Mo
 
 ### Authentication & Authorization
 
-The system uses JWT-based authentication with access and refresh tokens. Role-Based Access Control (RBAC) is implemented for `user`, `provider`, `admin`, and `super_admin` roles. Security features include bcryptjs for password hashing, email verification, password reset flows, and audit logging.
+The system uses JWT-based authentication with access and refresh tokens. Role-Based Access Control (RBAC) is implemented with the following hierarchy (highest to lowest):
+- `admin` (full system access, can manage other admins, system settings)
+- `manager` (can manage users and providers, view analytics)
+- `provider` (healthcare provider access)
+- `user` (standard user access)
+
+Security features include bcryptjs for password hashing, email verification, password reset flows, and audit logging. Admin-only operations (create admin, permanent delete, system settings) require the `admin` role specifically.
 
 ### UI/UX Decisions
 
@@ -53,7 +59,36 @@ The project structure separates frontend (`client/`) and backend (`server/`) for
 -   **Frontend:** `@tanstack/react-query`, `framer-motion`, `date-fns`, `react-day-picker`, `embla-carousel-react`, `zod`.
 -   **Backend:** `mongoose`, `jsonwebtoken`, `bcryptjs`, `@google/generative-ai`, `resend`, `express-validator`.
 
-## Recent Changes (January 2026)
+## Recent Changes (February 2026)
+
+### AI-Powered Mood Suggestions
+- **Activity to Mood Flow**: After logging an activity, AI (Gemini) now analyzes the activity and suggests an appropriate mood
+- AI generates mood suggestions with rationale based on activity category, title, description, time of day
+- Shows "AI Generated" badge instead of "Rule-based" in success dialog
+- Suggested mood is highlighted with "AI Pick" badge in the Quick Mood Check
+- When user selects a mood, navigates to mood tracking page with prefilled selections
+
+### Emergency Services Tab
+- **New Emergency Tab in Provider Directory**: Prominent red/alert colored tab for urgent access
+- **Location-based Emergency Numbers**: Uses browser geolocation with IP fallback to detect country
+- Comprehensive emergency number mapping for 20+ countries (911, 999, 112, 000, etc.)
+- Large click-to-dial buttons with tel: links for immediate calling
+- Shows verified emergency service providers with contact info
+
+### Admin Portal Fixes
+- **Fixed Authentication Sync**: Admin login now properly uses AuthContext login function
+- User and provider management pages now correctly display data
+- Provider verification workflow works properly
+- All admin dashboard sections functioning correctly
+
+### Dashboard UX Improvements
+- **Reduced Repetition**: "How are you feeling right now?" card is hidden when daily prompt is showing
+- **Consistent Terminology**: "Log Activity" and "Track Mood" button labels throughout
+- Weekly mood chart Y-axis fixed to 0-10 scale for proper mood score display
+- Voice input hints added to activity and mood logging forms ("Voice available" label)
+- Mood API endpoint fixed (singular to plural routing issue)
+
+## Previous Changes (January 2026)
 
 ### UI/UX Enhancements
 - **Heart Icon Animation**: Landing page heart icon beside "Your personal wellness companion" now pulses smoothly from filled to outline (2.5s animation cycle)

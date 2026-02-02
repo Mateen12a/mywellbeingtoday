@@ -20,8 +20,8 @@ export const getUsers = async (req, res, next) => {
       ];
     }
 
-    if (req.user.role === USER_ROLES.ADMIN) {
-      query.role = { $nin: [USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN] };
+    if (req.user.role === USER_ROLES.MANAGER) {
+      query.role = { $nin: [USER_ROLES.MANAGER, USER_ROLES.ADMIN] };
     }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);
@@ -60,8 +60,8 @@ export const getUser = async (req, res, next) => {
       throw new AppError('User not found', 404, 'NOT_FOUND');
     }
 
-    if (req.user.role === USER_ROLES.ADMIN && 
-        [USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN].includes(user.role)) {
+    if (req.user.role === USER_ROLES.MANAGER && 
+        [USER_ROLES.MANAGER, USER_ROLES.ADMIN].includes(user.role)) {
       throw new AppError('Access denied', 403, 'FORBIDDEN');
     }
 
@@ -83,11 +83,11 @@ export const updateUser = async (req, res, next) => {
       throw new AppError('User not found', 404, 'NOT_FOUND');
     }
 
-    if (req.user.role === USER_ROLES.ADMIN) {
-      if ([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN].includes(targetUser.role)) {
+    if (req.user.role === USER_ROLES.MANAGER) {
+      if ([USER_ROLES.MANAGER, USER_ROLES.ADMIN].includes(targetUser.role)) {
         throw new AppError('Cannot modify admin users', 403, 'FORBIDDEN');
       }
-      if (role && [USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN].includes(role)) {
+      if (role && [USER_ROLES.MANAGER, USER_ROLES.ADMIN].includes(role)) {
         throw new AppError('Cannot assign admin roles', 403, 'FORBIDDEN');
       }
     }
@@ -118,7 +118,7 @@ export const deleteUser = async (req, res, next) => {
       throw new AppError('User not found', 404, 'NOT_FOUND');
     }
 
-    if ([USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN].includes(targetUser.role)) {
+    if ([USER_ROLES.MANAGER, USER_ROLES.ADMIN].includes(targetUser.role)) {
       throw new AppError('Cannot delete admin users', 403, 'FORBIDDEN');
     }
 
@@ -138,8 +138,8 @@ export const deleteUser = async (req, res, next) => {
 
 export const permanentlyDeleteUser = async (req, res, next) => {
   try {
-    if (req.user.role !== USER_ROLES.SUPER_ADMIN) {
-      throw new AppError('Only super admins can permanently delete users', 403, 'FORBIDDEN');
+    if (req.user.role !== USER_ROLES.ADMIN) {
+      throw new AppError('Only admins can permanently delete users', 403, 'FORBIDDEN');
     }
 
     const targetUser = await User.findById(req.params.id);
@@ -152,8 +152,8 @@ export const permanentlyDeleteUser = async (req, res, next) => {
       throw new AppError('Cannot delete yourself', 403, 'FORBIDDEN');
     }
 
-    if (targetUser.role === USER_ROLES.SUPER_ADMIN) {
-      throw new AppError('Cannot delete super admin users', 403, 'FORBIDDEN');
+    if (targetUser.role === USER_ROLES.ADMIN) {
+      throw new AppError('Cannot delete admin users', 403, 'FORBIDDEN');
     }
 
     const userId = targetUser._id;
@@ -445,7 +445,7 @@ export const getDashboardStats = async (req, res, next) => {
 
 export const getSuperAdminStats = async (req, res, next) => {
   try {
-    if (req.user.role !== USER_ROLES.SUPER_ADMIN) {
+    if (req.user.role !== USER_ROLES.ADMIN) {
       throw new AppError('Access denied', 403, 'FORBIDDEN');
     }
 
@@ -477,7 +477,7 @@ export const getSuperAdminStats = async (req, res, next) => {
     ] = await Promise.all([
       User.countDocuments({ role: USER_ROLES.USER }),
       Provider.countDocuments(),
-      User.countDocuments({ role: { $in: [USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN] } }),
+      User.countDocuments({ role: { $in: [USER_ROLES.MANAGER, USER_ROLES.ADMIN] } }),
       Provider.countDocuments({ 'verification.isVerified': true }),
       Certificate.countDocuments(),
       ActivityLog.countDocuments(),
@@ -559,8 +559,8 @@ export const getSuperAdminStats = async (req, res, next) => {
 
 export const createAdmin = async (req, res, next) => {
   try {
-    if (req.user.role !== USER_ROLES.SUPER_ADMIN) {
-      throw new AppError('Only super admins can create admins', 403, 'FORBIDDEN');
+    if (req.user.role !== USER_ROLES.ADMIN) {
+      throw new AppError('Only admins can create managers', 403, 'FORBIDDEN');
     }
 
     const { email, password, firstName, lastName, role } = req.body;
@@ -573,7 +573,7 @@ export const createAdmin = async (req, res, next) => {
       throw new AppError('Password must be at least 8 characters', 400, 'VALIDATION_ERROR');
     }
 
-    const adminRole = role === 'super_admin' ? USER_ROLES.SUPER_ADMIN : USER_ROLES.ADMIN;
+    const adminRole = role === 'admin' ? USER_ROLES.ADMIN : USER_ROLES.MANAGER;
 
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
@@ -602,12 +602,12 @@ export const createAdmin = async (req, res, next) => {
 
 export const getAdmins = async (req, res, next) => {
   try {
-    if (req.user.role !== USER_ROLES.SUPER_ADMIN) {
+    if (req.user.role !== USER_ROLES.ADMIN) {
       throw new AppError('Access denied', 403, 'FORBIDDEN');
     }
 
     const admins = await User.find({ 
-      role: { $in: [USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN] } 
+      role: { $in: [USER_ROLES.MANAGER, USER_ROLES.ADMIN] } 
     }).select('-password');
 
     res.json({
@@ -621,7 +621,7 @@ export const getAdmins = async (req, res, next) => {
 
 export const getSystemSettings = async (req, res, next) => {
   try {
-    if (req.user.role !== USER_ROLES.SUPER_ADMIN) {
+    if (req.user.role !== USER_ROLES.ADMIN) {
       throw new AppError('Access denied', 403, 'FORBIDDEN');
     }
 
@@ -643,7 +643,7 @@ export const getSystemSettings = async (req, res, next) => {
 
 export const getAnonymizedAnalytics = async (req, res, next) => {
   try {
-    if (req.user.role !== USER_ROLES.SUPER_ADMIN) {
+    if (req.user.role !== USER_ROLES.ADMIN) {
       throw new AppError('Access denied', 403, 'FORBIDDEN');
     }
 

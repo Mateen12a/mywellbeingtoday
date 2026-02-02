@@ -6,7 +6,7 @@ import { invalidateAllQueries } from '@/lib/queryClient';
 interface User {
   _id: string;
   email: string;
-  role: 'user' | 'provider' | 'admin' | 'super_admin';
+  role: 'user' | 'provider' | 'manager' | 'admin';
   profile: {
     firstName: string;
     lastName: string;
@@ -110,8 +110,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const getDashboardPath = () => {
     if (!user) return '/';
     switch (user.role) {
-      case 'super_admin':
       case 'admin':
+      case 'manager':
         return '/admin/dashboard';
       case 'provider':
         return '/provider-dashboard';
@@ -147,8 +147,8 @@ export function useAuth() {
 
 export function getDashboardPath(role: string) {
   switch (role) {
-    case 'super_admin':
     case 'admin':
+    case 'manager':
       return '/admin/dashboard';
     case 'provider':
       return '/provider-dashboard';

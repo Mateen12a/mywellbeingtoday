@@ -843,7 +843,7 @@ class ApiClient {
     return this.request<{ admins: any[] }>('/admin/admins');
   }
 
-  async createAdmin(data: { email: string; password: string; firstName: string; lastName: string; role: 'admin' | 'super_admin' }) {
+  async createAdmin(data: { email: string; password: string; firstName: string; lastName: string; role: 'admin' | 'manager' }) {
     return this.request<{ user: any }>('/admin/admins', {
       method: 'POST',
       body: JSON.stringify(data),

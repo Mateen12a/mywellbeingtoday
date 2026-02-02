@@ -12,18 +12,16 @@ import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { UserPlus, Shield, ShieldCheck, Eye, EyeOff, Loader2, Users, AlertCircle, Mail, User, Lock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
-import { useAuth } from "@/contexts/AuthContext";
 import { useLocation } from "wouter";
 import api from "@/lib/api";
 import AdminLayout from "@/components/admin-layout";
 
 export default function ManageAdminsPage() {
-  const { user } = useAuth();
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const currentUser = api.getUser();
-  const isSuperAdmin = currentUser?.role === 'super_admin';
+  const isSuperAdmin = currentUser?.role === 'admin';
 
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -34,7 +32,7 @@ export default function ManageAdminsPage() {
     confirmPassword: "",
     firstName: "",
     lastName: "",
-    role: "admin" as "admin" | "super_admin",
+    role: "manager" as "admin" | "manager",
   });
   const [formError, setFormError] = useState<string | null>(null);
 
@@ -51,7 +49,7 @@ export default function ManageAdminsPage() {
   });
 
   const createAdminMutation = useMutation({
-    mutationFn: async (data: { email: string; password: string; firstName: string; lastName: string; role: 'admin' | 'super_admin' }) => {
+    mutationFn: async (data: { email: string; password: string; firstName: string; lastName: string; role: 'admin' | 'manager' }) => {
       const response = await api.createAdmin(data);
       if (!response.success) throw new Error(response.message || 'Failed to create admin');
       return response;
@@ -82,7 +80,7 @@ export default function ManageAdminsPage() {
       confirmPassword: "",
       firstName: "",
       lastName: "",
-      role: "admin",
+      role: "manager",
     });
     setFormError(null);
     setShowPassword(false);
@@ -282,31 +280,31 @@ export default function ManageAdminsPage() {
                     <Label htmlFor="role">Role <span className="text-red-500">*</span></Label>
                     <Select
                       value={formData.role}
-                      onValueChange={(value: "admin" | "super_admin") => setFormData({ ...formData, role: value })}
+                      onValueChange={(value: "admin" | "manager") => setFormData({ ...formData, role: value })}
                       disabled={createAdminMutation.isPending}
                     >
                       <SelectTrigger>
                         <SelectValue placeholder="Select role" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="admin">
+                        <SelectItem value="manager">
                           <div className="flex items-center gap-2">
                             <Shield className="h-4 w-4" />
-                            Admin
+                            Manager
                           </div>
                         </SelectItem>
-                        <SelectItem value="super_admin">
+                        <SelectItem value="admin">
                           <div className="flex items-center gap-2">
                             <ShieldCheck className="h-4 w-4" />
-                            Super Admin
+                            Admin
                           </div>
                         </SelectItem>
                       </SelectContent>
                     </Select>
                     <p className="text-xs text-muted-foreground">
-                      {formData.role === 'super_admin' 
-                        ? "Super Admins can manage other administrators and access all platform settings." 
-                        : "Admins can manage users, providers, and moderate content."}
+                      {formData.role === 'admin' 
+                        ? "Admins can manage other administrators and access all platform settings." 
+                        : "Managers can manage users, providers, and moderate content."}
                     </p>
                   </div>
                 </div>
@@ -337,7 +335,7 @@ export default function ManageAdminsPage() {
               Administrator Accounts
             </CardTitle>
             <CardDescription>
-              All administrator accounts on the platform. Super Admins have elevated privileges.
+              All administrator accounts on the platform. Admins have elevated privileges.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -383,16 +381,16 @@ export default function ManageAdminsPage() {
                       </TableCell>
                       <TableCell className="text-muted-foreground">{admin.email}</TableCell>
                       <TableCell>
-                        <Badge variant={admin.role === 'super_admin' ? 'default' : 'secondary'} className="gap-1">
-                          {admin.role === 'super_admin' ? (
+                        <Badge variant={admin.role === 'admin' ? 'default' : 'secondary'} className="gap-1">
+                          {admin.role === 'admin' ? (
                             <>
                               <ShieldCheck className="h-3 w-3" />
-                              Super Admin
+                              Admin
                             </>
                           ) : (
                             <>
                               <Shield className="h-3 w-3" />
-                              Admin
+                              Manager
                             </>
                           )}
                         </Badge>

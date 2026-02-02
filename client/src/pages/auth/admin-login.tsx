@@ -51,7 +51,7 @@ export default function AdminLogin() {
         const loggedInUser = api.getUser();
         
         // Verify admin role
-        if (loggedInUser?.role !== 'admin' && loggedInUser?.role !== 'super_admin') {
+        if (loggedInUser?.role !== 'manager' && loggedInUser?.role !== 'admin') {
           // Clear tokens and logout if not admin
           api.clearTokens();
           setError("Access denied. This login is only for administrators. Please use the regular login page.");

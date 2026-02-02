@@ -234,7 +234,7 @@ async function seed() {
   const adminUser = await User.create({
     email: 'admin@mywellbeingtoday.com',
     password: hashedPassword,
-    role: 'super_admin',
+    role: 'admin',
     profile: {
       firstName: 'Sarah',
       lastName: 'Mitchell',
@@ -259,14 +259,14 @@ async function seed() {
     updatedAt: now
   });
 
-  // Superadmin account - Dr. Kuje Amos
+  // Admin account - Dr. Kuje Amos
   // Email: superadmin@mywellbeingtoday.com
   // Password: Welcome123!
-  // Role: super_admin
+  // Role: admin
   const superadminUser = await User.create({
     email: 'superadmin@mywellbeingtoday.com',
     password: hashedPassword,
-    role: 'super_admin',
+    role: 'admin',
     profile: {
       firstName: 'Kuje',
       lastName: 'Amos',
@@ -628,15 +628,15 @@ async function seed() {
   console.log('========================================\n');
   console.log('TEST USER CREDENTIALS:');
   console.log('----------------------------------------');
-  console.log('SUPERADMIN (Dr. Kuje Amos):');
+  console.log('ADMIN (Dr. Kuje Amos):');
   console.log('  Email: superadmin@mywellbeingtoday.com');
   console.log('  Password: Welcome123!');
-  console.log('  Role: super_admin');
+  console.log('  Role: admin');
   console.log('');
-  console.log('ADMIN:');
+  console.log('ADMIN 2:');
   console.log('  Email: admin@mywellbeingtoday.com');
   console.log('  Password: Welcome123!');
-  console.log('  Role: super_admin');
+  console.log('  Role: admin');
   console.log('');
   console.log('PROVIDER:');
   console.log('  Email: provider@mywellbeingtoday.com');

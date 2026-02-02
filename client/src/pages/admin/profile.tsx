@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -78,9 +77,9 @@ export default function AdminProfilePage() {
 
   const getRoleBadgeVariant = (role: string) => {
     switch (role) {
-      case 'super_admin':
-        return 'default';
       case 'admin':
+        return 'default';
+      case 'manager':
         return 'secondary';
       default:
         return 'outline';
@@ -89,10 +88,10 @@ export default function AdminProfilePage() {
 
   const getRoleDisplayName = (role: string) => {
     switch (role) {
-      case 'super_admin':
-        return 'Super Admin';
       case 'admin':
-        return 'Administrator';
+        return 'Admin';
+      case 'manager':
+        return 'Manager';
       default:
         return role?.replace('_', ' ') || 'Unknown';
     }
@@ -353,7 +352,7 @@ export default function AdminProfilePage() {
               </CardContent>
             </Card>
 
-            {currentUser?.role === 'super_admin' && (
+            {currentUser?.role === 'admin' && (
               <Card className="border border-primary/20 shadow-sm bg-primary/5">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2 text-primary">
@@ -388,7 +387,7 @@ export default function AdminProfilePage() {
               </Card>
             )}
 
-            {currentUser?.role === 'admin' && (
+            {currentUser?.role === 'manager' && (
               <Card className="border border-border/60 shadow-sm">
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">

@@ -224,9 +224,9 @@ export default function Landing() {
               className="space-y-4 sm:space-y-5"
             >
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 leading-tight">
-                Your Wellbeing,{" "}
+                Take Control of{" "}
                 <span className="text-primary relative">
-                  Understood
+                  Your Health
                   <svg
                     className="absolute -bottom-2 left-0 w-full h-3 text-primary/30"
                     viewBox="0 0 200 12"
@@ -242,8 +242,8 @@ export default function Landing() {
                 </span>
               </h1>
               <p className="text-lg sm:text-xl md:text-2xl text-slate-600 max-w-lg leading-relaxed mx-auto lg:mx-0">
-                Monitor your activities, track your mood, and connect with
-                healthcare professionals.
+                Log your activities, track your mood, and connect with
+                healthcare providers.
               </p>
             </motion.div>
 
@@ -257,7 +257,7 @@ export default function Landing() {
               {[
                 { icon: Activity, text: "Activity Tracking" },
                 { icon: Heart, text: "Mood Analysis" },
-                { icon: Users, text: "Expert Network" },
+                { icon: Users, text: "Provider Directory" },
               ].map((item, i) => (
                 <div
                   key={i}
@@ -360,7 +360,7 @@ export default function Landing() {
                 className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto mt-4 leading-relaxed"
                 data-testid="text-wellbeing-section-subtitle"
               >
-                A simple platform using advanced artificial intelligence to understand how your daily activities affect your health, and to connect you with care when you need it.
+                AI-powered insights to help you understand your health patterns and connect with care when you need it.
               </p>
             </motion.div>
           </div>
@@ -400,7 +400,7 @@ export default function Landing() {
                   className="text-lg text-slate-600 leading-relaxed"
                   data-testid="text-question-description"
                 >
-                  This is a question many of us ask. We wait until something goes wrong before taking action. But your body often sends quiet signals long before you feel unwell.
+                  Your body sends quiet signals long before you feel unwell.
                 </p>
               </div>
             </div>
@@ -435,13 +435,13 @@ export default function Landing() {
                   className="text-2xl md:text-3xl font-serif font-bold text-primary"
                   data-testid="text-answer-title"
                 >
-                  Illness often starts quietly
+                  Catch problems early
                 </h3>
                 <p 
                   className="text-lg text-slate-700 leading-relaxed"
                   data-testid="text-answer-description"
                 >
-                  Monitoring your health and wellbeing helps you spot <strong>early warning signs</strong> like poor sleep, rising stress, anxiety, disruptions to work, productivity, or personal time. Catching these patterns early can prevent recurring symptoms from turning into serious illness and unexpected expenses.
+                  Spot early warning signs like poor sleep and rising stress before they become serious health issues.
                 </p>
               </div>
             </div>
@@ -455,21 +455,21 @@ export default function Landing() {
                 iconBg: "bg-blue-100",
                 iconColor: "text-blue-600",
                 title: "Easy Setup",
-                description: "Get started in minutes. Log your activities and mood with just a few taps from any device.",
+                description: "Log your activities and mood in seconds from any device.",
               },
               {
                 icon: Brain,
                 iconBg: "bg-primary/10",
                 iconColor: "text-primary",
                 title: "AI Insights",
-                description: "Our smart system learns your patterns and gives you personalised tips to improve your wellbeing.",
+                description: "Get personalised tips based on your unique patterns.",
               },
               {
                 icon: Users,
                 iconBg: "bg-green-100",
                 iconColor: "text-green-600",
                 title: "Connect with Care",
-                description: "Find healthcare professionals near you quickly. Get the support you need, when you need it.",
+                description: "Find healthcare providers near you when you need support.",
               },
             ].map((step, i) => (
               <motion.div
@@ -519,7 +519,7 @@ export default function Landing() {
             >
               <Clock className="w-6 h-6 text-primary" />
               <p className="text-lg font-medium text-slate-700">
-                <span className="text-primary font-bold">Prevention is better than cure.</span> Start understanding your wellbeing today.
+                <span className="text-primary font-bold">Prevention is better than cure.</span>
               </p>
             </div>
           </motion.div>
@@ -533,8 +533,7 @@ export default function Landing() {
             Holistic support at your fingertips
           </h2>
           <p className="text-gray-800 font-medium text-lg">
-            We provide the tools you need to maintain balance, track progress,
-            and find help when you need it.
+            Tools to maintain balance, track progress, and find help when you need it.
           </p>
         </div>
 
@@ -543,17 +542,17 @@ export default function Landing() {
             {
               icon: Activity,
               title: "Daily Tracking",
-              desc: "Log your activities and mood with ease. Identify patterns and celebrate small wins every day.",
+              desc: "Log activities and mood to identify patterns.",
             },
             {
               icon: ShieldCheck,
               title: "Private & Secure",
-              desc: "Your data is yours. We prioritise your privacy and provide a safe space for your personal growth.",
+              desc: "Your data stays private and protected.",
             },
             {
               icon: Users,
-              title: "Expert Network",
-              desc: "Access a directory of certified professionals and resources whenever you need extra support.",
+              title: "Provider Directory",
+              desc: "Find certified healthcare providers when you need support.",
             },
           ].map((feature, i) => (
             <Card
@@ -591,9 +590,7 @@ export default function Landing() {
           className="text-gray-800 max-w-2xl mx-auto text-lg font-medium"
           data-testid="text-cta-description"
         >
-          Start your personal health journey today with MyWellbeingToday - your
-          trusted companion for tracking wellness and connecting with
-          professionals.
+          Start your personal health journey today.
         </p>
         <div className="flex justify-center gap-4">
           <Link href="/auth/register">

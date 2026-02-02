@@ -125,7 +125,7 @@ export default function AdminLayout({ children, title = "Admin Dashboard" }: Adm
       title: "Logged Out",
       description: "You have been successfully logged out.",
     });
-    setLocation("/");
+    setLocation("/auth/admin-login");
   };
 
   const getUserDisplayName = (user: any) => {
@@ -190,7 +190,7 @@ export default function AdminLayout({ children, title = "Admin Dashboard" }: Adm
                   Admin Portal
                 </p>
                 <p className="text-[10px] text-muted-foreground">
-                  {currentUser?.role === 'super_admin' ? 'Super Admin' : 'Administrator'}
+                  {currentUser?.role === 'admin' ? 'Admin' : 'Manager'}
                 </p>
               </div>
             </div>

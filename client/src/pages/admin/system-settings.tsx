@@ -99,13 +99,13 @@ export default function SystemSettingsPage() {
     });
   };
 
-  if (currentUser?.role !== 'super_admin') {
+  if (currentUser?.role !== 'admin') {
     return (
       <AdminLayout title="Access Denied">
         <div className="flex flex-col items-center justify-center min-h-[400px] gap-4">
           <Shield className="h-16 w-16 text-muted-foreground" />
           <h2 className="text-xl font-semibold">Access Denied</h2>
-          <p className="text-muted-foreground">This page is only accessible to Super Admins.</p>
+          <p className="text-muted-foreground">This page is only accessible to Admins.</p>
         </div>
       </AdminLayout>
     );

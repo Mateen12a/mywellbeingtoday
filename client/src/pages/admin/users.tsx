@@ -153,7 +153,7 @@ export default function AdminUsersPage() {
   const [actionReason, setActionReason] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
 
-  const isSuperAdmin = currentUser?.role === "super_admin";
+  const isSuperAdmin = currentUser?.role === "admin";
 
   const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ["admin", "users", userPage, userSearch],
@@ -277,7 +277,7 @@ export default function AdminUsersPage() {
 
   const canDeleteUser = (user: any) => {
     if (!isSuperAdmin) return false;
-    if (user.role === "super_admin") return false;
+    if (user.role === "admin") return false;
     if (user._id === currentUser?._id) return false;
     return true;
   };

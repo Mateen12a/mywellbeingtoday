@@ -1,8 +1,8 @@
 export const USER_ROLES = {
   USER: 'user',
   PROVIDER: 'provider',
-  ADMIN: 'admin',
-  SUPER_ADMIN: 'super_admin'
+  MANAGER: 'manager',
+  ADMIN: 'admin'
 };
 
 export const APPOINTMENT_STATUS = {

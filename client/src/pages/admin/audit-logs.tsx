@@ -13,7 +13,7 @@ export default function AdminAuditLogsPage() {
   const [auditPage, setAuditPage] = useState(1);
   const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
   const currentUser = api.getUser();
-  const isSuperAdmin = currentUser?.role === 'super_admin';
+  const isSuperAdmin = currentUser?.role === 'admin';
 
   const { data: auditLogsData, isLoading: auditLogsLoading } = useQuery({
     queryKey: ["admin", "auditLogs", auditPage],
