@@ -484,6 +484,26 @@ class ApiClient {
     });
   }
 
+  async suspendProvider(id: string, reason?: string) {
+    return this.request<{ provider: any }>(`/admin/providers/${id}/suspend`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  }
+
+  async unsuspendProvider(id: string) {
+    return this.request<{ provider: any }>(`/admin/providers/${id}/unsuspend`, {
+      method: 'POST',
+    });
+  }
+
+  async unverifyProvider(id: string, reason?: string) {
+    return this.request<{ provider: any }>(`/admin/providers/${id}/unverify`, {
+      method: 'POST',
+      body: JSON.stringify({ reason }),
+    });
+  }
+
   async disableUser(id: string) {
     return this.request<void>(`/admin/users/${id}`, {
       method: 'DELETE',

@@ -61,6 +61,35 @@ The project structure separates frontend (`client/`) and backend (`server/`) for
 
 ## Recent Changes (February 2026)
 
+### User Appointments Page
+- **New Appointments Page**: Users can now view and manage their healthcare appointments at `/appointments`
+- **Upcoming & Past Tabs**: Appointments split into "Upcoming" and "Past" tabs for easy navigation
+- **Status Summary Cards**: Shows count of confirmed, pending, and completed appointments at a glance
+- **Cancel Appointments**: Users can cancel upcoming appointments directly from the page
+- **Dashboard Integration**: "You have an appointment coming up" suggestion now links to the appointments page
+- **Navigation Link**: Added "My Appointments" to the mobile navigation menu under Account section
+
+### Admin Panel Improvements
+- **View Profile Button**: Added eye icon button for users and providers to quickly view their profiles in a modal dialog
+- **Suspend Button**: Direct suspend button with ban icon for users (visible when account is active)
+- **Provider Actions**: Added approve (checkmark), reject (X), and suspend (ban) icon buttons for provider management
+- **System Log Rename**: Changed "Activity Log" to "System Log" throughout admin interface for clearer terminology
+
+### User-Friendly Labels
+- **formatLabel Utility**: Added centralized utility function in `client/src/lib/utils.ts` to convert snake_case enum values to readable labels
+- **Comprehensive Label Map**: Covers specialties (mental_health, counseling, etc.), appointment types, activity categories, user roles, and statuses
+- **Applied Throughout**: Labels now display properly formatted in appointments, dashboard, history, admin users/providers pages, and directory
+
+### Navigation & Terminology Updates
+- **Desktop Navigation**: Changed "Log" to "Log Activity" for better clarity
+- **Emergency Services URL**: Navigation to emergency services now properly sets tab parameter and scrolls to view
+
+### Emergency Services Enhancements
+- **Organization Name Display**: Emergency provider cards now show organization/practice name instead of individual provider name
+- **Enhanced Red Styling**: Emergency cards have stronger visual distinction with red borders, backgrounds, and text colors
+- **Duplicate Prevention**: Emergency providers are filtered out from "All Providers" tab to avoid duplicates
+- **Call Now Button**: Prominent red "Call Now" button for immediate emergency calling
+
 ### AI-Powered Mood Suggestions
 - **Activity to Mood Flow**: After logging an activity, AI (Gemini) now analyzes the activity and suggests an appropriate mood
 - AI generates mood suggestions with rationale based on activity category, title, description, time of day
@@ -94,6 +123,15 @@ The project structure separates frontend (`client/`) and backend (`server/`) for
 - Weekly mood chart Y-axis fixed to 0-10 scale for proper mood score display
 - Voice input hints added to activity and mood logging forms ("Voice available" label)
 - Mood API endpoint fixed (singular to plural routing issue)
+
+### Password Policy & Validation (February 2026)
+- **Strong Password Policy**: Minimum 8 characters with uppercase, lowercase, number, and special character requirements
+- **Real-Time Password Strength Indicator**: Visual progress bar with color coding (red/orange/yellow/green) and requirement checklist
+- **Shared Validation Utilities**: `client/src/lib/validation.ts` contains RFC 5322-compliant email regex and international phone validation
+- **Backend Validation Middleware**: `server/middlewares/validate.js` enforces password policy, email format, and phone validation
+- **React Hooks Bug Fixes**: Fixed hook ordering in all registration components (useState before conditional returns)
+- **Complete Validation Coverage**: validateRegistration middleware applied to user, provider, and admin registration routes
+- **PasswordStrengthIndicator Component**: Reusable component used across all registration forms
 
 ## Previous Changes (January 2026)
 

@@ -19,7 +19,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Search, Loader2, Bot, AlertTriangle, FileWarning, Eye, Ban, XCircle, CheckCircle, Mail, Phone, MapPin, Calendar, Briefcase, User } from "lucide-react";
+import { Search, Loader2, Bot, AlertTriangle, FileWarning, Eye, Ban, XCircle, CheckCircle, Mail, MapPin, Calendar, Briefcase, User, Filter, FileText, Clock, Globe, Languages, Award, ShieldCheck, ShieldOff, RotateCcw, ExternalLink } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
@@ -29,6 +29,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import AdminLayout from "@/components/admin-layout";
 import api from "@/lib/api";
 
@@ -148,6 +151,16 @@ export default function AdminProvidersPage() {
     open: false,
     provider: null,
   });
+  const [actionDialog, setActionDialog] = useState<{
+    open: boolean;
+    type: 'reject' | 'suspend' | 'unverify' | null;
+    provider: any | null;
+  }>({
+    open: false,
+    type: null,
+    provider: null,
+  });
+  const [actionReason, setActionReason] = useState("");
 
   const { data: providersData, isLoading: providersLoading } = useQuery({
     queryKey: ["admin", "providers", providerPage, providerSearch, providerFilter],
@@ -188,6 +201,7 @@ export default function AdminProvidersPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["admin", "providers"] });
       queryClient.invalidateQueries({ queryKey: ["admin", "dashboard"] });
+      setViewProfileDialog({ open: false, provider: null });
       toast({
         title: "Provider Verified",
         description: "The provider has been verified successfully.",
@@ -201,6 +215,130 @@ export default function AdminProvidersPage() {
       });
     },
   });
+
+  const rejectProviderMutation = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) => api.rejectProvider(id, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "providers"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "dashboard"] });
+      setActionDialog({ open: false, type: null, provider: null });
+      setViewProfileDialog({ open: false, provider: null });
+      setActionReason("");
+      toast({
+        title: "Provider Rejected",
+        description: "The provider application has been rejected.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to reject provider",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const suspendProviderMutation = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) => api.suspendProvider(id, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "providers"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "dashboard"] });
+      setActionDialog({ open: false, type: null, provider: null });
+      setViewProfileDialog({ open: false, provider: null });
+      setActionReason("");
+      toast({
+        title: "Provider Suspended",
+        description: "The provider has been suspended.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to suspend provider",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const unsuspendProviderMutation = useMutation({
+    mutationFn: (id: string) => api.unsuspendProvider(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "providers"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "dashboard"] });
+      setViewProfileDialog({ open: false, provider: null });
+      toast({
+        title: "Provider Unsuspended",
+        description: "The provider has been reactivated.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to unsuspend provider",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const unverifyProviderMutation = useMutation({
+    mutationFn: ({ id, reason }: { id: string; reason: string }) => api.unverifyProvider(id, reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "providers"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "dashboard"] });
+      setActionDialog({ open: false, type: null, provider: null });
+      setViewProfileDialog({ open: false, provider: null });
+      setActionReason("");
+      toast({
+        title: "Verification Revoked",
+        description: "The provider's verification has been revoked.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to revoke verification",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleActionSubmit = () => {
+    if (!actionDialog.provider || !actionDialog.type) return;
+    
+    const id = actionDialog.provider._id;
+    switch (actionDialog.type) {
+      case 'reject':
+        rejectProviderMutation.mutate({ id, reason: actionReason });
+        break;
+      case 'suspend':
+        suspendProviderMutation.mutate({ id, reason: actionReason });
+        break;
+      case 'unverify':
+        unverifyProviderMutation.mutate({ id, reason: actionReason });
+        break;
+    }
+  };
+
+  const getActionDialogTitle = () => {
+    switch (actionDialog.type) {
+      case 'reject': return 'Reject Provider';
+      case 'suspend': return 'Suspend Provider';
+      case 'unverify': return 'Revoke Verification';
+      default: return '';
+    }
+  };
+
+  const getActionDialogDescription = () => {
+    const name = actionDialog.provider?.practice?.name || 
+      `${actionDialog.provider?.userId?.profile?.firstName || ''} ${actionDialog.provider?.userId?.profile?.lastName || ''}`.trim() || 
+      'this provider';
+    switch (actionDialog.type) {
+      case 'reject': return `You are about to reject the application for ${name}. Please provide a reason.`;
+      case 'suspend': return `You are about to suspend ${name}. They will not be able to access their account. Please provide a reason.`;
+      case 'unverify': return `You are about to revoke the verification for ${name}. They will need to be re-verified. Please provide a reason.`;
+      default: return '';
+    }
+  };
 
   const formatDate = (dateString: string) => {
     return new Date(dateString).toLocaleDateString("en-US", {
@@ -492,126 +630,456 @@ export default function AdminProvidersPage() {
         open={viewProfileDialog.open}
         onOpenChange={(open) => !open && setViewProfileDialog({ open: false, provider: null })}
       >
-        <DialogContent className="sm:max-w-[550px]">
+        <DialogContent className="sm:max-w-[700px] max-h-[90vh]">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
               Provider Profile
             </DialogTitle>
             <DialogDescription>
-              Viewing profile details for {viewProfileDialog.provider?.userId?.profile?.firstName} {viewProfileDialog.provider?.userId?.profile?.lastName}
+              Complete profile details for {viewProfileDialog.provider?.userId?.profile?.firstName} {viewProfileDialog.provider?.userId?.profile?.lastName}
             </DialogDescription>
           </DialogHeader>
-          {viewProfileDialog.provider && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarFallback className="text-lg bg-primary/10 text-primary font-semibold">
-                    {(viewProfileDialog.provider.userId?.profile?.firstName?.[0] || '') + (viewProfileDialog.provider.userId?.profile?.lastName?.[0] || '')}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h3 className="font-semibold text-lg">
-                    {viewProfileDialog.provider.professionalInfo?.title || ''} {viewProfileDialog.provider.userId?.profile?.firstName} {viewProfileDialog.provider.userId?.profile?.lastName}
-                  </h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant={viewProfileDialog.provider.isVerified ? "default" : "secondary"}>
-                      {viewProfileDialog.provider.isVerified ? "Verified" : "Pending Verification"}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-              
-              <Separator />
-              
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 text-sm">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Email:</span>
-                  <span className="font-medium">{viewProfileDialog.provider.userId?.email}</span>
-                </div>
-                
-                {viewProfileDialog.provider.practice?.phone && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Phone:</span>
-                    <span className="font-medium">{viewProfileDialog.provider.practice.phone}</span>
-                  </div>
-                )}
-                
-                {viewProfileDialog.provider.practice?.name && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <Briefcase className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Practice:</span>
-                    <span className="font-medium">{viewProfileDialog.provider.practice.name}</span>
-                  </div>
-                )}
-                
-                {(viewProfileDialog.provider.practice?.city || viewProfileDialog.provider.practice?.address?.city) && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Location:</span>
-                    <span className="font-medium">
-                      {viewProfileDialog.provider.practice?.address?.city || viewProfileDialog.provider.practice?.city}
-                    </span>
-                  </div>
-                )}
-                
-                {viewProfileDialog.provider.professionalInfo?.specialties?.length > 0 && (
-                  <div className="flex items-start gap-3 text-sm">
-                    <Briefcase className="h-4 w-4 text-muted-foreground mt-0.5" />
-                    <span className="text-muted-foreground">Specialties:</span>
-                    <div className="flex flex-wrap gap-1">
-                      {viewProfileDialog.provider.professionalInfo.specialties.map((spec: string, i: number) => (
-                        <Badge key={i} variant="outline" className="text-xs">{formatLabel(spec)}</Badge>
-                      ))}
-                    </div>
-                  </div>
-                )}
-                
-                <div className="flex items-center gap-3 text-sm">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Registered:</span>
-                  <span className="font-medium">
-                    {new Date(viewProfileDialog.provider.createdAt).toLocaleDateString('en-GB', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric'
-                    })}
-                  </span>
-                </div>
-              </div>
-              
-              {analyzeProviderRisk(viewProfileDialog.provider).length > 0 && (
-                <>
-                  <Separator />
-                  <div>
-                    <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
-                      <Bot className="h-4 w-4" />
-                      AI Risk Assessment
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {analyzeProviderRisk(viewProfileDialog.provider).map((risk, idx) => (
-                        <Badge
-                          key={idx}
-                          variant="outline"
-                          className={getRiskBadgeStyles(risk.level)}
-                        >
-                          {risk.label}
+          {viewProfileDialog.provider && (() => {
+            const provider = viewProfileDialog.provider;
+            const isVerified = provider.verification?.isVerified || false;
+            const isActive = provider.isActive !== false;
+            const documents = provider.verification?.documents || [];
+            
+            return (
+              <ScrollArea className="max-h-[60vh] pr-4">
+                <div className="space-y-5">
+                  {/* Header with avatar and status */}
+                  <div className="flex items-start gap-4">
+                    <Avatar className="h-16 w-16">
+                      <AvatarFallback className="text-lg bg-primary/10 text-primary font-semibold">
+                        {(provider.userId?.profile?.firstName?.[0] || '') + (provider.userId?.profile?.lastName?.[0] || '')}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="flex-1">
+                      <h3 className="font-semibold text-lg">
+                        {provider.professionalInfo?.title || ''} {provider.userId?.profile?.firstName} {provider.userId?.profile?.lastName}
+                      </h3>
+                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                        <Badge variant={isVerified ? "default" : "secondary"} className={isVerified ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}>
+                          {isVerified ? "Verified" : "Pending Verification"}
                         </Badge>
-                      ))}
+                        {!isActive && (
+                          <Badge variant="destructive">Suspended</Badge>
+                        )}
+                        {provider.verification?.status === 'rejected' && (
+                          <Badge variant="destructive">Rejected</Badge>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </>
-              )}
-            </div>
+                  
+                  <Separator />
+                  
+                  {/* Contact Information */}
+                  <div>
+                    <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                      <Mail className="h-4 w-4" />
+                      Contact Information
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">Email:</span>
+                        <span className="font-medium">{provider.userId?.email || 'Not provided'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">Phone:</span>
+                        <span className="font-medium">{provider.practice?.phone || provider.userId?.profile?.phone || 'Not provided'}</span>
+                      </div>
+                      {provider.practice?.website && (
+                        <div className="flex items-center gap-2 col-span-2">
+                          <Globe className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">Website:</span>
+                          <a href={provider.practice.website} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline flex items-center gap-1">
+                            {provider.practice.website}
+                            <ExternalLink className="h-3 w-3" />
+                          </a>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Practice Information */}
+                  <div>
+                    <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                      <Briefcase className="h-4 w-4" />
+                      Practice Information
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">Practice Name:</span>
+                        <span className="font-medium">{provider.practice?.name || 'Not provided'}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">Practice Email:</span>
+                        <span className="font-medium">{provider.practice?.email || 'Not provided'}</span>
+                      </div>
+                      <div className="col-span-2">
+                        <div className="flex items-start gap-2">
+                          <MapPin className="h-4 w-4 text-muted-foreground mt-0.5" />
+                          <span className="text-muted-foreground">Address:</span>
+                          <span className="font-medium">
+                            {[
+                              provider.practice?.address?.street,
+                              provider.practice?.address?.city,
+                              provider.practice?.address?.postcode,
+                              provider.practice?.address?.country
+                            ].filter(Boolean).join(', ') || 'Not provided'}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Professional Information */}
+                  <div>
+                    <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                      <Award className="h-4 w-4" />
+                      Professional Information
+                    </h4>
+                    <div className="space-y-3 text-sm">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">Title:</span>
+                          <span className="font-medium">{provider.professionalInfo?.title || 'Not provided'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground">Experience:</span>
+                          <span className="font-medium">{provider.professionalInfo?.yearsOfExperience ? `${provider.professionalInfo.yearsOfExperience} years` : 'Not provided'}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <FileText className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">Registration No:</span>
+                          <span className="font-medium">{provider.professionalInfo?.registrationNumber || 'Not provided'}</span>
+                        </div>
+                      </div>
+                      
+                      {provider.professionalInfo?.specialties?.length > 0 && (
+                        <div>
+                          <span className="text-muted-foreground">Specialties:</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {provider.professionalInfo.specialties.map((spec: string, i: number) => (
+                              <Badge key={i} variant="outline" className="text-xs">{formatLabel(spec)}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {provider.professionalInfo?.qualifications?.length > 0 && (
+                        <div>
+                          <span className="text-muted-foreground">Qualifications:</span>
+                          <div className="flex flex-wrap gap-1 mt-1">
+                            {provider.professionalInfo.qualifications.map((qual: string, i: number) => (
+                              <Badge key={i} variant="secondary" className="text-xs">{qual}</Badge>
+                            ))}
+                          </div>
+                        </div>
+                      )}
+                      
+                      {provider.professionalInfo?.languages?.length > 0 && (
+                        <div className="flex items-start gap-2">
+                          <Languages className="h-4 w-4 text-muted-foreground mt-0.5" />
+                          <span className="text-muted-foreground">Languages:</span>
+                          <span className="font-medium">{provider.professionalInfo.languages.join(', ')}</span>
+                        </div>
+                      )}
+                      
+                      {provider.professionalInfo?.bio && (
+                        <div>
+                          <span className="text-muted-foreground">Bio:</span>
+                          <p className="mt-1 text-sm bg-muted/30 p-2 rounded">{provider.professionalInfo.bio}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Documents */}
+                  <div>
+                    <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Uploaded Documents
+                    </h4>
+                    {documents.length > 0 ? (
+                      <div className="space-y-2">
+                        {documents.map((doc: any, i: number) => (
+                          <div key={i} className="flex items-center justify-between bg-muted/30 p-2 rounded text-sm">
+                            <div className="flex items-center gap-2">
+                              <FileText className="h-4 w-4 text-muted-foreground" />
+                              <span className="font-medium">{doc.name || formatLabel(doc.type) || 'Document'}</span>
+                              {doc.type && <Badge variant="outline" className="text-xs">{formatLabel(doc.type)}</Badge>}
+                            </div>
+                            {doc.url && (
+                              <a href={doc.url} target="_blank" rel="noopener noreferrer" className="text-primary hover:underline flex items-center gap-1 text-xs">
+                                View <ExternalLink className="h-3 w-3" />
+                              </a>
+                            )}
+                            {doc.uploadedAt && (
+                              <span className="text-xs text-muted-foreground">
+                                {formatDate(doc.uploadedAt)}
+                              </span>
+                            )}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground">No documents uploaded</p>
+                    )}
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Verification Status */}
+                  <div>
+                    <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                      <ShieldCheck className="h-4 w-4" />
+                      Verification Status
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">Status:</span>
+                        <Badge variant={isVerified ? "default" : "secondary"} className={isVerified ? "bg-emerald-100 text-emerald-700" : ""}>
+                          {formatLabel(provider.verification?.status || 'pending')}
+                        </Badge>
+                      </div>
+                      {provider.verification?.verifiedAt && (
+                        <div className="flex items-center gap-2">
+                          <Clock className="h-4 w-4 text-muted-foreground" />
+                          <span className="text-muted-foreground">Verified:</span>
+                          <span className="font-medium">{formatDate(provider.verification.verifiedAt)}</span>
+                        </div>
+                      )}
+                      {provider.verification?.rejectionReason && (
+                        <div className="col-span-2">
+                          <span className="text-muted-foreground">Rejection Reason:</span>
+                          <p className="mt-1 text-sm bg-red-50 text-red-700 p-2 rounded">{provider.verification.rejectionReason}</p>
+                        </div>
+                      )}
+                      {provider.verification?.suspensionReason && (
+                        <div className="col-span-2">
+                          <span className="text-muted-foreground">Suspension Reason:</span>
+                          <p className="mt-1 text-sm bg-amber-50 text-amber-700 p-2 rounded">{provider.verification.suspensionReason}</p>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                  
+                  <Separator />
+                  
+                  {/* Account Dates */}
+                  <div>
+                    <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      Account Timeline
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">Registered:</span>
+                        <span className="font-medium">{formatDate(provider.createdAt)}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground">Last Updated:</span>
+                        <span className="font-medium">{formatDate(provider.updatedAt)}</span>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* AI Risk Assessment */}
+                  {analyzeProviderRisk(provider).length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
+                          <Bot className="h-4 w-4" />
+                          AI Risk Assessment
+                        </h4>
+                        <div className="flex flex-wrap gap-2">
+                          {analyzeProviderRisk(provider).map((risk, idx) => (
+                            <Tooltip key={idx}>
+                              <TooltipTrigger asChild>
+                                <Badge variant="outline" className={`cursor-help ${getRiskBadgeStyles(risk.level)}`}>
+                                  {risk.level === "high" && <AlertTriangle className="h-3 w-3 mr-1" />}
+                                  {risk.label}
+                                </Badge>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-xs max-w-[200px]">{risk.description}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+                </div>
+              </ScrollArea>
+            );
+          })()}
+          
+          {/* Action Buttons */}
+          {viewProfileDialog.provider && (
+            <DialogFooter className="flex-col sm:flex-row gap-2 pt-4 border-t">
+              <div className="flex flex-wrap gap-2 flex-1">
+                {/* Verify button - show if not verified */}
+                {!viewProfileDialog.provider.verification?.isVerified && viewProfileDialog.provider.isActive !== false && (
+                  <Button
+                    variant="default"
+                    size="sm"
+                    className="bg-emerald-600 hover:bg-emerald-700"
+                    onClick={() => verifyProviderMutation.mutate(viewProfileDialog.provider._id)}
+                    disabled={verifyProviderMutation.isPending}
+                  >
+                    {verifyProviderMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <ShieldCheck className="h-4 w-4 mr-2" />
+                    )}
+                    Verify
+                  </Button>
+                )}
+                
+                {/* Reject button - show if not verified and not rejected */}
+                {!viewProfileDialog.provider.verification?.isVerified && viewProfileDialog.provider.verification?.status !== 'rejected' && (
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => {
+                      setActionDialog({ open: true, type: 'reject', provider: viewProfileDialog.provider });
+                      setActionReason("");
+                    }}
+                  >
+                    <XCircle className="h-4 w-4 mr-2" />
+                    Reject
+                  </Button>
+                )}
+                
+                {/* Unverify button - show if verified */}
+                {viewProfileDialog.provider.verification?.isVerified && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-amber-600 border-amber-300 hover:bg-amber-50"
+                    onClick={() => {
+                      setActionDialog({ open: true, type: 'unverify', provider: viewProfileDialog.provider });
+                      setActionReason("");
+                    }}
+                  >
+                    <ShieldOff className="h-4 w-4 mr-2" />
+                    Revoke Verification
+                  </Button>
+                )}
+                
+                {/* Suspend button - show if active */}
+                {viewProfileDialog.provider.isActive !== false && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-red-600 border-red-300 hover:bg-red-50"
+                    onClick={() => {
+                      setActionDialog({ open: true, type: 'suspend', provider: viewProfileDialog.provider });
+                      setActionReason("");
+                    }}
+                  >
+                    <Ban className="h-4 w-4 mr-2" />
+                    Suspend
+                  </Button>
+                )}
+                
+                {/* Unsuspend button - show if suspended */}
+                {viewProfileDialog.provider.isActive === false && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="text-emerald-600 border-emerald-300 hover:bg-emerald-50"
+                    onClick={() => unsuspendProviderMutation.mutate(viewProfileDialog.provider._id)}
+                    disabled={unsuspendProviderMutation.isPending}
+                  >
+                    {unsuspendProviderMutation.isPending ? (
+                      <Loader2 className="h-4 w-4 animate-spin mr-2" />
+                    ) : (
+                      <RotateCcw className="h-4 w-4 mr-2" />
+                    )}
+                    Unsuspend
+                  </Button>
+                )}
+              </div>
+              
+              <Button
+                variant="outline"
+                onClick={() => setViewProfileDialog({ open: false, provider: null })}
+              >
+                Close
+              </Button>
+            </DialogFooter>
           )}
+        </DialogContent>
+      </Dialog>
+
+      {/* Action Reason Dialog */}
+      <Dialog
+        open={actionDialog.open}
+        onOpenChange={(open) => {
+          if (!open) {
+            setActionDialog({ open: false, type: null, provider: null });
+            setActionReason("");
+          }
+        }}
+      >
+        <DialogContent className="sm:max-w-[450px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              {actionDialog.type === 'reject' && <XCircle className="h-5 w-5 text-red-500" />}
+              {actionDialog.type === 'suspend' && <Ban className="h-5 w-5 text-amber-500" />}
+              {actionDialog.type === 'unverify' && <ShieldOff className="h-5 w-5 text-amber-500" />}
+              {getActionDialogTitle()}
+            </DialogTitle>
+            <DialogDescription>
+              {getActionDialogDescription()}
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <Label htmlFor="action-reason">Reason</Label>
+              <Textarea
+                id="action-reason"
+                placeholder="Please provide a reason for this action..."
+                value={actionReason}
+                onChange={(e) => setActionReason(e.target.value)}
+                rows={4}
+              />
+            </div>
+          </div>
+          
           <DialogFooter>
             <Button
               variant="outline"
-              onClick={() => setViewProfileDialog({ open: false, provider: null })}
+              onClick={() => {
+                setActionDialog({ open: false, type: null, provider: null });
+                setActionReason("");
+              }}
             >
-              Close
+              Cancel
+            </Button>
+            <Button
+              variant={actionDialog.type === 'reject' ? 'destructive' : 'default'}
+              onClick={handleActionSubmit}
+              disabled={!actionReason.trim() || rejectProviderMutation.isPending || suspendProviderMutation.isPending || unverifyProviderMutation.isPending}
+            >
+              {(rejectProviderMutation.isPending || suspendProviderMutation.isPending || unverifyProviderMutation.isPending) ? (
+                <Loader2 className="h-4 w-4 animate-spin mr-2" />
+              ) : null}
+              Confirm
             </Button>
           </DialogFooter>
         </DialogContent>

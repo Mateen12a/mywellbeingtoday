@@ -338,6 +338,123 @@ export const updateProvider = async (req, res, next) => {
   }
 };
 
+export const suspendProvider = async (req, res, next) => {
+  try {
+    const { reason } = req.body;
+    const provider = await Provider.findById(req.params.id).populate('userId', 'email profile');
+    
+    if (!provider) {
+      throw new AppError('Provider not found', 404, 'NOT_FOUND');
+    }
+
+    provider.isActive = false;
+    provider.verification = {
+      ...provider.verification,
+      suspendedAt: new Date(),
+      suspendedBy: req.user._id,
+      suspensionReason: reason
+    };
+    await provider.save();
+
+    const adminName = req.user.profile?.firstName && req.user.profile?.lastName
+      ? `${req.user.profile.firstName} ${req.user.profile.lastName}`
+      : req.user.email;
+
+    await logAction(req.user._id, 'ADMIN_SUSPEND_PROVIDER', 'provider', provider._id, {
+      providerEmail: provider.userId?.email,
+      providerName: provider.practice?.name || provider.professionalInfo?.title,
+      adminName,
+      adminEmail: req.user.email,
+      reason
+    }, req);
+
+    res.json({
+      success: true,
+      message: 'Provider suspended successfully',
+      data: { provider }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const unverifyProvider = async (req, res, next) => {
+  try {
+    const { reason } = req.body;
+    const provider = await Provider.findById(req.params.id).populate('userId', 'email profile');
+    
+    if (!provider) {
+      throw new AppError('Provider not found', 404, 'NOT_FOUND');
+    }
+
+    if (!provider.verification?.isVerified) {
+      throw new AppError('Provider is not verified', 400, 'INVALID_STATE');
+    }
+
+    provider.verification = {
+      ...provider.verification,
+      isVerified: false,
+      status: 'pending',
+      unverifiedAt: new Date(),
+      unverifiedBy: req.user._id,
+      unverificationReason: reason
+    };
+    await provider.save();
+
+    const adminName = req.user.profile?.firstName && req.user.profile?.lastName
+      ? `${req.user.profile.firstName} ${req.user.profile.lastName}`
+      : req.user.email;
+
+    await logAction(req.user._id, 'ADMIN_UNVERIFY_PROVIDER', 'provider', provider._id, {
+      providerEmail: provider.userId?.email,
+      providerName: provider.practice?.name || provider.professionalInfo?.title,
+      adminName,
+      adminEmail: req.user.email,
+      reason
+    }, req);
+
+    res.json({
+      success: true,
+      message: 'Provider verification revoked',
+      data: { provider }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const unsuspendProvider = async (req, res, next) => {
+  try {
+    const provider = await Provider.findById(req.params.id).populate('userId', 'email profile');
+    
+    if (!provider) {
+      throw new AppError('Provider not found', 404, 'NOT_FOUND');
+    }
+
+    provider.isActive = true;
+    await provider.save();
+
+    const adminName = req.user.profile?.firstName && req.user.profile?.lastName
+      ? `${req.user.profile.firstName} ${req.user.profile.lastName}`
+      : req.user.email;
+
+    await logAction(req.user._id, 'ADMIN_UNSUSPEND_PROVIDER', 'provider', provider._id, {
+      providerEmail: provider.userId?.email,
+      providerName: provider.practice?.name || provider.professionalInfo?.title,
+      adminName,
+      adminEmail: req.user.email
+    }, req);
+
+    res.json({
+      success: true,
+      message: 'Provider unsuspended successfully',
+      data: { provider }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const getAuditLogs = async (req, res, next) => {
   try {
     const { userId, action, resource, startDate, endDate, page = 1, limit = 50 } = req.query;

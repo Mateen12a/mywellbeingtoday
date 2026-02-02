@@ -15,6 +15,9 @@ router.delete('/users/:id/permanent', isSuperAdmin, adminController.permanentlyD
 router.get('/providers', adminController.getProviders);
 router.post('/providers/:id/verify', adminController.verifyProvider);
 router.post('/providers/:id/reject', adminController.rejectProvider);
+router.post('/providers/:id/suspend', adminController.suspendProvider);
+router.post('/providers/:id/unsuspend', adminController.unsuspendProvider);
+router.post('/providers/:id/unverify', adminController.unverifyProvider);
 router.put('/providers/:id', adminController.updateProvider);
 
 router.get('/audit-logs', adminController.getAuditLogs);
