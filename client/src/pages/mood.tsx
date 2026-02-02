@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,9 +33,10 @@ import {
   Bot,
   Lightbulb,
   MessageCircle,
+  ArrowLeft,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { Link } from "wouter";
+import { Link, useLocation, useSearch } from "wouter";
 import {
   Dialog,
   DialogContent,
@@ -103,6 +104,8 @@ interface MoodLog {
 export default function MoodTracker() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
+  const [, setLocation] = useLocation();
+  const searchString = useSearch();
   
   const [moodScore, setMoodScore] = useState([7]);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
@@ -128,6 +131,36 @@ export default function MoodTracker() {
     encouragement?: string;
     generatedBy?: 'ai' | 'rules';
   } | null>(null);
+  
+  const [fromActivity, setFromActivity] = useState(false);
+  const [aiRationale, setAiRationale] = useState<string | null>(null);
+  
+  useEffect(() => {
+    const params = new URLSearchParams(searchString);
+    const prefillMood = params.get('prefillMood');
+    const prefillScore = params.get('prefillScore');
+    const isFromActivity = params.get('fromActivity') === 'true';
+    const rationale = params.get('rationale');
+    
+    if (prefillMood) {
+      const validMood = MOOD_TYPES.find(m => m.id === prefillMood);
+      if (validMood) {
+        setSelectedMood(prefillMood);
+      }
+    }
+    if (prefillScore) {
+      const score = parseInt(prefillScore, 10);
+      if (!isNaN(score) && score >= 1 && score <= 10) {
+        setMoodScore([score]);
+      }
+    }
+    if (isFromActivity) {
+      setFromActivity(true);
+    }
+    if (rationale) {
+      setAiRationale(rationale);
+    }
+  }, [searchString]);
 
   const startVoiceInput = (setter: (val: string) => void, currentValue: string, isEdit = false) => {
     if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
@@ -372,6 +405,42 @@ export default function MoodTracker() {
         </CardContent>
       </Card>
 
+      {fromActivity && (
+        <div className="flex items-center justify-between">
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1 text-muted-foreground"
+            onClick={() => setLocation('/activity')}
+            data-testid="button-back-to-activity"
+          >
+            <ArrowLeft className="w-4 h-4" /> Back to Activity
+          </Button>
+          {aiRationale && (
+            <Badge variant="secondary" className="gap-1 text-xs">
+              <Sparkles className="w-3 h-3" /> AI Suggested
+            </Badge>
+          )}
+        </div>
+      )}
+      
+      {fromActivity && aiRationale && (
+        <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-100 rounded-lg p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+          <div className="flex items-start gap-3">
+            <div className="bg-purple-100 p-2 rounded-full shrink-0">
+              <Bot className="w-5 h-5 text-purple-600" />
+            </div>
+            <div>
+              <h4 className="font-semibold text-purple-900 text-sm">AI Mood Suggestion</h4>
+              <p className="text-xs text-purple-800 mt-1">{aiRationale}</p>
+              <p className="text-xs text-purple-600 mt-2">
+                We've pre-selected a mood based on your activity. Feel free to adjust if you're feeling differently.
+              </p>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="space-y-4 sm:space-y-6">
         <div className="flex items-center gap-2">
           <Heart className="w-4 sm:w-5 h-4 sm:h-5 text-primary" />
@@ -499,14 +568,19 @@ export default function MoodTracker() {
       </div>
 
       <div className="space-y-3 sm:space-y-4">
-        <Label htmlFor="notes" className="text-base sm:text-lg font-serif font-bold flex items-center gap-2">
-          <Brain className="w-4 sm:w-5 h-4 sm:h-5 text-primary" />
-          Additional Notes
-        </Label>
+        <div className="flex items-center justify-between">
+          <Label htmlFor="notes" className="text-base sm:text-lg font-serif font-bold flex items-center gap-2">
+            <Brain className="w-4 sm:w-5 h-4 sm:h-5 text-primary" />
+            Additional Notes
+          </Label>
+          <span className="text-xs text-muted-foreground flex items-center gap-1">
+            <Mic className="h-3 w-3" /> Voice available
+          </span>
+        </div>
         <div className="relative">
           <Textarea
             id="notes"
-            placeholder="Any thoughts or observations about how you're feeling..."
+            placeholder="Any thoughts or observations... (tap the mic to use voice)"
             value={notes}
             onChange={(e) => setNotes(e.target.value)}
             rows={3}

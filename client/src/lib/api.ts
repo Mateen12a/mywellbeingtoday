@@ -911,6 +911,21 @@ class ApiClient {
       stripeConfigured: boolean;
     }>('/subscription/pricing');
   }
+
+  async getMoodSuggestion(activityData: { category: string; title: string; description?: string }) {
+    return this.request<{
+      suggestion: {
+        suggestedMood: string;
+        alternativeMood: string;
+        rationale: string;
+        confidence: 'high' | 'medium' | 'low';
+        generatedBy: 'ai' | 'rule-based';
+      };
+    }>('/ai/mood-suggestion', {
+      method: 'POST',
+      body: JSON.stringify(activityData),
+    });
+  }
 }
 
 export const api = new ApiClient();

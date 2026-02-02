@@ -829,6 +829,358 @@ const getUrgencyDotColor = (urgency: string) => {
   }
 };
 
+const EMERGENCY_NUMBERS: { [key: string]: { number: string; label: string; description: string }[] } = {
+  US: [
+    { number: "911", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+    { number: "988", label: "Suicide & Crisis Lifeline", description: "24/7 Mental Health Support" },
+  ],
+  CA: [
+    { number: "911", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+  ],
+  GB: [
+    { number: "999", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+    { number: "111", label: "NHS Non-Emergency", description: "Medical Advice Line" },
+  ],
+  AU: [
+    { number: "000", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+    { number: "13 11 14", label: "Lifeline Australia", description: "24/7 Crisis Support" },
+  ],
+  IN: [
+    { number: "112", label: "Emergency Services", description: "Unified Emergency Number" },
+    { number: "108", label: "Ambulance", description: "Medical Emergency" },
+  ],
+  DE: [
+    { number: "112", label: "Notruf", description: "Fire, Ambulance" },
+    { number: "110", label: "Polizei", description: "Police Emergency" },
+  ],
+  FR: [
+    { number: "112", label: "Urgences Européennes", description: "European Emergency" },
+    { number: "15", label: "SAMU", description: "Medical Emergency" },
+  ],
+  IT: [
+    { number: "112", label: "Emergenze", description: "Unified Emergency Number" },
+    { number: "118", label: "Pronto Soccorso", description: "Medical Emergency" },
+  ],
+  ES: [
+    { number: "112", label: "Emergencias", description: "Unified Emergency Number" },
+  ],
+  NL: [
+    { number: "112", label: "Alarmnummer", description: "Police, Fire, Ambulance" },
+  ],
+  BE: [
+    { number: "112", label: "Urgences", description: "European Emergency" },
+    { number: "101", label: "Police", description: "Police Emergency" },
+  ],
+  AT: [
+    { number: "112", label: "Euronotruf", description: "European Emergency" },
+    { number: "144", label: "Rettung", description: "Ambulance" },
+  ],
+  CH: [
+    { number: "112", label: "European Emergency", description: "Unified Emergency" },
+    { number: "144", label: "Sanität", description: "Ambulance" },
+  ],
+  NZ: [
+    { number: "111", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+  ],
+  JP: [
+    { number: "119", label: "Fire/Ambulance", description: "消防・救急" },
+    { number: "110", label: "Police", description: "警察" },
+  ],
+  KR: [
+    { number: "119", label: "Fire/Ambulance", description: "소방/응급" },
+    { number: "112", label: "Police", description: "경찰" },
+  ],
+  CN: [
+    { number: "120", label: "Ambulance", description: "医疗急救" },
+    { number: "110", label: "Police", description: "报警" },
+  ],
+  BR: [
+    { number: "192", label: "SAMU", description: "Ambulância" },
+    { number: "190", label: "Polícia", description: "Police Emergency" },
+  ],
+  MX: [
+    { number: "911", label: "Emergencias", description: "Police, Fire, Ambulance" },
+  ],
+  ZA: [
+    { number: "10111", label: "Police", description: "SAPS Emergency" },
+    { number: "10177", label: "Ambulance", description: "Medical Emergency" },
+  ],
+  DEFAULT: [
+    { number: "112", label: "International Emergency", description: "Works in most countries" },
+    { number: "911", label: "North American Standard", description: "US, Canada, Mexico" },
+  ],
+};
+
+interface EmergencyTabContentProps {
+  emergencyProviders: any[];
+  isLoadingProviders: boolean;
+}
+
+const EmergencyTabContent = ({ emergencyProviders, isLoadingProviders }: EmergencyTabContentProps) => {
+  const [userCountry, setUserCountry] = useState<string | null>(null);
+  const [locationLoading, setLocationLoading] = useState(true);
+  const [locationError, setLocationError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const detectLocation = async () => {
+      setLocationLoading(true);
+      
+      if (navigator.geolocation) {
+        navigator.geolocation.getCurrentPosition(
+          async (position) => {
+            try {
+              const { latitude, longitude } = position.coords;
+              const response = await fetch(
+                `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+              );
+              const data = await response.json();
+              if (data.countryCode) {
+                setUserCountry(data.countryCode);
+              } else {
+                await fallbackToIP();
+              }
+            } catch {
+              await fallbackToIP();
+            }
+            setLocationLoading(false);
+          },
+          async () => {
+            await fallbackToIP();
+            setLocationLoading(false);
+          },
+          { timeout: 5000 }
+        );
+      } else {
+        await fallbackToIP();
+        setLocationLoading(false);
+      }
+    };
+
+    const fallbackToIP = async () => {
+      try {
+        const response = await fetch('https://ipapi.co/json/');
+        const data = await response.json();
+        if (data.country_code) {
+          setUserCountry(data.country_code);
+        } else {
+          setLocationError("Could not detect your location");
+        }
+      } catch {
+        setLocationError("Could not detect your location");
+      }
+    };
+
+    detectLocation();
+  }, []);
+
+  const emergencyNumbers = userCountry && EMERGENCY_NUMBERS[userCountry] 
+    ? EMERGENCY_NUMBERS[userCountry] 
+    : EMERGENCY_NUMBERS.DEFAULT;
+
+  const countryName = userCountry ? new Intl.DisplayNames(['en'], { type: 'region' }).of(userCountry) : null;
+
+  return (
+    <div className="space-y-6" data-testid="emergency-tab-content">
+      <Card className="border-red-200 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/30 dark:to-red-900/20 overflow-hidden">
+        <CardHeader className="pb-3 px-4 sm:px-6 pt-4 sm:pt-6">
+          <div className="flex items-center gap-3">
+            <div className="h-12 w-12 rounded-full bg-red-500 flex items-center justify-center shrink-0 shadow-lg shadow-red-500/30">
+              <AlertCircle className="w-6 h-6 text-white" />
+            </div>
+            <div>
+              <CardTitle className="text-lg sm:text-xl font-bold text-red-800 dark:text-red-200 flex items-center gap-2 flex-wrap">
+                Emergency Numbers
+                {locationLoading && (
+                  <Loader2 className="w-4 h-4 animate-spin text-red-600" />
+                )}
+              </CardTitle>
+              <CardDescription className="text-red-700/80 dark:text-red-300/80 font-medium text-sm">
+                {locationLoading ? (
+                  "Detecting your location..."
+                ) : locationError ? (
+                  "Showing international emergency numbers"
+                ) : countryName ? (
+                  `Emergency numbers for ${countryName}`
+                ) : (
+                  "International emergency numbers"
+                )}
+              </CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {emergencyNumbers.map((emergency, index) => (
+              <a
+                key={index}
+                href={`tel:${emergency.number.replace(/\s/g, '')}`}
+                className="flex items-center gap-4 p-4 bg-white dark:bg-red-950/50 rounded-xl border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/50 transition-all group shadow-sm hover:shadow-md"
+                data-testid={`dial-emergency-${index}`}
+              >
+                <div className="h-14 w-14 rounded-full bg-red-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-md">
+                  <Phone className="w-6 h-6 text-white" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-2xl sm:text-3xl font-bold text-red-700 dark:text-red-300 tracking-wide">{emergency.number}</p>
+                  <p className="font-bold text-sm text-red-800 dark:text-red-200 truncate">{emergency.label}</p>
+                  <p className="text-xs text-red-600/80 dark:text-red-400/80 truncate">{emergency.description}</p>
+                </div>
+                <div className="shrink-0">
+                  <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-800 flex items-center justify-center group-hover:bg-red-500 transition-colors">
+                    <Phone className="w-5 h-5 text-red-600 dark:text-red-300 group-hover:text-white transition-colors" />
+                  </div>
+                </div>
+              </a>
+            ))}
+          </div>
+
+          {!userCountry && !locationLoading && (
+            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 text-sm text-amber-800 dark:text-amber-200 flex items-start gap-2">
+              <Info className="w-4 h-4 mt-0.5 shrink-0" />
+              <p>Enable location services to see emergency numbers specific to your area.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <Card className="border-red-100 overflow-hidden">
+        <CardHeader className="pb-3 px-4 sm:px-6 pt-4 sm:pt-6 bg-red-50/50 dark:bg-red-950/20">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-900 flex items-center justify-center shrink-0">
+              <Ambulance className="w-5 h-5 text-red-600 dark:text-red-400" />
+            </div>
+            <div>
+              <CardTitle className="text-base sm:text-lg font-bold text-black dark:text-white">Emergency Service Providers</CardTitle>
+              <CardDescription className="text-sm">Verified emergency healthcare providers near you</CardDescription>
+            </div>
+          </div>
+        </CardHeader>
+        <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 pt-4 space-y-3">
+          {isLoadingProviders ? (
+            <div className="space-y-3">
+              <ProviderCardSkeleton />
+              <ProviderCardSkeleton />
+            </div>
+          ) : emergencyProviders.length > 0 ? (
+            <div className="space-y-3">
+              {emergencyProviders.map((provider: any) => (
+                <EmergencyProviderCard key={provider._id} provider={provider} />
+              ))}
+            </div>
+          ) : (
+            <div className="text-center py-8 text-muted-foreground">
+              <Ambulance className="w-12 h-12 mx-auto mb-3 opacity-40" />
+              <p className="font-medium">No emergency service providers available in your area.</p>
+              <p className="text-sm mt-1">Please use the emergency numbers above for immediate assistance.</p>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      <div className="bg-red-50 dark:bg-red-950/30 border border-red-200 dark:border-red-800 rounded-lg p-4">
+        <div className="flex items-start gap-3">
+          <AlertCircle className="w-5 h-5 text-red-600 dark:text-red-400 mt-0.5 shrink-0" />
+          <div className="text-sm text-red-800 dark:text-red-200">
+            <p className="font-bold mb-1">Important Information</p>
+            <ul className="space-y-1 text-red-700 dark:text-red-300">
+              <li>In a life-threatening emergency, always call emergency services first.</li>
+              <li>Stay calm and provide your location and nature of the emergency.</li>
+              <li>Do not hang up until the operator tells you to.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+interface EmergencyProviderCardProps {
+  provider: any;
+}
+
+const EmergencyProviderCard = ({ provider }: EmergencyProviderCardProps) => {
+  const [showBooking, setShowBooking] = useState(false);
+
+  const name = getProviderName(provider);
+  const initials = getProviderInitials(provider);
+  const avatarUrl = provider.userId?.profile?.avatarUrl;
+  const practice = provider.practice || {};
+  const phone = practice.phone || '';
+  const address = practice.address ? 
+    `${practice.address.street}, ${practice.address.city}`.trim() : 
+    practice.city || '';
+  const isAvailable = provider.availability?.acceptingNewPatients !== false;
+
+  return (
+    <>
+      <Card className="border-red-100 hover:border-red-200 hover:shadow-md transition-all overflow-hidden">
+        <CardContent className="p-0 flex flex-col sm:flex-row">
+          <div className="w-full sm:w-20 bg-red-50 dark:bg-red-950/30 flex items-center justify-center shrink-0 p-3 sm:p-0">
+            <Avatar className="w-12 sm:w-14 h-12 sm:h-14 border-2 border-red-200">
+              <AvatarImage src={avatarUrl} alt={name} />
+              <AvatarFallback className="text-base bg-red-100 text-red-700">{initials}</AvatarFallback>
+            </Avatar>
+          </div>
+          <div className="p-3 sm:p-4 flex-1 space-y-2">
+            <div className="flex justify-between items-start gap-2">
+              <div className="min-w-0 flex-1">
+                <h3 className="font-bold font-serif text-base text-black dark:text-white truncate">{name}</h3>
+                <Badge variant="secondary" className="bg-red-100 text-red-800 text-[10px] sm:text-xs mt-1">
+                  Emergency Services
+                </Badge>
+              </div>
+              {isAvailable && (
+                <Badge variant="secondary" className="bg-green-100 text-green-800 hover:bg-green-100 font-bold border-green-200 text-[10px] shrink-0">
+                  Available
+                </Badge>
+              )}
+            </div>
+            
+            {address && (
+              <p className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-400 truncate flex items-center gap-1">
+                <MapPin className="w-3 h-3 shrink-0" /> <span className="truncate">{address}</span>
+              </p>
+            )}
+
+            <div className="pt-2 flex gap-2">
+              {phone && (
+                <a 
+                  href={`tel:${phone}`}
+                  className="flex-1"
+                  data-testid={`dial-provider-${provider._id}`}
+                >
+                  <Button 
+                    size="sm" 
+                    className="w-full font-bold bg-red-600 hover:bg-red-700 text-white shadow-sm gap-2"
+                  >
+                    <Phone className="w-4 h-4" />
+                    Call Now
+                  </Button>
+                </a>
+              )}
+              <Button 
+                size="sm" 
+                variant="outline" 
+                className="flex-1 font-bold border-red-200 text-red-700 hover:text-red-800 hover:bg-red-50"
+                onClick={() => setShowBooking(true)}
+                data-testid={`book-emergency-provider-${provider._id}`}
+              >
+                Book
+              </Button>
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      <BookingModal 
+        provider={provider} 
+        isOpen={showBooking} 
+        onClose={() => setShowBooking(false)} 
+      />
+    </>
+  );
+};
+
 interface MapControllerProps {
   selectedProviderId: string | null;
   providers: any[];
@@ -1035,6 +1387,7 @@ export default function Directory() {
   const [aiExpanded, setAiExpanded] = useState(true);
   const [viewMode, setViewMode] = useState<"ai" | "browse">("ai");
   const [selectedProviderForMap, setSelectedProviderForMap] = useState<string | null>(null);
+  const [activeTab, setActiveTab] = useState("providers");
   const { user } = useAuth();
 
   const handleProviderLocationClick = (providerId: string) => {
@@ -1069,6 +1422,17 @@ export default function Directory() {
     staleTime: 1000 * 60 * 5,
   });
 
+  const { data: emergencyProvidersData, isLoading: isLoadingEmergency } = useQuery({
+    queryKey: ["providers", "emergency_services"],
+    queryFn: async () => {
+      const response = await api.getProviders({ specialty: "emergency_services", limit: 20 });
+      return response.data;
+    },
+    staleTime: 1000 * 60 * 5,
+    enabled: activeTab === "emergency",
+  });
+
+  const emergencyProviders = emergencyProvidersData?.providers || [];
   const providers = providersData?.providers || [];
 
   const filteredProviders = useMemo(() => {
@@ -1379,9 +1743,39 @@ export default function Directory() {
             </div>
           </Card>
 
-          <Tabs value={specialty} className="w-full" onValueChange={setSpecialty}>
+          <Tabs value={activeTab} className="w-full" onValueChange={(val) => {
+              setActiveTab(val);
+              if (val !== "emergency" && val !== "providers") {
+                setSpecialty(val);
+              } else if (val === "providers") {
+                setSpecialty("all");
+              }
+            }}>
             <TabsList className="w-full justify-start overflow-x-auto h-auto p-0.5 sm:p-1 bg-transparent gap-1 sm:gap-2 mb-4 no-scrollbar flex-wrap sm:flex-nowrap">
-              {SPECIALTIES.slice(0, 5).map(tab => (
+              <TabsTrigger 
+                value="emergency"
+                className={cn(
+                  "rounded-full border px-2 sm:px-4 py-1.5 sm:py-2 font-bold whitespace-nowrap transition-colors text-xs sm:text-sm gap-1.5",
+                  "bg-red-50 text-red-700 border-red-200 hover:bg-red-100",
+                  "data-[state=active]:bg-red-600 data-[state=active]:text-white data-[state=active]:border-red-600"
+                )}
+                data-testid="tab-emergency"
+              >
+                <AlertCircle className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
+                <span className="hidden sm:inline">Emergency</span>
+                <span className="sm:hidden">SOS</span>
+              </TabsTrigger>
+              <TabsTrigger 
+                value="providers"
+                className={cn(
+                  "rounded-full border px-2 sm:px-4 py-1.5 sm:py-2 font-bold whitespace-nowrap transition-colors text-xs sm:text-sm",
+                  "text-gray-700 bg-white data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary"
+                )}
+                data-testid="tab-all-providers"
+              >
+                All Providers
+              </TabsTrigger>
+              {SPECIALTIES.slice(1, 5).map(tab => (
                 <TabsTrigger 
                   key={tab.id} 
                   value={tab.id}
@@ -1389,56 +1783,114 @@ export default function Directory() {
                     "rounded-full border px-2 sm:px-4 py-1.5 sm:py-2 font-bold whitespace-nowrap transition-colors text-xs sm:text-sm",
                     "text-gray-700 bg-white data-[state=active]:bg-primary data-[state=active]:text-primary-foreground data-[state=active]:border-primary"
                   )}
+                  onClick={() => setActiveTab(tab.id)}
+                  data-testid={`tab-${tab.id}`}
                 >
                   {tab.label}
                 </TabsTrigger>
               ))}
             </TabsList>
 
-            <div className="space-y-3 sm:space-y-4">
-              {isLoading ? (
-                <>
-                  <ProviderCardSkeleton />
-                  <ProviderCardSkeleton />
-                  <ProviderCardSkeleton />
-                </>
-              ) : isError ? (
-                <Card className="p-4 sm:p-6">
-                  <div className="flex flex-col items-center gap-3 sm:gap-4 text-center">
-                    <AlertCircle className="w-10 sm:w-12 h-10 sm:h-12 text-red-500" />
-                    <div>
-                      <h3 className="font-bold text-base sm:text-lg">Error Loading Providers</h3>
-                      <p className="text-muted-foreground text-xs sm:text-sm mt-1">
-                        {(error as any)?.message || "Could not load providers. Please try again."}
-                      </p>
+            <TabsContent value="emergency" className="mt-0">
+              <EmergencyTabContent 
+                emergencyProviders={emergencyProviders} 
+                isLoadingProviders={isLoadingEmergency} 
+              />
+            </TabsContent>
+
+            <TabsContent value="providers" className="mt-0">
+              <div className="space-y-3 sm:space-y-4">
+                {isLoading ? (
+                  <>
+                    <ProviderCardSkeleton />
+                    <ProviderCardSkeleton />
+                    <ProviderCardSkeleton />
+                  </>
+                ) : isError ? (
+                  <Card className="p-4 sm:p-6">
+                    <div className="flex flex-col items-center gap-3 sm:gap-4 text-center">
+                      <AlertCircle className="w-10 sm:w-12 h-10 sm:h-12 text-red-500" />
+                      <div>
+                        <h3 className="font-bold text-base sm:text-lg">Error Loading Providers</h3>
+                        <p className="text-muted-foreground text-xs sm:text-sm mt-1">
+                          {(error as any)?.message || "Could not load providers. Please try again."}
+                        </p>
+                      </div>
+                      <Button onClick={() => window.location.reload()} size="sm">Retry</Button>
                     </div>
-                    <Button onClick={() => window.location.reload()} size="sm">Retry</Button>
-                  </div>
-                </Card>
-              ) : filteredProviders.length === 0 ? (
-                <Card className="p-4 sm:p-6">
-                  <div className="flex flex-col items-center gap-3 sm:gap-4 text-center">
-                    <User className="w-10 sm:w-12 h-10 sm:h-12 text-muted-foreground" />
-                    <div>
-                      <h3 className="font-bold text-base sm:text-lg">No Providers Found</h3>
-                      <p className="text-muted-foreground text-xs sm:text-sm mt-1">
-                        {search || city || specialty !== "all" 
-                          ? "Try adjusting your search filters."
-                          : "No providers are currently available."}
-                      </p>
+                  </Card>
+                ) : filteredProviders.length === 0 ? (
+                  <Card className="p-4 sm:p-6">
+                    <div className="flex flex-col items-center gap-3 sm:gap-4 text-center">
+                      <User className="w-10 sm:w-12 h-10 sm:h-12 text-muted-foreground" />
+                      <div>
+                        <h3 className="font-bold text-base sm:text-lg">No Providers Found</h3>
+                        <p className="text-muted-foreground text-xs sm:text-sm mt-1">
+                          {search || city || specialty !== "all" 
+                            ? "Try adjusting your search filters."
+                            : "No providers are currently available."}
+                        </p>
+                      </div>
                     </div>
-                  </div>
-                </Card>
-              ) : (
-                filteredProviders.map((provider: any) => (
-                  <ProviderCard 
-                    key={provider._id} 
-                    provider={provider} 
-                    onLocationClick={handleProviderLocationClick}
-                  />
-                ))
-              )}
-            </div>
+                  </Card>
+                ) : (
+                  filteredProviders.map((provider: any) => (
+                    <ProviderCard 
+                      key={provider._id} 
+                      provider={provider} 
+                      onLocationClick={handleProviderLocationClick}
+                    />
+                  ))
+                )}
+              </div>
+            </TabsContent>
+
+            {SPECIALTIES.slice(1, 5).map(tab => (
+              <TabsContent key={tab.id} value={tab.id} className="mt-0">
+                <div className="space-y-3 sm:space-y-4">
+                  {isLoading ? (
+                    <>
+                      <ProviderCardSkeleton />
+                      <ProviderCardSkeleton />
+                      <ProviderCardSkeleton />
+                    </>
+                  ) : isError ? (
+                    <Card className="p-4 sm:p-6">
+                      <div className="flex flex-col items-center gap-3 sm:gap-4 text-center">
+                        <AlertCircle className="w-10 sm:w-12 h-10 sm:h-12 text-red-500" />
+                        <div>
+                          <h3 className="font-bold text-base sm:text-lg">Error Loading Providers</h3>
+                          <p className="text-muted-foreground text-xs sm:text-sm mt-1">
+                            {(error as any)?.message || "Could not load providers. Please try again."}
+                          </p>
+                        </div>
+                        <Button onClick={() => window.location.reload()} size="sm">Retry</Button>
+                      </div>
+                    </Card>
+                  ) : filteredProviders.length === 0 ? (
+                    <Card className="p-4 sm:p-6">
+                      <div className="flex flex-col items-center gap-3 sm:gap-4 text-center">
+                        <User className="w-10 sm:w-12 h-10 sm:h-12 text-muted-foreground" />
+                        <div>
+                          <h3 className="font-bold text-base sm:text-lg">No Providers Found</h3>
+                          <p className="text-muted-foreground text-xs sm:text-sm mt-1">
+                            Try adjusting your search filters.
+                          </p>
+                        </div>
+                      </div>
+                    </Card>
+                  ) : (
+                    filteredProviders.map((provider: any) => (
+                      <ProviderCard 
+                        key={provider._id} 
+                        provider={provider} 
+                        onLocationClick={handleProviderLocationClick}
+                      />
+                    ))
+                  )}
+                </div>
+              </TabsContent>
+            ))}
           </Tabs>
         </div>
       </div>

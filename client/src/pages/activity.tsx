@@ -138,6 +138,15 @@ export default function ActivityLog() {
     generatedBy?: 'ai' | 'rules';
   } | null>(null);
 
+  const [aiMoodSuggestion, setAiMoodSuggestion] = useState<{
+    suggestedMood: string;
+    alternativeMood: string;
+    rationale: string;
+    confidence: string;
+    generatedBy: 'ai' | 'rule-based';
+  } | null>(null);
+  const [isFetchingMoodSuggestion, setIsFetchingMoodSuggestion] = useState(false);
+
   const [moodFlowState, setMoodFlowState] = useState<'idle' | 'saving' | 'generating' | 'complete'>('idle');
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [reportData, setReportData] = useState<{
@@ -205,9 +214,12 @@ export default function ActivityLog() {
       if (!response.success) throw new Error(response.message);
       return response.data;
     },
-    onSuccess: (data: any) => {
+    onSuccess: async (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['activities'] });
-      setSavedActivity({ category, description });
+      const savedCat = category;
+      const savedTitle = title;
+      const savedDesc = description;
+      setSavedActivity({ category: savedCat, description: savedDesc });
       const aiData = data?.aiSuggestions || data?.activity?.aiSuggestions;
       if (aiData) {
         setAiSuggestions(aiData);
@@ -216,6 +228,23 @@ export default function ActivityLog() {
       }
       setShowSuccessDialog(true);
       resetForm();
+      
+      setIsFetchingMoodSuggestion(true);
+      setAiMoodSuggestion(null);
+      try {
+        const suggestionResponse = await api.getMoodSuggestion({
+          category: savedCat,
+          title: savedTitle,
+          description: savedDesc,
+        });
+        if (suggestionResponse.success && suggestionResponse.data?.suggestion) {
+          setAiMoodSuggestion(suggestionResponse.data.suggestion);
+        }
+      } catch (error) {
+        console.error('Failed to fetch AI mood suggestion:', error);
+      } finally {
+        setIsFetchingMoodSuggestion(false);
+      }
     },
     onError: (error: Error) => {
       toast({
@@ -285,49 +314,22 @@ export default function ActivityLog() {
     setMoodFlowState('idle');
     setSelectedMood(null);
     setReportData(null);
+    setAiMoodSuggestion(null);
+    setIsFetchingMoodSuggestion(false);
   };
 
-  const handleMoodSelect = async (mood: typeof MOOD_OPTIONS[0]) => {
-    setSelectedMood(mood.value);
-    setMoodFlowState('saving');
-
-    try {
-      const moodResponse = await api.quickMoodLog(mood.score, mood.value);
-      if (!moodResponse.success) {
-        throw new Error(moodResponse.message || 'Failed to save mood');
-      }
-
-      setMoodFlowState('generating');
-
-      const reportResponse = await api.generateWellbeingReport(7);
-      if (!reportResponse.success) {
-        throw new Error(reportResponse.message || 'Failed to generate report');
-      }
-
-      const report = reportResponse.data?.report;
-      setReportData({
-        overallScore: report?.overallScore,
-        wellbeingLevel: report?.wellbeingLevel,
-        recommendations: report?.recommendations || [],
-        seekHelpRecommended: report?.seekHelpRecommended,
-        analysis: report?.analysis,
-      });
-      setMoodFlowState('complete');
-      
-      queryClient.invalidateQueries({ queryKey: ['moods'] });
-      queryClient.invalidateQueries({ queryKey: ['moodStats'] });
-      queryClient.invalidateQueries({ queryKey: ['wellbeing'] });
-      queryClient.invalidateQueries({ queryKey: ['wellbeingReports'] });
-      queryClient.invalidateQueries({ queryKey: ['dashboardSummary'] });
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message || "Something went wrong",
-        variant: "destructive",
-      });
-      setMoodFlowState('idle');
-      setSelectedMood(null);
+  const handleMoodSelect = (mood: typeof MOOD_OPTIONS[0]) => {
+    setShowSuccessDialog(false);
+    resetMoodFlow();
+    const params = new URLSearchParams({
+      prefillMood: mood.value,
+      prefillScore: mood.score.toString(),
+      fromActivity: 'true',
+    });
+    if (aiMoodSuggestion?.rationale) {
+      params.append('rationale', aiMoodSuggestion.rationale);
     }
+    setLocation(`/mood?${params.toString()}`);
   };
 
   const handleDialogClose = (open: boolean) => {
@@ -598,10 +600,15 @@ export default function ActivityLog() {
           </div>
 
           <div className="space-y-2">
-            <Label className="text-sm sm:text-base">Description / Notes</Label>
+            <div className="flex items-center justify-between">
+              <Label className="text-sm sm:text-base">Description / Notes</Label>
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Mic className="h-3 w-3" /> Voice available
+              </span>
+            </div>
             <div className="relative">
               <Textarea 
-                placeholder="Describe your experience..." 
+                placeholder="Describe your experience... (tap the mic to use voice)" 
                 className="min-h-[120px] sm:min-h-[150px] rounded-xl resize-none pr-12 text-sm sm:text-base"
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
@@ -757,21 +764,76 @@ export default function ActivityLog() {
                 <h4 className="font-semibold text-foreground text-xs sm:text-sm">Quick Mood Check</h4>
                 <p className="text-xs text-muted-foreground mt-1">How are you feeling right now?</p>
               </div>
+              
+              {isFetchingMoodSuggestion && (
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-100 rounded-lg p-3 animate-in fade-in duration-300">
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 text-purple-500 animate-spin" />
+                    <span className="text-sm text-purple-700 font-medium">AI is analyzing your activity...</span>
+                  </div>
+                </div>
+              )}
+              
+              {aiMoodSuggestion && !isFetchingMoodSuggestion && (
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-100 rounded-lg p-3 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="flex items-start gap-2">
+                    <div className="bg-purple-100 p-1.5 rounded-full shrink-0">
+                      <Bot className="w-4 h-4 text-purple-600" />
+                    </div>
+                    <div className="flex-1 space-y-1.5">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-sm font-semibold text-purple-900">Suggested Mood:</span>
+                        <Badge 
+                          variant={aiMoodSuggestion.generatedBy === 'ai' ? 'default' : 'secondary'} 
+                          className="gap-1 text-xs"
+                          data-testid="badge-mood-suggestion-type"
+                        >
+                          <Sparkles className="w-3 h-3" />
+                          {aiMoodSuggestion.generatedBy === 'ai' ? 'AI Generated' : 'Rule-based'}
+                        </Badge>
+                      </div>
+                      <div className="flex gap-2 flex-wrap">
+                        <Badge className="bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200">
+                          {MOOD_OPTIONS.find(m => m.value === aiMoodSuggestion.suggestedMood)?.emoji || '🎯'} {aiMoodSuggestion.suggestedMood}
+                        </Badge>
+                        {aiMoodSuggestion.alternativeMood && (
+                          <Badge variant="outline" className="text-purple-600 border-purple-200">
+                            or {aiMoodSuggestion.alternativeMood}
+                          </Badge>
+                        )}
+                      </div>
+                      <p className="text-xs text-purple-800 mt-1">{aiMoodSuggestion.rationale}</p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               <div className="grid grid-cols-3 gap-1 sm:gap-2">
-                {MOOD_OPTIONS.map((mood) => (
-                  <button
-                    key={mood.value}
-                    onClick={() => handleMoodSelect(mood)}
-                    data-testid={`button-mood-quick-${mood.value}`}
-                    className={cn(
-                      "flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl border-2 transition-all duration-200 min-h-[80px] sm:min-h-[90px] touch-manipulation active:scale-95",
-                      mood.color
-                    )}
-                  >
-                    <span className="text-xl sm:text-2xl">{mood.emoji}</span>
-                    <span className="text-xs font-medium text-center leading-tight">{mood.label}</span>
-                  </button>
-                ))}
+                {MOOD_OPTIONS.map((mood) => {
+                  const isSuggested = aiMoodSuggestion?.suggestedMood === mood.value;
+                  const isAlternative = aiMoodSuggestion?.alternativeMood === mood.value;
+                  return (
+                    <button
+                      key={mood.value}
+                      onClick={() => handleMoodSelect(mood)}
+                      data-testid={`button-mood-quick-${mood.value}`}
+                      className={cn(
+                        "flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl border-2 transition-all duration-200 min-h-[80px] sm:min-h-[90px] touch-manipulation active:scale-95 relative",
+                        mood.color,
+                        isSuggested && "ring-2 ring-purple-500 ring-offset-2",
+                        isAlternative && "ring-1 ring-purple-300"
+                      )}
+                    >
+                      {isSuggested && (
+                        <div className="absolute -top-2 -right-2 bg-purple-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5">
+                          <Sparkles className="w-2.5 h-2.5" /> AI
+                        </div>
+                      )}
+                      <span className="text-xl sm:text-2xl">{mood.emoji}</span>
+                      <span className="text-xs font-medium text-center leading-tight">{mood.label}</span>
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}

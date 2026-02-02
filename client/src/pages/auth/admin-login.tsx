@@ -15,7 +15,7 @@ import api from "@/lib/api";
 export default function AdminLogin() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, isLoading: authLoading, login } = useAuth();
   
   const [isLoading, setIsLoading] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
@@ -43,15 +43,19 @@ export default function AdminLogin() {
     setError(null);
     
     try {
-      const response = await api.login(formData.email, formData.password);
+      // Use AuthContext login to properly set state and tokens
+      const result = await login(formData.email, formData.password);
       
-      if (response.success && response.data?.user) {
-        const user = response.data.user;
+      if (result.success) {
+        // Get the user from localStorage after successful login
+        const loggedInUser = api.getUser();
         
-        if (user.role !== 'admin' && user.role !== 'super_admin') {
+        // Verify admin role
+        if (loggedInUser?.role !== 'admin' && loggedInUser?.role !== 'super_admin') {
+          // Clear tokens and logout if not admin
           api.clearTokens();
           setError("Access denied. This login is only for administrators. Please use the regular login page.");
-          setIsLoading(false);
+          window.location.reload(); // Refresh to reset auth state
           return;
         }
         
@@ -61,7 +65,7 @@ export default function AdminLogin() {
         });
         setLocation("/admin/dashboard");
       } else {
-        setError(response.message || "Invalid credentials. Please try again.");
+        setError(result.message || "Invalid credentials. Please try again.");
       }
     } catch (err: any) {
       setError(err.message || "Login failed. Please check your credentials and try again.");

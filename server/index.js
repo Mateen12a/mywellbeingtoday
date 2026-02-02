@@ -15,6 +15,7 @@ import adminRoutes from "./routes/adminRoutes.js";
 import certificateRoutes from "./routes/certificateRoutes.js";
 import subscriptionRoutes from "./routes/subscriptionRoutes.js";
 import supportRoutes from "./routes/supportRoutes.js";
+import aiRoutes from "./routes/aiRoutes.js";
 import connectDB from "./config/database.js";
 
 const app = express();
@@ -88,7 +89,7 @@ app.use((req, res, next) => {
 
 app.use('/api/auth', authRoutes);
 app.use('/api/activities', activityRoutes);
-app.use('/api/mood', moodRoutes);
+app.use('/api/moods', moodRoutes);
 app.use('/api/wellbeing', wellbeingRoutes);
 app.use('/api/providers', providerRoutes);
 app.use('/api/appointments', appointmentRoutes);
@@ -97,6 +98,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/certificates', certificateRoutes);
 app.use('/api/subscription', subscriptionRoutes);
 app.use('/api/support', supportRoutes);
+app.use('/api/ai', aiRoutes);
 
 app.use((err, _req, res, next) => {
   const status = err.status || err.statusCode || 500;

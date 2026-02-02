@@ -464,39 +464,6 @@ export default function Dashboard() {
   const personalizedSuggestions = useMemo(() => {
     const suggestions: Suggestion[] = [];
 
-    if (!hasLoggedMoodToday) {
-      suggestions.push({
-        id: 'log-mood',
-        title: 'Log your mood for today',
-        description: 'Take a moment to check in with yourself and track how you\'re feeling right now.',
-        href: '/mood',
-        buttonText: 'Log Mood',
-        icon: Heart,
-        priority: 1,
-        gradient: 'from-rose-50 to-pink-50',
-        borderColor: 'border-rose-100',
-        textColor: 'text-rose-900',
-        buttonBorderColor: 'border-rose-200',
-        buttonTextColor: 'text-rose-700',
-      });
-    }
-
-    if (!hasLoggedActivityToday) {
-      suggestions.push({
-        id: 'log-activity',
-        title: 'Track your activities',
-        description: 'Record what you\'ve been up to today to understand how activities affect your wellbeing.',
-        href: '/activity',
-        buttonText: 'Log Activity',
-        icon: Activity,
-        priority: 2,
-        gradient: 'from-green-50 to-emerald-50',
-        borderColor: 'border-green-100',
-        textColor: 'text-green-900',
-        buttonBorderColor: 'border-green-200',
-        buttonTextColor: 'text-green-700',
-      });
-    }
 
     if (isHighStress) {
       suggestions.push({
@@ -728,19 +695,19 @@ export default function Dashboard() {
                 </div>
               </div>
               <div className="flex gap-2 w-full">
-                {!hasLoggedMoodToday && (
-                  <Link href="/mood" className="flex-1 min-w-0">
+                {!hasLoggedActivityToday && (
+                  <Link href="/activity" className="flex-1 min-w-0">
                     <Button size="sm" className="w-full rounded-full shadow-sm text-xs sm:text-sm h-9">
-                      <Heart className="w-3.5 h-3.5 mr-1.5 shrink-0" />
-                      <span>Log Mood</span>
+                      <Activity className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                      <span>Log Activity</span>
                     </Button>
                   </Link>
                 )}
-                {!hasLoggedActivityToday && (
-                  <Link href="/activity" className="flex-1 min-w-0">
+                {!hasLoggedMoodToday && (
+                  <Link href="/mood" className="flex-1 min-w-0">
                     <Button variant="outline" size="sm" className="w-full rounded-full border-primary/30 text-xs sm:text-sm h-9">
-                      <Activity className="w-3.5 h-3.5 mr-1.5 shrink-0" />
-                      <span>Log Activity</span>
+                      <Heart className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                      <span>Track Mood</span>
                     </Button>
                   </Link>
                 )}
@@ -800,31 +767,33 @@ export default function Dashboard() {
         </Card>
       )}
 
-      {/* Mood Check-in Card */}
-      <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/30 overflow-hidden relative shadow-sm">
-        <div className="absolute top-0 right-0 w-48 sm:w-64 h-48 sm:h-64 bg-primary/10 rounded-full blur-2xl sm:blur-3xl -mr-24 sm:-mr-32 -mt-24 sm:-mt-32 pointer-events-none" />
-        <CardContent className="p-5 sm:p-6 lg:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 sm:gap-6 relative z-10">
-          <div className="space-y-3 sm:space-y-4">
-            <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 text-xs sm:text-sm font-bold text-primary tracking-wide uppercase border border-primary/20">
-              <Sun className="w-3.5 h-3.5" /> Daily Check-in
+      {/* Mood Check-in Card - only show when daily prompt is not visible */}
+      {!showDailyPrompt && (
+        <Card className="border-primary/20 bg-gradient-to-br from-primary/5 to-secondary/30 overflow-hidden relative shadow-sm">
+          <div className="absolute top-0 right-0 w-48 sm:w-64 h-48 sm:h-64 bg-primary/10 rounded-full blur-2xl sm:blur-3xl -mr-24 sm:-mr-32 -mt-24 sm:-mt-32 pointer-events-none" />
+          <CardContent className="p-5 sm:p-6 lg:p-8 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-5 sm:gap-6 relative z-10">
+            <div className="space-y-3 sm:space-y-4">
+              <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full bg-white/80 text-xs sm:text-sm font-bold text-primary tracking-wide uppercase border border-primary/20">
+                <Sun className="w-3.5 h-3.5" /> Daily Check-in
+              </div>
+              <h2 className="text-xl sm:text-2xl font-serif font-bold text-black">
+                How are you feeling right now?
+              </h2>
+              <p className="text-gray-800 font-medium text-sm sm:text-base">
+                Taking a moment to reflect can help you understand your patterns better.
+              </p>
             </div>
-            <h2 className="text-xl sm:text-2xl font-serif font-bold text-black">
-              How are you feeling right now?
-            </h2>
-            <p className="text-gray-800 font-medium text-sm sm:text-base">
-              Taking a moment to reflect can help you understand your patterns better.
-            </p>
-          </div>
-          <Link href="/mood" className="w-full sm:w-auto">
-            <Button
-              size="default"
-              className="w-full sm:w-auto rounded-full shadow-lg shadow-primary/20 font-bold text-sm sm:text-base"
-            >
-              <Heart className="mr-2 w-5 h-5" /> Log Mood
-            </Button>
-          </Link>
-        </CardContent>
-      </Card>
+            <Link href="/mood" className="w-full sm:w-auto">
+              <Button
+                size="default"
+                className="w-full sm:w-auto rounded-full shadow-lg shadow-primary/20 font-bold text-sm sm:text-base"
+              >
+                <Heart className="mr-2 w-5 h-5" /> Track Mood
+              </Button>
+            </Link>
+          </CardContent>
+        </Card>
+      )}
 
       {/* Quick Actions Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
@@ -1051,7 +1020,7 @@ export default function Dashboard() {
                     tick={{ fontSize: 12, fill: "hsl(var(--muted-foreground))" }}
                     dy={10}
                   />
-                  <YAxis domain={[0, 6]} hide={true} />
+                  <YAxis domain={[0, 10]} hide={true} />
                   <Tooltip
                     contentStyle={{
                       backgroundColor: "hsl(var(--card))",

@@ -1379,6 +1379,97 @@ Return ONLY the title text, nothing else. No quotes, no explanation, just the ti
   }
 }
 
+export async function generateMoodSuggestion(activityData) {
+  const { category, title, description } = activityData;
+  
+  const moodMappings = {
+    exercise: { primary: 'energetic', secondary: 'happy', rationale: 'Physical activity typically boosts energy and improves mood.' },
+    meditation: { primary: 'calm', secondary: 'relaxed', rationale: 'Meditation practices promote relaxation and mental clarity.' },
+    relaxation: { primary: 'relaxed', secondary: 'calm', rationale: 'Taking time to relax helps reduce stress and promotes calmness.' },
+    work: { primary: 'focused', secondary: 'stressed', rationale: 'Work activities often require concentration and can be demanding.' },
+    social: { primary: 'happy', secondary: 'energetic', rationale: 'Social interactions tend to boost mood and energy.' },
+    sleep: { primary: 'tired', secondary: 'calm', rationale: 'Rest and sleep are associated with recovery and calmness.' },
+    nutrition: { primary: 'calm', secondary: 'happy', rationale: 'Healthy eating supports overall wellbeing and mood stability.' },
+    hobby: { primary: 'happy', secondary: 'relaxed', rationale: 'Hobbies bring joy and provide a pleasant escape from daily stress.' },
+    healthcare: { primary: 'anxious', secondary: 'calm', rationale: 'Healthcare activities can bring mixed feelings but often lead to relief.' },
+    other: { primary: 'calm', secondary: 'focused', rationale: 'General activities contribute to your daily wellbeing.' }
+  };
+
+  const fallbackSuggestion = moodMappings[category] || moodMappings.other;
+  const fallback = {
+    suggestedMood: fallbackSuggestion.primary,
+    alternativeMood: fallbackSuggestion.secondary,
+    rationale: fallbackSuggestion.rationale,
+    confidence: 'medium',
+    generatedBy: 'rule-based'
+  };
+
+  if (!model) {
+    return fallback;
+  }
+
+  try {
+    const prompt = `You are a wellbeing assistant analyzing a user's activity to suggest their likely current mood.
+
+ACTIVITY DETAILS:
+- Category: ${category}
+- Title: ${title}
+- Description: ${description || 'No additional description provided'}
+
+Based on this activity, suggest the most likely mood the user might be experiencing. Consider:
+1. The type of activity and its typical emotional effects
+2. Any emotional cues in the description
+3. Time and energy implications of the activity
+
+VALID MOOD OPTIONS (choose from these only):
+- happy: Feeling joyful, content, or positive
+- calm: Feeling peaceful, serene, or tranquil
+- focused: Feeling concentrated, determined, or attentive
+- anxious: Feeling worried, nervous, or uneasy
+- stressed: Feeling overwhelmed, pressured, or tense
+- sad: Feeling down, melancholy, or unhappy
+- tired: Feeling fatigued, exhausted, or low energy
+- energetic: Feeling active, vibrant, or full of energy
+- relaxed: Feeling at ease, comfortable, or unwound
+- irritated: Feeling annoyed, frustrated, or agitated
+- hopeful: Feeling optimistic, encouraged, or positive about the future
+
+Return a JSON object:
+{
+  "suggestedMood": "one of the valid mood options above",
+  "alternativeMood": "another possible mood option",
+  "rationale": "A brief, encouraging explanation (1-2 sentences) of why this mood might fit their activity",
+  "confidence": "high|medium|low"
+}
+
+Be supportive and positive in your rationale. If the activity suggests the person might be struggling, be empathetic and encouraging.`;
+
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    const jsonMatch = text.match(/\{[\s\S]*\}/);
+
+    if (jsonMatch) {
+      const parsed = JSON.parse(jsonMatch[0]);
+      const validMoods = ['happy', 'calm', 'focused', 'anxious', 'stressed', 'sad', 'tired', 'energetic', 'relaxed', 'irritated', 'hopeful'];
+      
+      const suggestedMood = validMoods.includes(parsed.suggestedMood) ? parsed.suggestedMood : fallbackSuggestion.primary;
+      const alternativeMood = validMoods.includes(parsed.alternativeMood) ? parsed.alternativeMood : fallbackSuggestion.secondary;
+      
+      return {
+        suggestedMood,
+        alternativeMood,
+        rationale: typeof parsed.rationale === 'string' ? parsed.rationale : fallbackSuggestion.rationale,
+        confidence: ['high', 'medium', 'low'].includes(parsed.confidence) ? parsed.confidence : 'medium',
+        generatedBy: 'ai'
+      };
+    }
+    return fallback;
+  } catch (error) {
+    console.error('[AI SERVICE] Mood suggestion error:', error.message);
+    return fallback;
+  }
+}
+
 export default {
   analyzeWellbeing,
   generateRecommendations,
@@ -1393,5 +1484,6 @@ export default {
   generateProviderInsights,
   generateCertificateSuggestion,
   generateChatTitle,
-  generateProviderChatTitle
+  generateProviderChatTitle,
+  generateMoodSuggestion
 };
