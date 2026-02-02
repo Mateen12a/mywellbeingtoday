@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
+import { formatLabel } from "@/lib/utils";
 import {
   Card,
   CardContent,
@@ -492,8 +493,8 @@ export default function Dashboard() {
         id: 'appointment',
         title: 'You have an appointment coming up',
         description: `Your next appointment is scheduled for ${formattedDate}. Make sure you're prepared!`,
-        href: '/history',
-        buttonText: 'View Details',
+        href: '/appointments',
+        buttonText: 'View Appointments',
         icon: Clock,
         priority: 4,
         gradient: 'from-amber-50 to-orange-50',
@@ -943,7 +944,7 @@ export default function Dashboard() {
                     <div className="flex-1 min-w-0">
                       <p className="font-bold text-sm text-black truncate">{activity.name || activity.activityType}</p>
                       <p className="text-sm font-medium text-gray-600 truncate">
-                        {activity.category} • {new Date(activity.createdAt).toLocaleDateString()}
+                        {formatLabel(activity.category)} • {new Date(activity.createdAt).toLocaleDateString()}
                       </p>
                     </div>
                   </div>

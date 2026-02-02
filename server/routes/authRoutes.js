@@ -7,7 +7,7 @@ const router = Router();
 
 router.post('/register', validateRegistration, authController.register);
 router.post('/register-provider', validateRegistration, authController.registerProvider);
-router.post('/register-admin', authController.registerAdmin);
+router.post('/register-admin', validateRegistration, authController.registerAdmin);
 router.post('/login', validateLogin, authController.login);
 router.post('/logout', authenticate, authController.logout);
 router.post('/refresh-token', authController.refreshToken);

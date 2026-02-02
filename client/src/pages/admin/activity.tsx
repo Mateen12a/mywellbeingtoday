@@ -137,12 +137,12 @@ export default function AdminActivityPage() {
   };
 
   return (
-    <AdminLayout title="Activity Log">
+    <AdminLayout title="System Log">
       <div className="space-y-6">
         <div className="flex flex-col gap-2">
-          <h2 className="text-2xl font-bold tracking-tight">Platform Activity</h2>
+          <h2 className="text-2xl font-bold tracking-tight">System Log</h2>
           <p className="text-muted-foreground">
-            Monitor all platform activities including logins, mood logs, activities, and appointments.
+            Monitor all system activities including logins, mood logs, activities, and appointments.
             Chat message content is not shown for privacy.
           </p>
         </div>

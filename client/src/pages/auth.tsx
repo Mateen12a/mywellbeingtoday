@@ -8,9 +8,10 @@ import { Eye, EyeOff, ArrowLeft, Mail, Lock, User, Shield, Stethoscope, Building
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, getDashboardPath } from "@/contexts/AuthContext";
-import api from "@/lib/api";
-import { invalidateAllQueries } from "@/lib/queryClient";
 import { PageLoader } from "@/components/ui/page-loader";
+import { PasswordStrengthIndicator } from "@/components/ui/password-strength-indicator";
+import { validatePassword, validateEmail, validateName } from "@/lib/validation";
+import api from "@/lib/api";
 
 const AuthLayout = ({ children, title, subtitle }: { children: React.ReactNode, title: string, subtitle: string }) => (
   <div className="flex items-center justify-center min-h-[80vh]">
@@ -29,7 +30,6 @@ const AuthLayout = ({ children, title, subtitle }: { children: React.ReactNode, 
 export function Login() {
   const [, setLocation] = useLocation();
   const [showPassword, setShowPassword] = useState(false);
-  const [userType, setUserType] = useState("user");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -88,7 +88,7 @@ export function Login() {
 
   return (
     <AuthLayout title="Welcome Back" subtitle="Sign in to continue your journey">
-      <Tabs defaultValue="user" className="w-full mb-6" onValueChange={setUserType}>
+      <Tabs defaultValue="user" className="w-full mb-6">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="user">User</TabsTrigger>
           <TabsTrigger value="provider">Provider</TabsTrigger>
@@ -154,6 +154,13 @@ export function Register() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    password: "",
+    confirmPassword: "",
+  });
   const { toast } = useToast();
   const { register, user, isLoading: authLoading } = useAuth();
 
@@ -166,14 +173,6 @@ export function Register() {
   if (user) {
     return <Redirect to={getDashboardPath(user.role)} />;
   }
-  
-  const [formData, setFormData] = useState({
-    firstName: "",
-    lastName: "",
-    email: "",
-    password: "",
-    confirmPassword: "",
-  });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
@@ -182,19 +181,55 @@ export function Register() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (formData.password !== formData.confirmPassword) {
+    // Validate first name
+    const firstNameValidation = validateName(formData.firstName, 'First name');
+    if (!firstNameValidation.isValid) {
       toast({
-        title: "Passwords don't match",
-        description: "Please make sure your passwords match",
+        title: "Invalid first name",
+        description: firstNameValidation.error,
         variant: "destructive",
       });
       return;
     }
 
-    if (formData.password.length < 6) {
+    // Validate last name
+    const lastNameValidation = validateName(formData.lastName, 'Last name');
+    if (!lastNameValidation.isValid) {
       toast({
-        title: "Password too short",
-        description: "Password must be at least 6 characters",
+        title: "Invalid last name",
+        description: lastNameValidation.error,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate email
+    const emailValidation = validateEmail(formData.email);
+    if (!emailValidation.isValid) {
+      toast({
+        title: "Invalid email",
+        description: emailValidation.error,
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Validate password with full policy
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) {
+      toast({
+        title: "Password doesn't meet requirements",
+        description: passwordValidation.errors[0],
+        variant: "destructive",
+      });
+      return;
+    }
+
+    // Check passwords match
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure your passwords match",
         variant: "destructive",
       });
       return;
@@ -344,6 +379,7 @@ export function Register() {
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
+          <PasswordStrengthIndicator password={formData.password} />
         </div>
 
         <div className="space-y-2">
@@ -367,6 +403,9 @@ export function Register() {
               {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
+          {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+            <p className="text-xs text-red-500">Passwords do not match</p>
+          )}
         </div>
         
         <div className="flex items-start gap-2 pt-2">

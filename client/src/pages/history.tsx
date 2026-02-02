@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { formatLabel } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -555,7 +556,7 @@ export default function History() {
   }, [moodStats]);
 
   const activityChartData = activityStats?.categoryBreakdown?.map((cat: any) => ({
-    name: cat.category?.charAt(0).toUpperCase() + cat.category?.slice(1) || 'Other',
+    name: formatLabel(cat.category) || 'Other',
     value: cat.count || 0,
     emoji: getActivityEmoji(cat.category),
   })) || [];

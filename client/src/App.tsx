@@ -22,6 +22,7 @@ import AIKnowledgeAssistant from "@/pages/ai-assistant";
 import Certificates from "@/pages/certificates";
 import Directory from "@/pages/directory";
 import Subscription from "@/pages/subscription";
+import Appointments from "@/pages/appointments";
 import NotFound from "@/pages/not-found";
 
 import PractitionerDashboard from "@/pages/provider-dashboard";
@@ -134,6 +135,13 @@ function Router() {
           {() => (
             <ProtectedRoute requiredRole="user">
               <AIKnowledgeAssistant />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/appointments">
+          {() => (
+            <ProtectedRoute requiredRole="user">
+              <Appointments />
             </ProtectedRoute>
           )}
         </Route>

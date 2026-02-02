@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Link, useLocation, Redirect } from "wouter";
+import { Link, Redirect } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, getDashboardPath } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
@@ -9,22 +9,13 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Loader2, ShieldAlert, ArrowLeft, CheckCircle2, Eye, EyeOff, Lock } from "lucide-react";
 import { PageLoader } from "@/components/ui/page-loader";
+import { PasswordStrengthIndicator } from "@/components/ui/password-strength-indicator";
+import { validatePassword, validateEmail, validateName } from "@/lib/validation";
 import api from "@/lib/api";
 
 export default function AdminRegister() {
-  const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user, isLoading: authLoading } = useAuth();
-  
-  // Show loading while checking auth state
-  if (authLoading) {
-    return <PageLoader />;
-  }
-  
-  // Redirect if already logged in
-  if (user) {
-    return <Redirect to={getDashboardPath(user.role)} />;
-  }
   
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
@@ -42,26 +33,44 @@ export default function AdminRegister() {
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
+  
+  // Show loading while checking auth state
+  if (authLoading) {
+    return <PageLoader />;
+  }
+  
+  // Redirect if already logged in
+  if (user) {
+    return <Redirect to={getDashboardPath(user.role)} />;
+  }
 
   const validateForm = () => {
     const newErrors: Record<string, string> = {};
 
-    if (!formData.firstName.trim()) {
-      newErrors.firstName = "First name is required";
+    // Validate first name with proper regex
+    const firstNameValidation = validateName(formData.firstName, 'First name');
+    if (!firstNameValidation.isValid) {
+      newErrors.firstName = firstNameValidation.error || "First name is required";
     }
-    if (!formData.lastName.trim()) {
-      newErrors.lastName = "Last name is required";
+    
+    // Validate last name with proper regex
+    const lastNameValidation = validateName(formData.lastName, 'Last name');
+    if (!lastNameValidation.isValid) {
+      newErrors.lastName = lastNameValidation.error || "Last name is required";
     }
-    if (!formData.email.trim()) {
-      newErrors.email = "Email is required";
-    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
-      newErrors.email = "Invalid email format";
+    
+    // Validate email with proper regex
+    const emailValidation = validateEmail(formData.email);
+    if (!emailValidation.isValid) {
+      newErrors.email = emailValidation.error || "Email is required";
     }
-    if (!formData.password) {
-      newErrors.password = "Password is required";
-    } else if (formData.password.length < 8) {
-      newErrors.password = "Password must be at least 8 characters";
+    
+    // Validate password with full policy
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) {
+      newErrors.password = passwordValidation.errors[0];
     }
+    
     if (formData.password !== formData.confirmPassword) {
       newErrors.confirmPassword = "Passwords do not match";
     }
@@ -214,7 +223,7 @@ export default function AdminRegister() {
                 {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
               </div>
 
-              <div className="grid sm:grid-cols-2 gap-4">
+              <div className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
@@ -237,6 +246,7 @@ export default function AdminRegister() {
                     </Button>
                   </div>
                   {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
+                  <PasswordStrengthIndicator password={formData.password} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword">Confirm Password</Label>
@@ -260,6 +270,9 @@ export default function AdminRegister() {
                     </Button>
                   </div>
                   {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword}</p>}
+                  {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                    <p className="text-xs text-red-500">Passwords do not match</p>
+                  )}
                 </div>
               </div>
 

@@ -12,6 +12,8 @@ import { useToast } from "@/hooks/use-toast";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { useAuth, getDashboardPath } from "@/contexts/AuthContext";
 import { PageLoader } from "@/components/ui/page-loader";
+import { PasswordStrengthIndicator } from "@/components/ui/password-strength-indicator";
+import { validatePassword, validateEmail, validateName, validatePhone } from "@/lib/validation";
 import api from "@/lib/api";
 import { invalidateAllQueries } from "@/lib/queryClient";
 
@@ -160,16 +162,22 @@ export default function ProviderRegister() {
         toast({ title: "Missing field", description: "Please specify your professional title", variant: "destructive" });
         return false;
       }
-      if (!formData.firstName.trim()) {
-        toast({ title: "Missing field", description: "Please enter your first name", variant: "destructive" });
+      // Validate first name with proper regex
+      const firstNameValidation = validateName(formData.firstName, 'First name');
+      if (!firstNameValidation.isValid) {
+        toast({ title: "Invalid first name", description: firstNameValidation.error, variant: "destructive" });
         return false;
       }
-      if (!formData.lastName.trim()) {
-        toast({ title: "Missing field", description: "Please enter your last name", variant: "destructive" });
+      // Validate last name with proper regex
+      const lastNameValidation = validateName(formData.lastName, 'Last name');
+      if (!lastNameValidation.isValid) {
+        toast({ title: "Invalid last name", description: lastNameValidation.error, variant: "destructive" });
         return false;
       }
-      if (!formData.email.trim()) {
-        toast({ title: "Missing field", description: "Please enter your email", variant: "destructive" });
+      // Validate email with proper regex
+      const emailValidation = validateEmail(formData.email);
+      if (!emailValidation.isValid) {
+        toast({ title: "Invalid email", description: emailValidation.error, variant: "destructive" });
         return false;
       }
     }
@@ -186,8 +194,10 @@ export default function ProviderRegister() {
         toast({ title: "Missing field", description: "Please enter your post code", variant: "destructive" });
         return false;
       }
-      if (!formData.phone.trim()) {
-        toast({ title: "Missing field", description: "Please enter your phone number", variant: "destructive" });
+      // Validate phone number with proper regex
+      const phoneValidation = validatePhone(formData.phone);
+      if (!phoneValidation.isValid) {
+        toast({ title: "Invalid phone number", description: phoneValidation.error, variant: "destructive" });
         return false;
       }
     }
@@ -196,12 +206,10 @@ export default function ProviderRegister() {
         toast({ title: "Missing field", description: "Please enter your license number", variant: "destructive" });
         return false;
       }
-      if (!formData.password) {
-        toast({ title: "Missing field", description: "Please enter a password", variant: "destructive" });
-        return false;
-      }
-      if (formData.password.length < 6) {
-        toast({ title: "Password too short", description: "Password must be at least 6 characters", variant: "destructive" });
+      // Validate password with full policy
+      const passwordValidation = validatePassword(formData.password);
+      if (!passwordValidation.isValid) {
+        toast({ title: "Password doesn't meet requirements", description: passwordValidation.errors[0], variant: "destructive" });
         return false;
       }
       if (formData.password !== formData.confirmPassword) {
@@ -649,6 +657,7 @@ export default function ProviderRegister() {
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
+                  <PasswordStrengthIndicator password={formData.password} />
                 </div>
 
                 <div className="space-y-2">
@@ -670,6 +679,9 @@ export default function ProviderRegister() {
                       {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </button>
                   </div>
+                  {formData.confirmPassword && formData.password !== formData.confirmPassword && (
+                    <p className="text-xs text-red-500">Passwords do not match</p>
+                  )}
                 </div>
               </div>
             )}

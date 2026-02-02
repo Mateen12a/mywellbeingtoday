@@ -10,7 +10,7 @@ import { Slider } from "@/components/ui/slider";
 import { Label } from "@/components/ui/label";
 import { Sparkles, Send, Bot, User, BookOpen, ShieldAlert, BarChart2, RefreshCw, TrendingUp, TrendingDown, Minus, AlertCircle, Loader2, Cpu, Calculator, WifiOff, X, Plus, MessageSquare, Trash2, Edit2, Check, Menu, Smile, Activity, MapPin, Calendar, Clock, FileText, Navigation, Heart, Dumbbell, Mic, Paperclip, Image, File } from "lucide-react";
 import { AIService, WellbeingReport, generateClientSideInsights, ClientSideInsights, ConversationData, ChatMessageData, AIAction } from "@/services/ai";
-import { cn } from "@/lib/utils";
+import { cn, formatLabel } from "@/lib/utils";
 import aiAssistantImage from "@assets/generated_images/serene_abstract_ai_wellbeing_assistant_visualization.png";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -1081,7 +1081,7 @@ export default function AIKnowledgeAssistant() {
                           {msg.sources && msg.sources.length > 0 && (
                             <div className="mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-gray-200 text-xs sm:text-sm font-semibold text-gray-600 flex gap-2 items-center">
                               <BookOpen className="w-3 h-3 sm:w-4 sm:h-4" />
-                              <span>Sources: {msg.sources.join(", ")}</span>
+                              <span>Sources: {msg.sources.map((s: string) => formatLabel(s)).join(", ")}</span>
                             </div>
                           )}
                           {msg.role === 'assistant' && msg.actions && msg.actions.length > 0 && (

@@ -75,12 +75,9 @@ const SPECIALTIES = [
   { id: "other", label: "Other" },
 ];
 
-const formatSpecialty = (specialty: string) => {
-  return specialty
-    .split('_')
-    .map(word => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(' ');
-};
+import { formatLabel } from "@/lib/utils";
+
+const formatSpecialty = formatLabel;
 
 const getProviderName = (provider: any) => {
   const user = provider.userId;
@@ -1101,10 +1098,10 @@ interface EmergencyProviderCardProps {
 const EmergencyProviderCard = ({ provider }: EmergencyProviderCardProps) => {
   const [showBooking, setShowBooking] = useState(false);
 
-  const name = getProviderName(provider);
-  const initials = getProviderInitials(provider);
-  const avatarUrl = provider.userId?.profile?.avatarUrl;
   const practice = provider.practice || {};
+  const organizationName = practice.name || provider.professionalInfo?.title || getProviderName(provider);
+  const initials = organizationName ? organizationName.substring(0, 2).toUpperCase() : "EM";
+  const avatarUrl = provider.userId?.profile?.avatarUrl;
   const phone = practice.phone || '';
   const address = practice.address ? 
     `${practice.address.street}, ${practice.address.city}`.trim() : 
@@ -1113,19 +1110,19 @@ const EmergencyProviderCard = ({ provider }: EmergencyProviderCardProps) => {
 
   return (
     <>
-      <Card className="border-red-100 hover:border-red-200 hover:shadow-md transition-all overflow-hidden">
+      <Card className="border-2 border-red-200 bg-red-50/30 hover:border-red-300 hover:shadow-md transition-all overflow-hidden">
         <CardContent className="p-0 flex flex-col sm:flex-row">
-          <div className="w-full sm:w-20 bg-red-50 dark:bg-red-950/30 flex items-center justify-center shrink-0 p-3 sm:p-0">
-            <Avatar className="w-12 sm:w-14 h-12 sm:h-14 border-2 border-red-200">
-              <AvatarImage src={avatarUrl} alt={name} />
-              <AvatarFallback className="text-base bg-red-100 text-red-700">{initials}</AvatarFallback>
+          <div className="w-full sm:w-20 bg-red-100 dark:bg-red-950/50 flex items-center justify-center shrink-0 p-3 sm:p-0">
+            <Avatar className="w-12 sm:w-14 h-12 sm:h-14 border-2 border-red-300">
+              <AvatarImage src={avatarUrl} alt={organizationName} />
+              <AvatarFallback className="text-base bg-red-200 text-red-700 font-bold">{initials}</AvatarFallback>
             </Avatar>
           </div>
           <div className="p-3 sm:p-4 flex-1 space-y-2">
             <div className="flex justify-between items-start gap-2">
               <div className="min-w-0 flex-1">
-                <h3 className="font-bold font-serif text-base text-black dark:text-white truncate">{name}</h3>
-                <Badge variant="secondary" className="bg-red-100 text-red-800 text-[10px] sm:text-xs mt-1">
+                <h3 className="font-bold font-serif text-base text-red-800 dark:text-red-300 truncate">{organizationName}</h3>
+                <Badge variant="secondary" className="bg-red-200 text-red-800 text-[10px] sm:text-xs mt-1 font-semibold">
                   Emergency Services
                 </Badge>
               </div>
@@ -1137,7 +1134,7 @@ const EmergencyProviderCard = ({ provider }: EmergencyProviderCardProps) => {
             </div>
             
             {address && (
-              <p className="text-[10px] sm:text-xs font-medium text-gray-600 dark:text-gray-400 truncate flex items-center gap-1">
+              <p className="text-[10px] sm:text-xs font-medium text-red-700/80 dark:text-red-400 truncate flex items-center gap-1">
                 <MapPin className="w-3 h-3 shrink-0" /> <span className="truncate">{address}</span>
               </p>
             )}
@@ -1161,7 +1158,7 @@ const EmergencyProviderCard = ({ provider }: EmergencyProviderCardProps) => {
               <Button 
                 size="sm" 
                 variant="outline" 
-                className="flex-1 font-bold border-red-200 text-red-700 hover:text-red-800 hover:bg-red-50"
+                className="flex-1 font-bold border-red-300 text-red-700 hover:text-red-800 hover:bg-red-100"
                 onClick={() => setShowBooking(true)}
                 data-testid={`book-emergency-provider-${provider._id}`}
               >
@@ -1387,8 +1384,32 @@ export default function Directory() {
   const [aiExpanded, setAiExpanded] = useState(true);
   const [viewMode, setViewMode] = useState<"ai" | "browse">("ai");
   const [selectedProviderForMap, setSelectedProviderForMap] = useState<string | null>(null);
-  const [activeTab, setActiveTab] = useState("providers");
+  const [activeTab, setActiveTab] = useState(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return urlParams.get('tab') || "providers";
+  });
   const { user } = useAuth();
+  
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const tabParam = urlParams.get('tab');
+    if (tabParam === 'emergency') {
+      setActiveTab('emergency');
+      // Scroll to the emergency tab content after a brief delay to ensure content is rendered
+      setTimeout(() => {
+        const emergencyContent = document.querySelector('[data-testid="emergency-tab-content"]');
+        if (emergencyContent) {
+          emergencyContent.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        } else {
+          // Fallback to scrolling to the tabs section
+          const tabsSection = document.querySelector('[data-testid="directory-tabs"]');
+          if (tabsSection) {
+            tabsSection.scrollIntoView({ behavior: 'smooth', block: 'start' });
+          }
+        }
+      }, 200);
+    }
+  }, []);
 
   const handleProviderLocationClick = (providerId: string) => {
     setSelectedProviderForMap(providerId);
@@ -1436,21 +1457,35 @@ export default function Directory() {
   const providers = providersData?.providers || [];
 
   const filteredProviders = useMemo(() => {
-    if (!search) return providers;
-    const searchLower = search.toLowerCase();
-    return providers.filter((p: any) => {
-      const name = getProviderName(p).toLowerCase();
-      const specialties = (p.professionalInfo?.specialties || []).join(' ').toLowerCase();
-      const practiceName = (p.practice?.name || '').toLowerCase();
-      const address = p.practice?.address ? 
-        `${p.practice.address.street || ''} ${p.practice.address.city || ''} ${p.practice.address.state || ''} ${p.practice.address.postcode || ''}`.toLowerCase() : '';
-      const practiceCity = (p.practice?.city || '').toLowerCase();
-      return name.includes(searchLower) || 
-             specialties.includes(searchLower) || 
-             practiceName.includes(searchLower) ||
-             address.includes(searchLower) ||
-             practiceCity.includes(searchLower);
+    let filtered = providers.filter((p: any) => {
+      // Check both specialty field and specialties array for emergency providers
+      const specialty = p.professionalInfo?.specialty || '';
+      const specialties = p.professionalInfo?.specialties || [];
+      const isEmergencyBySpecialty = specialty.toLowerCase().includes('emergency');
+      const isEmergencyBySpecialties = specialties.some((s: string) => 
+        s.toLowerCase() === 'emergency' || s.toLowerCase().includes('emergency')
+      );
+      return !isEmergencyBySpecialty && !isEmergencyBySpecialties;
     });
+    
+    if (search) {
+      const searchLower = search.toLowerCase();
+      filtered = filtered.filter((p: any) => {
+        const name = getProviderName(p).toLowerCase();
+        const specialties = (p.professionalInfo?.specialties || []).join(' ').toLowerCase();
+        const practiceName = (p.practice?.name || '').toLowerCase();
+        const address = p.practice?.address ? 
+          `${p.practice.address.street || ''} ${p.practice.address.city || ''} ${p.practice.address.state || ''} ${p.practice.address.postcode || ''}`.toLowerCase() : '';
+        const practiceCity = (p.practice?.city || '').toLowerCase();
+        return name.includes(searchLower) || 
+               specialties.includes(searchLower) || 
+               practiceName.includes(searchLower) ||
+               address.includes(searchLower) ||
+               practiceCity.includes(searchLower);
+      });
+    }
+    
+    return filtered;
   }, [providers, search]);
 
   const MapPreview = () => {
@@ -1750,7 +1785,8 @@ export default function Directory() {
               } else if (val === "providers") {
                 setSpecialty("all");
               }
-            }}>
+            }}
+            data-testid="directory-tabs">
             <TabsList className="w-full justify-start overflow-x-auto h-auto p-0.5 sm:p-1 bg-transparent gap-1 sm:gap-2 mb-4 no-scrollbar flex-wrap sm:flex-nowrap">
               <TabsTrigger 
                 value="emergency"

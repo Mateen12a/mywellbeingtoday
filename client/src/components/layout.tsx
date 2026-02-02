@@ -13,6 +13,7 @@ import {
   Activity,
   Heart,
   Calendar,
+  CalendarCheck,
   FileText,
   MapPin,
   MessageSquare,
@@ -260,7 +261,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   Dashboard
                 </NavLink>
                 <NavLink href="/activity" icon={Activity}>
-                  Log
+                  Log Activity
                 </NavLink>
                 <NavLink href="/mood" icon={Heart}>
                   Mood
@@ -538,6 +539,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                         <div className="px-2 py-1 mt-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
                           Account
                         </div>
+                        <NavLink href="/appointments" icon={CalendarCheck}>
+                          My Appointments
+                        </NavLink>
                         <NavLink href="/history" icon={Calendar}>
                           History & Records
                         </NavLink>

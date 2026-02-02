@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { formatLabel } from "@/lib/utils";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -46,7 +47,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Search, MoreHorizontal, AlertCircle, User, Loader2, Trash2, Bot, Filter, AlertTriangle } from "lucide-react";
+import { Search, MoreHorizontal, AlertCircle, User, Loader2, Trash2, Bot, AlertTriangle, Eye, Ban, Mail, Phone, Calendar, MapPin } from "lucide-react";
+import { Separator } from "@/components/ui/separator";
 import AdminLayout from "@/components/admin-layout";
 import api from "@/lib/api";
 
@@ -152,6 +154,13 @@ export default function AdminUsersPage() {
   });
   const [actionReason, setActionReason] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
+  const [viewProfileDialog, setViewProfileDialog] = useState<{
+    open: boolean;
+    user: any | null;
+  }>({
+    open: false,
+    user: null,
+  });
 
   const isSuperAdmin = currentUser?.role === "admin";
 
@@ -404,7 +413,7 @@ export default function AdminUsersPage() {
                           </td>
                           <td className="px-6 py-4">
                             <Badge variant="outline" className="capitalize">
-                              {user.role?.replace('_', ' ')}
+                              {formatLabel(user.role)}
                             </Badge>
                           </td>
                           <td className="px-6 py-4 text-muted-foreground">
@@ -451,36 +460,68 @@ export default function AdminUsersPage() {
                             </div>
                           </td>
                           <td className="px-6 py-4 text-right">
-                            <DropdownMenu>
-                              <DropdownMenuTrigger asChild>
-                                <Button variant="ghost" size="icon" data-testid={`button-user-actions-${user._id}`}>
-                                  <MoreHorizontal className="h-4 w-4" />
-                                </Button>
-                              </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end">
-                                <DropdownMenuItem onClick={() => openActionDialog("role", user)}>
-                                  Change Role
-                                </DropdownMenuItem>
-                                <DropdownMenuItem
-                                  onClick={() => openActionDialog("suspend", user)}
-                                  className="text-amber-600 focus:text-amber-600"
-                                >
-                                  Disable Account
-                                </DropdownMenuItem>
-                                {canDeleteUser(user) && (
-                                  <>
-                                    <DropdownMenuSeparator />
-                                    <DropdownMenuItem
-                                      onClick={() => openDeleteDialog(user)}
-                                      className="text-red-600 focus:text-red-600"
+                            <div className="flex items-center justify-end gap-1">
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-8 w-8"
+                                    onClick={() => setViewProfileDialog({ open: true, user })}
+                                    data-testid={`button-view-user-${user._id}`}
+                                  >
+                                    <Eye className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>View Profile</TooltipContent>
+                              </Tooltip>
+                              {user.isActive !== false && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                                      onClick={() => openActionDialog("suspend", user)}
+                                      data-testid={`button-suspend-user-${user._id}`}
                                     >
-                                      <Trash2 className="h-4 w-4 mr-2" />
-                                      Delete User
-                                    </DropdownMenuItem>
-                                  </>
-                                )}
-                              </DropdownMenuContent>
-                            </DropdownMenu>
+                                      <Ban className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Suspend User</TooltipContent>
+                                </Tooltip>
+                              )}
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="icon" className="h-8 w-8" data-testid={`button-user-actions-${user._id}`}>
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end">
+                                  <DropdownMenuItem onClick={() => openActionDialog("role", user)}>
+                                    Change Role
+                                  </DropdownMenuItem>
+                                  <DropdownMenuItem
+                                    onClick={() => openActionDialog("suspend", user)}
+                                    className="text-amber-600 focus:text-amber-600"
+                                  >
+                                    Disable Account
+                                  </DropdownMenuItem>
+                                  {canDeleteUser(user) && (
+                                    <>
+                                      <DropdownMenuSeparator />
+                                      <DropdownMenuItem
+                                        onClick={() => openDeleteDialog(user)}
+                                        className="text-red-600 focus:text-red-600"
+                                      >
+                                        <Trash2 className="h-4 w-4 mr-2" />
+                                        Delete User
+                                      </DropdownMenuItem>
+                                    </>
+                                  )}
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </div>
                           </td>
                         </tr>
                       );
@@ -638,6 +679,132 @@ export default function AdminUsersPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* View Profile Dialog */}
+      <Dialog
+        open={viewProfileDialog.open}
+        onOpenChange={(open) => !open && setViewProfileDialog({ open: false, user: null })}
+      >
+        <DialogContent className="sm:max-w-[500px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <User className="h-5 w-5" />
+              User Profile
+            </DialogTitle>
+            <DialogDescription>
+              Viewing profile details for {getUserDisplayName(viewProfileDialog.user)}
+            </DialogDescription>
+          </DialogHeader>
+          {viewProfileDialog.user && (
+            <div className="space-y-4">
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarFallback className="text-lg bg-primary/10 text-primary font-semibold">
+                    {getInitials(viewProfileDialog.user)}
+                  </AvatarFallback>
+                </Avatar>
+                <div>
+                  <h3 className="font-semibold text-lg">{getUserDisplayName(viewProfileDialog.user)}</h3>
+                  <div className="flex items-center gap-2 mt-1">
+                    <Badge variant={viewProfileDialog.user.isActive !== false ? "default" : "secondary"}>
+                      {viewProfileDialog.user.isActive !== false ? "Active" : "Disabled"}
+                    </Badge>
+                    <Badge variant="outline" className="capitalize">
+                      {formatLabel(viewProfileDialog.user.role)}
+                    </Badge>
+                  </div>
+                </div>
+              </div>
+              
+              <Separator />
+              
+              <div className="space-y-3">
+                <div className="flex items-center gap-3 text-sm">
+                  <Mail className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Email:</span>
+                  <span className="font-medium">{viewProfileDialog.user.email}</span>
+                  {viewProfileDialog.user.isEmailVerified && (
+                    <Badge variant="outline" className="text-green-600 border-green-600 text-xs">Verified</Badge>
+                  )}
+                </div>
+                
+                {viewProfileDialog.user.profile?.phone && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Phone className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Phone:</span>
+                    <span className="font-medium">{viewProfileDialog.user.profile.phone}</span>
+                  </div>
+                )}
+                
+                <div className="flex items-center gap-3 text-sm">
+                  <Calendar className="h-4 w-4 text-muted-foreground" />
+                  <span className="text-muted-foreground">Joined:</span>
+                  <span className="font-medium">
+                    {new Date(viewProfileDialog.user.createdAt).toLocaleDateString('en-GB', {
+                      day: 'numeric',
+                      month: 'long',
+                      year: 'numeric'
+                    })}
+                  </span>
+                </div>
+                
+                {viewProfileDialog.user.lastLoginAt && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <Calendar className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Last Login:</span>
+                    <span className="font-medium">
+                      {new Date(viewProfileDialog.user.lastLoginAt).toLocaleDateString('en-GB', {
+                        day: 'numeric',
+                        month: 'long',
+                        year: 'numeric'
+                      })}
+                    </span>
+                  </div>
+                )}
+
+                {viewProfileDialog.user.profile?.address?.city && (
+                  <div className="flex items-center gap-3 text-sm">
+                    <MapPin className="h-4 w-4 text-muted-foreground" />
+                    <span className="text-muted-foreground">Location:</span>
+                    <span className="font-medium">{viewProfileDialog.user.profile.address.city}</span>
+                  </div>
+                )}
+              </div>
+              
+              {analyzeUserRisk(viewProfileDialog.user).length > 0 && (
+                <>
+                  <Separator />
+                  <div>
+                    <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
+                      <Bot className="h-4 w-4" />
+                      AI Risk Assessment
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {analyzeUserRisk(viewProfileDialog.user).map((risk, idx) => (
+                        <Badge
+                          key={idx}
+                          variant="outline"
+                          className={getRiskBadgeStyles(risk.level)}
+                        >
+                          {risk.label}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </>
+              )}
+            </div>
+          )}
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setViewProfileDialog({ open: false, user: null })}
+            >
+              Close
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </AdminLayout>
   );
 }

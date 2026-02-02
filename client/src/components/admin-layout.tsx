@@ -1,5 +1,6 @@
 import { ReactNode, useState } from "react";
 import { useLocation } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator as UiSeparator } from "@/components/ui/separator";
@@ -68,6 +69,7 @@ interface AdminNotification {
 export default function AdminLayout({ children, title = "Admin Dashboard" }: AdminLayoutProps) {
   const { toast } = useToast();
   const [location, setLocation] = useLocation();
+  const { logout } = useAuth();
   const currentUser = api.getUser();
   
   const [notifications, setNotifications] = useState<AdminNotification[]>([
@@ -112,7 +114,7 @@ export default function AdminLayout({ children, title = "Admin Dashboard" }: Adm
     { id: "users", label: "User Management", icon: Users, path: "/admin/users" },
     { id: "providers", label: "Providers", icon: UserCheck, path: "/admin/providers" },
     { id: "content", label: "Content", icon: FileText, path: "/admin/content" },
-    { id: "activity", label: "Activity Log", icon: Activity, path: "/admin/activity" },
+    { id: "activity", label: "System Log", icon: Activity, path: "/admin/activity" },
     { id: "reported-chats", label: "Reported Chats", icon: Flag, path: "/admin/reported-chats" },
     { id: "support", label: "Support Tickets", icon: Headphones, path: "/admin/support" },
     { id: "audit-logs", label: "Audit Logs", icon: Clock, path: "/admin/audit-logs" },
@@ -121,7 +123,7 @@ export default function AdminLayout({ children, title = "Admin Dashboard" }: Adm
 
   const handleLogout = async () => {
     try {
-      await api.logout();
+      await logout();
     } catch {
       // Ignore errors - logout already cleared local tokens
     }
