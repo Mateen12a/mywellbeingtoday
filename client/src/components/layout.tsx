@@ -25,15 +25,13 @@ import {
   Globe,
   Stethoscope,
   AlertTriangle,
-  Bell,
-  Check
+  Bell
 } from "lucide-react";
 import { useState, useEffect } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
-import user2 from "@assets/stock_images/professional_headsho_65477c19.jpg";
 import { useAuth } from "@/contexts/AuthContext";
 import {
   DropdownMenu,
@@ -45,18 +43,137 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import api from "@/lib/api";
+import { registerServiceWorker, subscribeToPushNotifications, isPushSupported, getPushPermissionStatus } from '@/lib/pushNotifications';
 
 function getInitials(firstName: string, lastName: string): string {
   return `${firstName?.charAt(0) || ""}${lastName?.charAt(0) || ""}`.toUpperCase();
 }
 
-interface Notification {
-  id: string;
-  title: string;
-  message: string;
-  time: string;
-  read: boolean;
-  type: 'info' | 'success' | 'warning';
+function NotificationBell() {
+  const [, setLocation] = useLocation();
+  const queryClient = useQueryClient();
+  const [open, setOpen] = useState(false);
+
+  const { data: countData } = useQuery({
+    queryKey: ['unreadNotificationCount'],
+    queryFn: () => api.getUnreadNotificationCount(),
+    refetchInterval: 30000,
+  });
+
+  const { data: notifData, refetch: refetchNotifications } = useQuery({
+    queryKey: ['notifications'],
+    queryFn: () => api.getNotifications(1, 20),
+    enabled: open,
+  });
+
+  const unreadCount = countData?.data?.count || 0;
+  const notifications = notifData?.data?.notifications || [];
+
+  const handleMarkAllRead = async () => {
+    await api.markAllNotificationsAsRead();
+    queryClient.invalidateQueries({ queryKey: ['unreadNotificationCount'] });
+    queryClient.invalidateQueries({ queryKey: ['notifications'] });
+  };
+
+  const handleNotificationClick = async (notification: any) => {
+    if (!notification.read) {
+      await api.markNotificationAsRead(notification._id);
+      queryClient.invalidateQueries({ queryKey: ['unreadNotificationCount'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    }
+    setOpen(false);
+    if (notification.link) {
+      setLocation(notification.link);
+    }
+  };
+
+  const getTimeAgo = (date: string) => {
+    const now = new Date();
+    const then = new Date(date);
+    const diffMs = now.getTime() - then.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins}m ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return then.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+  };
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case 'login': return '🔐';
+      case 'register': case 'welcome': return '🎉';
+      case 'mood_logged': return '😊';
+      case 'activity_logged': return '🏃';
+      case 'appointment_booked': case 'appointment_confirmed': return '📅';
+      case 'appointment_cancelled': return '❌';
+      case 'emergency': return '🚨';
+      case 'provider_verified': return '✅';
+      default: return '🔔';
+    }
+  };
+
+  return (
+    <Popover open={open} onOpenChange={(isOpen) => { setOpen(isOpen); if (isOpen) refetchNotifications(); }}>
+      <PopoverTrigger asChild>
+        <Button variant="ghost" size="icon" className="relative">
+          <Bell className="h-5 w-5" />
+          {unreadCount > 0 && (
+            <span className="absolute -top-1 -right-1 bg-red-500 text-white text-[10px] font-bold rounded-full h-5 w-5 flex items-center justify-center">
+              {unreadCount > 99 ? '99+' : unreadCount}
+            </span>
+          )}
+        </Button>
+      </PopoverTrigger>
+      <PopoverContent className="w-80 sm:w-96 p-0" align="end">
+        <div className="flex items-center justify-between p-3 border-b">
+          <h3 className="font-semibold text-sm">Notifications</h3>
+          {unreadCount > 0 && (
+            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={handleMarkAllRead}>
+              Mark all read
+            </Button>
+          )}
+        </div>
+        <ScrollArea className="max-h-[400px]">
+          {notifications.length === 0 ? (
+            <div className="p-6 text-center text-sm text-muted-foreground">
+              No notifications yet
+            </div>
+          ) : (
+            <div className="divide-y">
+              {notifications.map((notification: any) => (
+                <button
+                  key={notification._id}
+                  className={`w-full text-left p-3 hover:bg-muted/50 transition-colors flex gap-3 ${
+                    !notification.read ? 'bg-primary/5' : ''
+                  }`}
+                  onClick={() => handleNotificationClick(notification)}
+                >
+                  <span className="text-lg shrink-0 mt-0.5">{getNotificationIcon(notification.type)}</span>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2">
+                      <p className={`text-sm truncate ${!notification.read ? 'font-semibold' : 'font-medium'}`}>
+                        {notification.title}
+                      </p>
+                      {!notification.read && (
+                        <span className="h-2 w-2 bg-primary rounded-full shrink-0" />
+                      )}
+                    </div>
+                    <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{notification.message}</p>
+                    <p className="text-[10px] text-muted-foreground mt-1">{getTimeAgo(notification.createdAt)}</p>
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </ScrollArea>
+      </PopoverContent>
+    </Popover>
+  );
 }
 
 export default function Layout({ children }: { children: React.ReactNode }) {
@@ -64,73 +181,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showMobileTitle, setShowMobileTitle] = useState(false);
   const { isAuthenticated, logout, user } = useAuth();
-  
-  // Load notifications with read status from localStorage
-  const [notifications, setNotifications] = useState<Notification[]>(() => {
-    const defaultNotifications: Notification[] = [
-      {
-        id: '1',
-        title: 'Welcome to mywellbeingtoday',
-        message: 'Start tracking your mood and activities to get personalized insights.',
-        time: '2 hours ago',
-        read: false,
-        type: 'info'
-      },
-      {
-        id: '2',
-        title: 'Daily Check-in Reminder',
-        message: "Don't forget to log your mood today for better wellbeing tracking.",
-        time: '5 hours ago',
-        read: false,
-        type: 'info'
-      },
-      {
-        id: '3',
-        title: 'Weekly Report Ready',
-        message: 'Your wellbeing report for last week is now available.',
-        time: '1 day ago',
-        read: true,
-        type: 'success'
-      }
-    ];
-    
-    // Check localStorage for read status
-    try {
-      const savedReadStatus = localStorage.getItem('notification_read_status');
-      if (savedReadStatus) {
-        const readIds = JSON.parse(savedReadStatus) as string[];
-        return defaultNotifications.map(n => ({
-          ...n,
-          read: readIds.includes(n.id) || n.read
-        }));
-      }
-    } catch (e) {
-      console.error('Error loading notification status:', e);
-    }
-    return defaultNotifications;
-  });
-  
-  const unreadCount = notifications.filter(n => !n.read).length;
-  
-  const markAsRead = (id: string) => {
-    setNotifications(prev => {
-      const updated = prev.map(n => n.id === id ? { ...n, read: true } : n);
-      // Save to localStorage
-      const readIds = updated.filter(n => n.read).map(n => n.id);
-      localStorage.setItem('notification_read_status', JSON.stringify(readIds));
-      return updated;
-    });
-  };
-  
-  const markAllAsRead = () => {
-    setNotifications(prev => {
-      const updated = prev.map(n => ({ ...n, read: true }));
-      // Save to localStorage
-      const readIds = updated.map(n => n.id);
-      localStorage.setItem('notification_read_status', JSON.stringify(readIds));
-      return updated;
-    });
-  };
 
   const isAdmin = location.startsWith("/admin/") || location === "/admin";
   const isAdminLogin = location === "/admin-login";
@@ -140,6 +190,21 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     window.scrollTo(0, 0);
   }, [location]);
+
+  useEffect(() => {
+    if (user && isPushSupported() && getPushPermissionStatus() === 'default') {
+      registerServiceWorker().then(() => {
+        const timer = setTimeout(() => {
+          subscribeToPushNotifications();
+        }, 3000);
+        return () => clearTimeout(timer);
+      });
+    } else if (user && isPushSupported() && getPushPermissionStatus() === 'granted') {
+      registerServiceWorker().then(() => {
+        subscribeToPushNotifications();
+      });
+    }
+  }, [user]);
 
   // Typing effect logic for mobile/tablet dashboard
   useEffect(() => {
@@ -282,72 +347,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   </div>
                 </Link>
                 <div className="h-6 w-px bg-border mx-2" />
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button 
-                      variant="ghost" 
-                      size="icon" 
-                      className="relative rounded-full"
-                      data-testid="button-notifications"
-                    >
-                      <Bell className="h-5 w-5" />
-                      {unreadCount > 0 && (
-                        <span className="absolute -top-1 -right-1 h-5 w-5 bg-red-500 rounded-full flex items-center justify-center text-[10px] font-bold text-white border-2 border-white">
-                          {unreadCount > 9 ? '9+' : unreadCount}
-                        </span>
-                      )}
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-80 p-0 rounded-xl shadow-xl" align="end">
-                    <div className="flex items-center justify-between px-4 py-3 border-b bg-muted/30">
-                      <h4 className="font-semibold text-sm">Notifications</h4>
-                      {unreadCount > 0 && (
-                        <Button 
-                          variant="ghost" 
-                          size="sm" 
-                          className="h-7 text-xs text-primary hover:text-primary"
-                          onClick={markAllAsRead}
-                          data-testid="button-mark-all-read"
-                        >
-                          <Check className="h-3 w-3 mr-1" />
-                          Mark all read
-                        </Button>
-                      )}
-                    </div>
-                    <ScrollArea className="max-h-[300px]">
-                      {notifications.length === 0 ? (
-                        <div className="p-4 text-center text-sm text-muted-foreground">
-                          No notifications
-                        </div>
-                      ) : (
-                        <div className="divide-y">
-                          {notifications.map((notification) => (
-                            <div 
-                              key={notification.id}
-                              className={cn(
-                                "p-3 hover:bg-muted/50 transition-colors cursor-pointer",
-                                !notification.read && "bg-primary/5"
-                              )}
-                              onClick={() => markAsRead(notification.id)}
-                              data-testid={`notification-item-${notification.id}`}
-                            >
-                              <div className="flex items-start gap-3">
-                                {!notification.read && (
-                                  <span className="h-2 w-2 bg-primary rounded-full mt-1.5 shrink-0" />
-                                )}
-                                <div className={cn("flex-1", notification.read && "ml-5")}>
-                                  <p className="font-medium text-sm">{notification.title}</p>
-                                  <p className="text-xs text-muted-foreground mt-0.5">{notification.message}</p>
-                                  <p className="text-xs text-muted-foreground mt-1">{notification.time}</p>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </ScrollArea>
-                  </PopoverContent>
-                </Popover>
+                <NotificationBell />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant="ghost" size="icon" className="rounded-full">
@@ -393,69 +393,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {/* Mobile/Tablet Menu */}
           <div className="xl:hidden flex items-center gap-1 shrink-0">
             {isAuthenticated && (
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button 
-                    variant="ghost" 
-                    size="icon" 
-                    className="relative h-9 w-9"
-                    data-testid="button-notifications-mobile"
-                  >
-                    <Bell className="h-4 w-4" />
-                    {unreadCount > 0 && (
-                      <span className="absolute -top-0.5 -right-0.5 h-4 w-4 bg-red-500 rounded-full flex items-center justify-center text-[8px] font-bold text-white">
-                        {unreadCount > 9 ? '9+' : unreadCount}
-                      </span>
-                    )}
-                  </Button>
-                </PopoverTrigger>
-                <PopoverContent className="w-72 p-0 rounded-xl shadow-xl" align="end">
-                  <div className="flex items-center justify-between px-3 py-2 border-b bg-muted/30">
-                    <h4 className="font-semibold text-sm">Notifications</h4>
-                    {unreadCount > 0 && (
-                      <Button 
-                        variant="ghost" 
-                        size="sm" 
-                        className="h-6 text-xs text-primary"
-                        onClick={markAllAsRead}
-                      >
-                        Mark all read
-                      </Button>
-                    )}
-                  </div>
-                  <ScrollArea className="max-h-[250px]">
-                    {notifications.length === 0 ? (
-                      <div className="p-3 text-center text-sm text-muted-foreground">
-                        No notifications
-                      </div>
-                    ) : (
-                      <div className="divide-y">
-                        {notifications.map((notification) => (
-                          <div 
-                            key={notification.id}
-                            className={cn(
-                              "p-2.5 hover:bg-muted/50 transition-colors cursor-pointer",
-                              !notification.read && "bg-primary/5"
-                            )}
-                            onClick={() => markAsRead(notification.id)}
-                          >
-                            <div className="flex items-start gap-2">
-                              {!notification.read && (
-                                <span className="h-1.5 w-1.5 bg-primary rounded-full mt-1.5 shrink-0" />
-                              )}
-                              <div className={cn("flex-1", notification.read && "ml-3.5")}>
-                                <p className="font-medium text-xs">{notification.title}</p>
-                                <p className="text-[11px] text-muted-foreground mt-0.5 line-clamp-2">{notification.message}</p>
-                                <p className="text-[10px] text-muted-foreground mt-1">{notification.time}</p>
-                              </div>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    )}
-                  </ScrollArea>
-                </PopoverContent>
-              </Popover>
+              <NotificationBell />
             )}
             <Sheet open={isOpen} onOpenChange={setIsOpen}>
               <SheetTrigger asChild>

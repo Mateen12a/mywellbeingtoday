@@ -339,6 +339,53 @@ const createNotificationEmailTemplate = (userName, subject, content, actionUrl =
   return createEmailWrapper(htmlContent);
 };
 
+const createOTPEmailTemplate = (userName, otpCode) => {
+  const digits = otpCode.split('');
+  const digitBoxes = digits.map(d => `
+    <td style="width: 48px; height: 56px; background-color: ${COLORS.lightBg}; border: 2px solid ${COLORS.primary}; border-radius: 8px; text-align: center; vertical-align: middle; margin: 0 4px;">
+      <span style="font-size: 28px; font-weight: 700; color: ${COLORS.text}; font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, monospace;">${d}</span>
+    </td>
+  `).join('<td style="width: 8px;"></td>');
+
+  const content = `
+    <tr>
+      <td>
+        ${createEmailHeader()}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding: 40px 30px;">
+        <p style="margin: 0 0 20px 0; font-size: 18px; color: ${COLORS.text}; line-height: 1.6; font-weight: 600;">
+          Verify Your Email
+        </p>
+        <p style="margin: 0 0 24px 0; font-size: 16px; color: ${COLORS.text}; line-height: 1.6;">
+          Hello ${userName},
+        </p>
+        <p style="margin: 0 0 24px 0; font-size: 16px; color: ${COLORS.text}; line-height: 1.6;">
+          Your verification code is:
+        </p>
+        <table cellpadding="0" cellspacing="0" style="border-collapse: collapse; margin: 24px auto;">
+          <tr>
+            ${digitBoxes}
+          </tr>
+        </table>
+        <p style="margin: 24px 0 0 0; font-size: 14px; color: ${COLORS.lightText}; line-height: 1.6; text-align: center;">
+          This code expires in <strong>10 minutes</strong>.
+        </p>
+        <p style="margin: 24px 0 0 0; font-size: 14px; color: ${COLORS.lightText}; line-height: 1.6;">
+          <strong>Security Note:</strong> If you didn't request this, ignore this email. We'll never ask for your password via email.
+        </p>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        ${createEmailFooter()}
+      </td>
+    </tr>
+  `;
+  return createEmailWrapper(content);
+};
+
 // ============ EXPORT FUNCTIONS ============
 
 /**
@@ -551,10 +598,39 @@ export async function sendNotification(
   }
 }
 
+export async function sendOTPEmail(email, userName, otpCode) {
+  try {
+    if (!resend) {
+      console.log('[EMAIL SERVICE] RESEND_API_KEY not configured. OTP email would be sent to:', {
+        to: email,
+        userName,
+        otpCode,
+        timestamp: new Date().toISOString()
+      });
+      return { success: true, fallback: true, message: 'Email logged (API key not configured)' };
+    }
+
+    const html = createOTPEmailTemplate(userName, otpCode);
+    const response = await resend.emails.send({
+      from: SENDER_EMAIL,
+      to: email,
+      subject: 'Your Verification Code - mywellbeingtoday',
+      html
+    });
+
+    console.log('[EMAIL SERVICE] OTP email sent to:', email);
+    return response;
+  } catch (error) {
+    console.error('[EMAIL SERVICE] Error sending OTP email:', error);
+    throw error;
+  }
+}
+
 export default {
   sendVerificationEmail,
   sendPasswordResetEmail,
   sendWelcomeEmail,
   sendAppointmentConfirmation,
-  sendNotification
+  sendNotification,
+  sendOTPEmail
 };

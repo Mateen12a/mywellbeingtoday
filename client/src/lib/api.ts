@@ -29,6 +29,7 @@ class ApiClient {
     localStorage.removeItem('accessToken');
     localStorage.removeItem('refreshToken');
     localStorage.removeItem('user');
+    localStorage.removeItem('rememberMe');
   }
 
   getUser() {
@@ -133,6 +134,12 @@ class ApiClient {
       }
 
       const data = await response.json();
+      if (data.success && data.data?.requiresOtpReverification) {
+        this.clearTokens();
+        const email = data.data.email || '';
+        window.location.href = `/auth/reverify?email=${encodeURIComponent(email)}`;
+        return false;
+      }
       if (data.success && data.data) {
         this.setTokens(data.data.accessToken, data.data.refreshToken);
         return true;
@@ -145,7 +152,7 @@ class ApiClient {
   }
 
   async register(email: string, password: string, firstName: string, lastName: string) {
-    const response = await this.request<{ user: any; accessToken: string; refreshToken: string }>(
+    const response = await this.request<{ user: any; accessToken: string; refreshToken: string; requiresVerification?: boolean; email?: string }>(
       '/auth/register',
       {
         method: 'POST',
@@ -153,7 +160,7 @@ class ApiClient {
       }
     );
 
-    if (response.success && response.data) {
+    if (response.success && response.data && !response.data.requiresVerification) {
       this.setTokens(response.data.accessToken, response.data.refreshToken);
       this.setUser(response.data.user);
     }
@@ -162,7 +169,7 @@ class ApiClient {
   }
 
   async registerProvider(email: string, password: string, firstName: string, lastName: string, providerData: any) {
-    const response = await this.request<{ user: any; provider: any; accessToken: string; refreshToken: string }>(
+    const response = await this.request<{ user: any; provider: any; accessToken: string; refreshToken: string; requiresVerification?: boolean; email?: string }>(
       '/auth/register-provider',
       {
         method: 'POST',
@@ -170,7 +177,7 @@ class ApiClient {
       }
     );
 
-    if (response.success && response.data) {
+    if (response.success && response.data && !response.data.requiresVerification) {
       this.setTokens(response.data.accessToken, response.data.refreshToken);
       this.setUser(response.data.user);
     }
@@ -178,21 +185,43 @@ class ApiClient {
     return response;
   }
 
-  async login(email: string, password: string) {
-    const response = await this.request<{ user: any; accessToken: string; refreshToken: string }>(
+  async login(email: string, password: string, rememberMe: boolean = false) {
+    const response = await this.request<{ user: any; accessToken: string; refreshToken: string; requiresVerification?: boolean; email?: string; rememberMe?: boolean }>(
       '/auth/login',
       {
         method: 'POST',
-        body: JSON.stringify({ email, password }),
+        body: JSON.stringify({ email, password, rememberMe }),
       }
     );
 
-    if (response.success && response.data) {
+    if (response.success && response.data && !response.data.requiresVerification) {
       this.setTokens(response.data.accessToken, response.data.refreshToken);
       this.setUser(response.data.user);
+      localStorage.setItem('rememberMe', String(!!rememberMe));
     }
 
     return response;
+  }
+
+  async verifyOTP(email: string, otp: string): Promise<ApiResponse> {
+    return this.request('/auth/verify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp }),
+    });
+  }
+
+  async reverifyOTP(email: string, otp: string): Promise<ApiResponse> {
+    return this.request('/auth/reverify-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp }),
+    });
+  }
+
+  async resendOTP(email: string): Promise<ApiResponse> {
+    return this.request('/auth/resend-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email }),
+    });
   }
 
   async logout() {
@@ -942,6 +971,54 @@ class ApiClient {
       trialDays: number;
       stripeConfigured: boolean;
     }>('/subscription/pricing');
+  }
+
+  async getNotifications(page = 1, limit = 20, unreadOnly = false): Promise<ApiResponse> {
+    const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
+    if (unreadOnly) params.set('unreadOnly', 'true');
+    return this.request(`/notifications?${params.toString()}`);
+  }
+
+  async getUnreadNotificationCount(): Promise<ApiResponse> {
+    return this.request('/notifications/unread-count');
+  }
+
+  async markNotificationAsRead(id: string): Promise<ApiResponse> {
+    return this.request(`/notifications/${id}/read`, { method: 'PUT' });
+  }
+
+  async markAllNotificationsAsRead(): Promise<ApiResponse> {
+    return this.request('/notifications/mark-all-read', { method: 'PUT' });
+  }
+
+  async deleteNotification(id: string): Promise<ApiResponse> {
+    return this.request(`/notifications/${id}`, { method: 'DELETE' });
+  }
+
+  async getVapidPublicKey(): Promise<ApiResponse> {
+    return this.request('/push/vapid-key');
+  }
+
+  async subscribeToPush(subscription: PushSubscription): Promise<ApiResponse> {
+    const sub = subscription.toJSON();
+    return this.request('/push/subscribe', {
+      method: 'POST',
+      body: JSON.stringify({
+        endpoint: sub.endpoint,
+        keys: sub.keys
+      }),
+    });
+  }
+
+  async unsubscribeFromPush(endpoint: string): Promise<ApiResponse> {
+    return this.request('/push/unsubscribe', {
+      method: 'POST',
+      body: JSON.stringify({ endpoint }),
+    });
+  }
+
+  async getPushSubscriptionStatus(): Promise<ApiResponse> {
+    return this.request('/push/status');
   }
 
   async getMoodSuggestion(activityData: { category: string; title: string; description?: string }) {

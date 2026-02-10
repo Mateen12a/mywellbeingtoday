@@ -8,7 +8,7 @@ import { startHealthCheck, stopHealthCheck } from "@/lib/healthCheck";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Layout from "@/components/layout";
 import Landing from "@/pages/landing";
-import { Login, Register, Verify, Recovery } from "@/pages/auth";
+import { Login, Register, Verify, Reverify, Recovery } from "@/pages/auth";
 import ProviderRegister from "@/pages/auth/provider-register";
 import AdminLogin from "@/pages/auth/admin-login";
 import AdminRegister from "@/pages/auth/admin-register";
@@ -60,6 +60,7 @@ function Router() {
         <Route path="/auth/register-admin" component={AdminRegister} />
         <Route path="/auth/admin-register-secret" component={AdminRegister} />
         <Route path="/auth/verify" component={Verify} />
+        <Route path="/auth/reverify" component={Reverify} />
         <Route path="/auth/recovery" component={Recovery} />
         
         {/* Admin Login Routes */}

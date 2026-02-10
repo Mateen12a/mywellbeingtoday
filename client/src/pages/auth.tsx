@@ -3,7 +3,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useLocation, Redirect } from "wouter";
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { Eye, EyeOff, ArrowLeft, Mail, Lock, User, Shield, Stethoscope, Building, FileText, Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
@@ -32,6 +32,7 @@ export function Login() {
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [rememberMe, setRememberMe] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { login, user, isLoading: authLoading } = useAuth();
@@ -51,7 +52,16 @@ export function Login() {
     setIsLoading(true);
 
     try {
-      const result = await login(email, password);
+      const result = await login(email, password, rememberMe);
+
+      if (result.requiresVerification) {
+        toast({
+          title: "Verification required",
+          description: "Please verify your email to continue.",
+        });
+        setLocation(`/auth/verify?email=${encodeURIComponent(email)}`);
+        return;
+      }
       
       if (result.success) {
         toast({
@@ -59,7 +69,6 @@ export function Login() {
           description: "Logged in successfully",
         });
         
-        // Get the updated user from localStorage (set by AuthContext)
         const userStr = localStorage.getItem('user');
         const user = userStr ? JSON.parse(userStr) : null;
         
@@ -136,6 +145,19 @@ export function Login() {
               {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
             </button>
           </div>
+        </div>
+        <div className="flex items-center gap-2">
+          <input
+            type="checkbox"
+            id="rememberMe"
+            checked={rememberMe}
+            onChange={(e) => setRememberMe(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-primary focus:ring-primary cursor-pointer"
+            disabled={isLoading}
+          />
+          <Label htmlFor="rememberMe" className="text-sm text-muted-foreground cursor-pointer select-none">
+            Remember me for 7 days
+          </Label>
         </div>
         <Button type="submit" className="w-full rounded-xl" size="lg" disabled={isLoading}>
           {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing in...</> : "Sign In"}
@@ -245,6 +267,15 @@ export function Register() {
         formData.lastName
       );
       
+      if (result.requiresVerification) {
+        toast({
+          title: "Check your email",
+          description: "We've sent a verification code to your email.",
+        });
+        setLocation(`/auth/verify?email=${encodeURIComponent(formData.email)}`);
+        return;
+      }
+
       if (result.success) {
         toast({
           title: "Account created!",
@@ -436,25 +467,280 @@ export function Register() {
 }
 
 export function Verify() {
-  const [, setLocation] = useLocation();
+  const { toast } = useToast();
 
-  const handleVerify = (e: React.FormEvent) => {
-    e.preventDefault();
-    setLocation("/dashboard");
+  const params = new URLSearchParams(window.location.search);
+  const email = params.get('email') || '';
+
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [isLoading, setIsLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => setResendCooldown(prev => prev - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
+
+  const maskEmail = (email: string) => {
+    const [local, domain] = email.split('@');
+    if (!domain) return email;
+    return `${local[0]}${'*'.repeat(Math.max(local.length - 1, 2))}@${domain}`;
   };
 
+  const handleChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+    const newOtp = [...otp];
+    newOtp[index] = value.slice(-1);
+    setOtp(newOtp);
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (pastedData.length === 6) {
+      setOtp(pastedData.split(''));
+      inputRefs.current[5]?.focus();
+    }
+  };
+
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = otp.join('');
+    if (code.length !== 6) {
+      toast({ title: "Invalid code", description: "Please enter the full 6-digit code", variant: "destructive" });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await api.verifyOTP(email, code);
+      if (response.success && response.data) {
+        api.setTokens(response.data.accessToken, response.data.refreshToken);
+        api.setUser(response.data.user);
+        toast({ title: "Email verified!", description: "Welcome to MyWellbeingToday" });
+        window.location.href = response.data.user.role === 'provider' ? '/provider-dashboard' : '/dashboard';
+      } else {
+        toast({ title: "Verification failed", description: response.message || "Invalid code", variant: "destructive" });
+        setOtp(['', '', '', '', '', '']);
+        inputRefs.current[0]?.focus();
+      }
+    } catch (error: any) {
+      toast({ title: "Verification failed", description: error.message || "Invalid or expired code", variant: "destructive" });
+      setOtp(['', '', '', '', '', '']);
+      inputRefs.current[0]?.focus();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    try {
+      await api.resendOTP(email);
+      setResendCooldown(60);
+      toast({ title: "Code sent", description: "A new verification code has been sent to your email." });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Could not resend code", variant: "destructive" });
+    }
+  };
+
+  if (!email) {
+    return <Redirect to="/auth/login" />;
+  }
+
   return (
-    <AuthLayout title="Verify Email" subtitle="Enter the code sent to your email">
+    <AuthLayout title="Verify Email" subtitle={`Enter the code sent to ${maskEmail(email)}`}>
       <form onSubmit={handleVerify} className="space-y-6">
-        <div className="space-y-2 text-center">
-          <div className="flex justify-center gap-2">
-            {[1, 2, 3, 4, 5, 6].map((i) => (
-              <Input key={i} className="w-10 h-12 text-center text-lg font-bold rounded-lg" maxLength={1} />
+        <div className="space-y-4 text-center">
+          <div className="flex justify-center gap-2" onPaste={handlePaste}>
+            {otp.map((digit, index) => (
+              <Input
+                key={index}
+                ref={(el) => { inputRefs.current[index] = el; }}
+                className="w-11 h-14 text-center text-xl font-bold rounded-lg"
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleChange(index, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
+                disabled={isLoading}
+                inputMode="numeric"
+                autoFocus={index === 0}
+              />
             ))}
           </div>
-          <p className="text-xs text-muted-foreground">Didn't receive code? <button type="button" className="text-primary hover:underline">Resend</button></p>
+          <p className="text-xs text-muted-foreground">
+            Didn't receive code?{' '}
+            {resendCooldown > 0 ? (
+              <span className="text-muted-foreground">Resend in {resendCooldown}s</span>
+            ) : (
+              <button type="button" onClick={handleResend} className="text-primary hover:underline font-medium">Resend</button>
+            )}
+          </p>
         </div>
-        <Button type="submit" className="w-full rounded-xl" size="lg">Verify & Continue</Button>
+        <Button type="submit" className="w-full rounded-xl" size="lg" disabled={isLoading}>
+          {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verifying...</> : "Verify & Continue"}
+        </Button>
+        <div className="text-center">
+          <Link href="/auth/login">
+            <Button variant="ghost" size="sm" className="text-muted-foreground">
+              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Login
+            </Button>
+          </Link>
+        </div>
+      </form>
+    </AuthLayout>
+  );
+}
+
+export function Reverify() {
+  const { toast } = useToast();
+  const [, setLocation] = useLocation();
+
+  const params = new URLSearchParams(window.location.search);
+  const email = params.get('email') || '';
+
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [isLoading, setIsLoading] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => setResendCooldown(prev => prev - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
+
+  const maskEmail = (email: string) => {
+    const [local, domain] = email.split('@');
+    if (!domain) return email;
+    return `${local[0]}${'*'.repeat(Math.max(local.length - 1, 2))}@${domain}`;
+  };
+
+  const handleChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+    const newOtp = [...otp];
+    newOtp[index] = value.slice(-1);
+    setOtp(newOtp);
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handlePaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (pastedData.length === 6) {
+      setOtp(pastedData.split(''));
+      inputRefs.current[5]?.focus();
+    }
+  };
+
+  const handleVerify = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = otp.join('');
+    if (code.length !== 6) {
+      toast({ title: "Invalid code", description: "Please enter the full 6-digit code", variant: "destructive" });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const response = await api.reverifyOTP(email, code);
+      if (response.success && response.data) {
+        api.setTokens(response.data.accessToken, response.data.refreshToken);
+        api.setUser(response.data.user);
+        toast({ title: "Verified!", description: "Session verified successfully" });
+        const dashboardPath = response.data.user.role === 'provider' ? '/provider-dashboard' : '/dashboard';
+        setLocation(dashboardPath);
+      } else {
+        toast({ title: "Verification failed", description: response.message || "Invalid code", variant: "destructive" });
+        setOtp(['', '', '', '', '', '']);
+        inputRefs.current[0]?.focus();
+      }
+    } catch (error: any) {
+      toast({ title: "Verification failed", description: error.message || "Invalid or expired code", variant: "destructive" });
+      setOtp(['', '', '', '', '', '']);
+      inputRefs.current[0]?.focus();
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleResend = async () => {
+    try {
+      await api.resendOTP(email);
+      setResendCooldown(60);
+      toast({ title: "Code sent", description: "A new verification code has been sent to your email." });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Could not resend code", variant: "destructive" });
+    }
+  };
+
+  if (!email) {
+    return <Redirect to="/auth/login" />;
+  }
+
+  return (
+    <AuthLayout title="Security Check" subtitle={`For your security, please enter the verification code sent to ${maskEmail(email)}`}>
+      <form onSubmit={handleVerify} className="space-y-6">
+        <div className="space-y-4 text-center">
+          <div className="h-12 w-12 bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mx-auto">
+            <Shield className="h-6 w-6" />
+          </div>
+          <p className="text-sm text-muted-foreground">Your session needs re-verification for security purposes.</p>
+          <div className="flex justify-center gap-2" onPaste={handlePaste}>
+            {otp.map((digit, index) => (
+              <Input
+                key={index}
+                ref={(el) => { inputRefs.current[index] = el; }}
+                className="w-11 h-14 text-center text-xl font-bold rounded-lg"
+                maxLength={1}
+                value={digit}
+                onChange={(e) => handleChange(index, e.target.value)}
+                onKeyDown={(e) => handleKeyDown(index, e)}
+                disabled={isLoading}
+                inputMode="numeric"
+                autoFocus={index === 0}
+              />
+            ))}
+          </div>
+          <p className="text-xs text-muted-foreground">
+            Didn't receive code?{' '}
+            {resendCooldown > 0 ? (
+              <span className="text-muted-foreground">Resend in {resendCooldown}s</span>
+            ) : (
+              <button type="button" onClick={handleResend} className="text-primary hover:underline font-medium">Resend</button>
+            )}
+          </p>
+        </div>
+        <Button type="submit" className="w-full rounded-xl" size="lg" disabled={isLoading}>
+          {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Verifying...</> : "Verify & Continue"}
+        </Button>
+        <div className="text-center">
+          <Link href="/auth/login">
+            <Button variant="ghost" size="sm" className="text-muted-foreground">
+              <ArrowLeft className="mr-2 h-4 w-4" /> Sign in with different account
+            </Button>
+          </Link>
+        </div>
       </form>
     </AuthLayout>
   );

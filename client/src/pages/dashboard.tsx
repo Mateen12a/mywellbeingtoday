@@ -524,7 +524,7 @@ export default function Dashboard() {
 
     suggestions.push({
       id: 'wellbeing-report',
-      title: 'View Wellbeing Report',
+      title: 'View your wellbeing report',
       description: hasReports 
         ? 'Review your latest wellbeing insights and personalized recommendations.'
         : 'Generate your first wellbeing report to get personalized insights.',
@@ -797,14 +797,14 @@ export default function Dashboard() {
       )}
 
       {/* Quick Actions Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3 sm:gap-4">
         {[
           {
-            title: "Log Activity",
-            icon: Activity,
-            href: "/activity",
-            color: "text-blue-700",
-            bg: "bg-blue-100",
+            title: "Directory of Health and Social Care Providers",
+            icon: MapPin,
+            href: "/directory",
+            color: "text-emerald-700",
+            bg: "bg-emerald-100",
           },
           {
             title: "My History",
@@ -812,13 +812,6 @@ export default function Dashboard() {
             href: "/history",
             color: "text-purple-700",
             bg: "bg-purple-100",
-          },
-          {
-            title: "Directory",
-            icon: MapPin,
-            href: "/directory",
-            color: "text-emerald-700",
-            bg: "bg-emerald-100",
           },
           {
             title: "Certificates",

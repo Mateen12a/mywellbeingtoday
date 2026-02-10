@@ -62,17 +62,72 @@ import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
 
 const MOOD_TYPES = [
-  { id: "happy", label: "Happy", icon: Smile, color: "text-yellow-500 bg-yellow-50 border-yellow-200" },
-  { id: "calm", label: "Calm", icon: Cloud, color: "text-blue-500 bg-blue-50 border-blue-200" },
-  { id: "focused", label: "Focused", icon: Target, color: "text-purple-500 bg-purple-50 border-purple-200" },
-  { id: "anxious", label: "Anxious", icon: Zap, color: "text-orange-500 bg-orange-50 border-orange-200" },
-  { id: "stressed", label: "Stressed", icon: Flame, color: "text-red-500 bg-red-50 border-red-200" },
-  { id: "sad", label: "Sad", icon: Frown, color: "text-indigo-500 bg-indigo-50 border-indigo-200" },
-  { id: "tired", label: "Tired", icon: Coffee, color: "text-gray-500 bg-gray-50 border-gray-200" },
-  { id: "energetic", label: "Energetic", icon: Sparkles, color: "text-green-500 bg-green-50 border-green-200" },
-  { id: "irritated", label: "Irritated", icon: AlertCircle, color: "text-rose-500 bg-rose-50 border-rose-200" },
-  { id: "hopeful", label: "Hopeful", icon: Sun, color: "text-amber-500 bg-amber-50 border-amber-200" },
-  { id: "other", label: "Other", icon: MoreHorizontal, color: "text-slate-500 bg-slate-50 border-slate-200" },
+  {
+    id: "happy",
+    label: "Happy",
+    icon: Smile,
+    color: "text-yellow-500 bg-yellow-50 border-yellow-200",
+  },
+  {
+    id: "calm",
+    label: "Calm",
+    icon: Cloud,
+    color: "text-blue-500 bg-blue-50 border-blue-200",
+  },
+  {
+    id: "focused",
+    label: "Focused",
+    icon: Target,
+    color: "text-purple-500 bg-purple-50 border-purple-200",
+  },
+  {
+    id: "anxious",
+    label: "Anxious",
+    icon: Zap,
+    color: "text-orange-500 bg-orange-50 border-orange-200",
+  },
+  {
+    id: "stressed",
+    label: "Stressed",
+    icon: Flame,
+    color: "text-red-500 bg-red-50 border-red-200",
+  },
+  {
+    id: "sad",
+    label: "Sad",
+    icon: Frown,
+    color: "text-indigo-500 bg-indigo-50 border-indigo-200",
+  },
+  {
+    id: "tired",
+    label: "Tired",
+    icon: Coffee,
+    color: "text-gray-500 bg-gray-50 border-gray-200",
+  },
+  {
+    id: "energetic",
+    label: "Energetic",
+    icon: Sparkles,
+    color: "text-green-500 bg-green-50 border-green-200",
+  },
+  {
+    id: "irritated",
+    label: "Irritated",
+    icon: AlertCircle,
+    color: "text-rose-500 bg-rose-50 border-rose-200",
+  },
+  {
+    id: "hopeful",
+    label: "Hopeful",
+    icon: Sun,
+    color: "text-amber-500 bg-amber-50 border-amber-200",
+  },
+  {
+    id: "other",
+    label: "Other",
+    icon: MoreHorizontal,
+    color: "text-slate-500 bg-slate-50 border-slate-200",
+  },
 ];
 
 const FACTORS = [
@@ -106,7 +161,7 @@ export default function MoodTracker() {
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
   const searchString = useSearch();
-  
+
   const [moodScore, setMoodScore] = useState([7]);
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [customMood, setCustomMood] = useState("");
@@ -115,35 +170,37 @@ export default function MoodTracker() {
   const [notes, setNotes] = useState("");
   const [energyLevel, setEnergyLevel] = useState([5]);
   const [stressLevel, setStressLevel] = useState([5]);
-  
+
   const [editingLog, setEditingLog] = useState<MoodLog | null>(null);
   const [editConfirmLog, setEditConfirmLog] = useState<MoodLog | null>(null);
-  const [deleteConfirmLog, setDeleteConfirmLog] = useState<MoodLog | null>(null);
-  
+  const [deleteConfirmLog, setDeleteConfirmLog] = useState<MoodLog | null>(
+    null,
+  );
+
   const [isRecording, setIsRecording] = useState(false);
   const [isRecordingEdit, setIsRecordingEdit] = useState(false);
-  
+
   const [showFeedbackDialog, setShowFeedbackDialog] = useState(false);
   const [aiFeedback, setAiFeedback] = useState<{
     feedback?: string;
     insight?: string;
     copingTip?: string;
     encouragement?: string;
-    generatedBy?: 'ai' | 'rules';
+    generatedBy?: "ai" | "rules";
   } | null>(null);
-  
+
   const [fromActivity, setFromActivity] = useState(false);
   const [aiRationale, setAiRationale] = useState<string | null>(null);
-  
+
   useEffect(() => {
     const params = new URLSearchParams(searchString);
-    const prefillMood = params.get('prefillMood');
-    const prefillScore = params.get('prefillScore');
-    const isFromActivity = params.get('fromActivity') === 'true';
-    const rationale = params.get('rationale');
-    
+    const prefillMood = params.get("prefillMood");
+    const prefillScore = params.get("prefillScore");
+    const isFromActivity = params.get("fromActivity") === "true";
+    const rationale = params.get("rationale");
+
     if (prefillMood) {
-      const validMood = MOOD_TYPES.find(m => m.id === prefillMood);
+      const validMood = MOOD_TYPES.find((m) => m.id === prefillMood);
       if (validMood) {
         setSelectedMood(prefillMood);
       }
@@ -162,38 +219,55 @@ export default function MoodTracker() {
     }
   }, [searchString]);
 
-  const startVoiceInput = (setter: (val: string) => void, currentValue: string, isEdit = false) => {
-    if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
-      toast({ title: "Voice input not supported", description: "Your browser doesn't support speech recognition.", variant: "destructive" });
+  const startVoiceInput = (
+    setter: (val: string) => void,
+    currentValue: string,
+    isEdit = false,
+  ) => {
+    if (
+      !("webkitSpeechRecognition" in window) &&
+      !("SpeechRecognition" in window)
+    ) {
+      toast({
+        title: "Voice input not supported",
+        description: "Your browser doesn't support speech recognition.",
+        variant: "destructive",
+      });
       return;
     }
-    
-    const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+
+    const SpeechRecognition =
+      (window as any).SpeechRecognition ||
+      (window as any).webkitSpeechRecognition;
     const recognition = new SpeechRecognition();
     recognition.continuous = false;
     recognition.interimResults = false;
-    recognition.lang = 'en-US';
-    
+    recognition.lang = "en-US";
+
     if (isEdit) {
       setIsRecordingEdit(true);
     } else {
       setIsRecording(true);
     }
-    
+
     recognition.onresult = (event: any) => {
       const transcript = event.results[0][0].transcript;
       setter(currentValue ? `${currentValue} ${transcript}` : transcript);
     };
-    
+
     recognition.onerror = () => {
       if (isEdit) {
         setIsRecordingEdit(false);
       } else {
         setIsRecording(false);
       }
-      toast({ title: "Voice input error", description: "Could not recognize speech. Please try again.", variant: "destructive" });
+      toast({
+        title: "Voice input error",
+        description: "Could not recognize speech. Please try again.",
+        variant: "destructive",
+      });
     };
-    
+
     recognition.onend = () => {
       if (isEdit) {
         setIsRecordingEdit(false);
@@ -201,11 +275,15 @@ export default function MoodTracker() {
         setIsRecording(false);
       }
     };
-    
+
     recognition.start();
   };
 
-  const { data: moodLogsData, isLoading, error } = useQuery({
+  const {
+    data: moodLogsData,
+    isLoading,
+    error,
+  } = useQuery({
     queryKey: ["moodLogs"],
     queryFn: async () => {
       const response = await api.getMoodLogs({ limit: 10 });
@@ -232,7 +310,11 @@ export default function MoodTracker() {
       resetForm();
     },
     onError: (error: Error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -248,7 +330,11 @@ export default function MoodTracker() {
       setEditingLog(null);
     },
     onError: (error: Error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -264,7 +350,11 @@ export default function MoodTracker() {
       setDeleteConfirmLog(null);
     },
     onError: (error: Error) => {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
+      toast({
+        title: "Error",
+        description: error.message,
+        variant: "destructive",
+      });
     },
   });
 
@@ -283,7 +373,7 @@ export default function MoodTracker() {
     setSelectedFactors((prev) =>
       prev.includes(factorId)
         ? prev.filter((f) => f !== factorId)
-        : [...prev, factorId]
+        : [...prev, factorId],
     );
   };
 
@@ -318,7 +408,7 @@ export default function MoodTracker() {
 
   const handleEditSave = () => {
     if (!editingLog) return;
-    
+
     updateMutation.mutate({
       id: editingLog._id,
       data: {
@@ -333,7 +423,8 @@ export default function MoodTracker() {
   };
 
   const getMoodLabel = (val: number) => {
-    if (val >= 8) return { text: "Excellent", icon: ThumbsUp, color: "text-green-600" };
+    if (val >= 8)
+      return { text: "Excellent", icon: ThumbsUp, color: "text-green-600" };
     if (val >= 6) return { text: "Good", icon: Smile, color: "text-teal-600" };
     if (val >= 4) return { text: "Okay", icon: Meh, color: "text-yellow-600" };
     if (val >= 2) return { text: "Low", icon: Frown, color: "text-orange-600" };
@@ -344,11 +435,13 @@ export default function MoodTracker() {
   const MoodIcon = moodData.icon;
 
   // Handle both possible data structures: moodLogsData could be the array directly or { moodLogs: [...] }
-  const moodLogs = Array.isArray(moodLogsData) 
-    ? moodLogsData 
-    : (Array.isArray(moodLogsData?.moodLogs) ? moodLogsData.moodLogs : []);
+  const moodLogs = Array.isArray(moodLogsData)
+    ? moodLogsData
+    : Array.isArray(moodLogsData?.moodLogs)
+      ? moodLogsData.moodLogs
+      : [];
 
-  const getMoodConfig = (moodId: string) => 
+  const getMoodConfig = (moodId: string) =>
     MOOD_TYPES.find((m) => m.id === moodId) || MOOD_TYPES[0];
 
   return (
@@ -358,7 +451,7 @@ export default function MoodTracker() {
           How are you feeling today?
         </h1>
         <p className="text-sm sm:text-base md:text-lg text-muted-foreground">
-          Track your emotional and physical state to help us support you better.
+          Track your emotional and physical state.
         </p>
       </div>
 
@@ -376,17 +469,24 @@ export default function MoodTracker() {
             <div
               className={cn(
                 "h-20 sm:h-24 w-20 sm:w-24 rounded-full bg-white shadow-xl flex items-center justify-center transition-all duration-300",
-                moodData.color
+                moodData.color,
               )}
             >
               <MoodIcon className="w-10 sm:w-12 h-10 sm:h-12" />
             </div>
           </div>
           <div className="text-center">
-            <h2 className={cn("text-xl sm:text-2xl font-bold font-serif mb-1 sm:mb-2", moodData.color)}>
+            <h2
+              className={cn(
+                "text-xl sm:text-2xl font-bold font-serif mb-1 sm:mb-2",
+                moodData.color,
+              )}
+            >
               {moodData.text}
             </h2>
-            <p className="text-xs sm:text-sm text-muted-foreground">Level {moodScore[0]}/10</p>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Level {moodScore[0]}/10
+            </p>
           </div>
           <div className="max-w-md mx-auto space-y-2">
             <Slider
@@ -411,7 +511,7 @@ export default function MoodTracker() {
             variant="ghost"
             size="sm"
             className="gap-1 text-muted-foreground"
-            onClick={() => setLocation('/activity')}
+            onClick={() => setLocation("/activity")}
             data-testid="button-back-to-activity"
           >
             <ArrowLeft className="w-4 h-4" /> Back to Activity
@@ -423,7 +523,7 @@ export default function MoodTracker() {
           )}
         </div>
       )}
-      
+
       {fromActivity && aiRationale && (
         <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-100 rounded-lg p-4 animate-in fade-in slide-in-from-top-2 duration-300">
           <div className="flex items-start gap-3">
@@ -431,10 +531,13 @@ export default function MoodTracker() {
               <Bot className="w-5 h-5 text-purple-600" />
             </div>
             <div>
-              <h4 className="font-semibold text-purple-900 text-sm">AI Mood Suggestion</h4>
+              <h4 className="font-semibold text-purple-900 text-sm">
+                AI Mood Suggestion
+              </h4>
               <p className="text-xs text-purple-800 mt-1">{aiRationale}</p>
               <p className="text-xs text-purple-600 mt-2">
-                We've pre-selected a mood based on your activity. Feel free to adjust if you're feeling differently.
+                We've pre-selected a mood based on your activity. Feel free to
+                adjust if you're feeling differently.
               </p>
             </div>
           </div>
@@ -444,7 +547,7 @@ export default function MoodTracker() {
       <div className="space-y-4 sm:space-y-6">
         <div className="flex items-center gap-2">
           <Heart className="w-4 sm:w-5 h-4 sm:h-5 text-primary" />
-          <h2 className="text-lg sm:text-xl font-serif font-bold">Select Your Mood</h2>
+          <h2 className="text-lg sm:text-xl font-serif font-bold">Your Mood</h2>
         </div>
         <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-5 gap-2 sm:gap-3">
           {MOOD_TYPES.map((mood) => {
@@ -459,19 +562,29 @@ export default function MoodTracker() {
                   "p-3 sm:p-4 rounded-xl border-2 transition-all duration-200 flex flex-col items-center gap-1 sm:gap-2 min-h-[80px] sm:min-h-[100px] touch-manipulation",
                   isSelected
                     ? `${mood.color} ring-2 ring-offset-2 ring-primary`
-                    : "border-gray-200 hover:border-gray-300 bg-white"
+                    : "border-gray-200 hover:border-gray-300 bg-white",
                 )}
               >
-                <Icon className={cn("w-5 sm:w-6 h-5 sm:h-6", isSelected ? "" : "text-gray-400")} />
-                <span className="text-xs sm:text-sm font-medium text-center leading-tight">{mood.label}</span>
+                <Icon
+                  className={cn(
+                    "w-5 sm:w-6 h-5 sm:h-6",
+                    isSelected ? "" : "text-gray-400",
+                  )}
+                />
+                <span className="text-xs sm:text-sm font-medium text-center leading-tight">
+                  {mood.label}
+                </span>
               </button>
             );
           })}
         </div>
-        
+
         {selectedMood === "other" && (
           <div className="animate-in slide-in-from-top-2 duration-200">
-            <Label htmlFor="customMood" className="text-sm font-medium mb-2 block">
+            <Label
+              htmlFor="customMood"
+              className="text-sm font-medium mb-2 block"
+            >
               Please describe your mood:
             </Label>
             <Input
@@ -488,7 +601,9 @@ export default function MoodTracker() {
       <div className="grid md:grid-cols-2 gap-4 sm:gap-6 max-w-4xl mx-auto">
         <Card>
           <CardHeader className="pb-2 sm:pb-4">
-            <CardTitle className="text-base sm:text-lg font-serif">Energy Level</CardTitle>
+            <CardTitle className="text-base sm:text-lg font-serif">
+              Energy Level
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <Slider
@@ -508,7 +623,9 @@ export default function MoodTracker() {
         </Card>
         <Card>
           <CardHeader className="pb-2 sm:pb-4">
-            <CardTitle className="text-base sm:text-lg font-serif">Stress Level</CardTitle>
+            <CardTitle className="text-base sm:text-lg font-serif">
+              Stress Level
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-3">
             <Slider
@@ -531,7 +648,9 @@ export default function MoodTracker() {
       <div className="space-y-4 sm:space-y-6">
         <div className="flex items-center gap-2">
           <Activity className="w-4 sm:w-5 h-4 sm:h-5 text-primary" />
-          <h2 className="text-lg sm:text-xl font-serif font-bold">Contributing Factors</h2>
+          <h2 className="text-lg sm:text-xl font-serif font-bold">
+            Contributing Factors
+          </h2>
         </div>
         <div className="flex flex-wrap gap-2">
           {FACTORS.map((factor) => (
@@ -543,17 +662,20 @@ export default function MoodTracker() {
                 "px-3 sm:px-4 py-2 rounded-full border transition-all duration-200 text-xs sm:text-sm font-medium min-h-[36px] touch-manipulation flex items-center",
                 selectedFactors.includes(factor.id)
                   ? "bg-primary text-primary-foreground border-primary"
-                  : "bg-white border-gray-200 hover:border-gray-300 text-gray-700"
+                  : "bg-white border-gray-200 hover:border-gray-300 text-gray-700",
               )}
             >
               {factor.label}
             </button>
           ))}
         </div>
-        
+
         {selectedFactors.includes("other") && (
           <div className="animate-in slide-in-from-top-2 duration-200">
-            <Label htmlFor="customFactor" className="text-sm font-medium mb-2 block">
+            <Label
+              htmlFor="customFactor"
+              className="text-sm font-medium mb-2 block"
+            >
               Please specify other factor:
             </Label>
             <Input
@@ -569,7 +691,10 @@ export default function MoodTracker() {
 
       <div className="space-y-3 sm:space-y-4">
         <div className="flex items-center justify-between">
-          <Label htmlFor="notes" className="text-base sm:text-lg font-serif font-bold flex items-center gap-2">
+          <Label
+            htmlFor="notes"
+            className="text-base sm:text-lg font-serif font-bold flex items-center gap-2"
+          >
             <Brain className="w-4 sm:w-5 h-4 sm:h-5 text-primary" />
             Additional Notes
           </Label>
@@ -592,22 +717,24 @@ export default function MoodTracker() {
             size="icon"
             className={cn(
               "absolute right-2 top-2 h-8 w-8",
-              isRecording && "text-red-500 animate-pulse"
+              isRecording && "text-red-500 animate-pulse",
             )}
             onClick={() => startVoiceInput(setNotes, notes)}
             title={isRecording ? "Recording..." : "Voice input"}
             data-testid="button-voice-notes"
           >
-            {isRecording ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+            {isRecording ? (
+              <MicOff className="w-4 h-4" />
+            ) : (
+              <Mic className="w-4 h-4" />
+            )}
           </Button>
         </div>
       </div>
 
       <div className="flex flex-col sm:flex-row justify-end pt-6 sm:pt-8 gap-3 sm:gap-4">
         <Link href="/history" className="sm:hidden w-full">
-          <Button variant="outline">
-            View History
-          </Button>
+          <Button variant="outline">View History</Button>
         </Link>
         <Button
           className="rounded-xl"
@@ -632,21 +759,31 @@ export default function MoodTracker() {
             <div className="mx-auto h-10 sm:h-12 w-10 sm:w-12 rounded-full bg-green-100 flex items-center justify-center">
               <Heart className="h-5 sm:h-6 w-5 sm:w-6 text-green-600" />
             </div>
-            <DialogTitle className="text-center text-lg sm:text-xl font-serif">Mood Logged Successfully!</DialogTitle>
+            <DialogTitle className="text-center text-lg sm:text-xl font-serif">
+              Mood Logged Successfully!
+            </DialogTitle>
             <DialogDescription className="text-center text-sm sm:text-base">
-              Thank you for checking in. Here's some personalized feedback for you.
+              Thank you for checking in. Here's some personalized feedback for
+              you.
             </DialogDescription>
           </DialogHeader>
-          
+
           {aiFeedback && (
             <div className="space-y-3 my-2">
               <div className="flex justify-center">
-                <Badge variant={aiFeedback.generatedBy === 'ai' ? 'default' : 'secondary'} className="gap-1">
+                <Badge
+                  variant={
+                    aiFeedback.generatedBy === "ai" ? "default" : "secondary"
+                  }
+                  className="gap-1"
+                >
                   <Bot className="w-3 h-3" />
-                  {aiFeedback.generatedBy === 'ai' ? 'AI Generated' : 'Rule-based'}
+                  {aiFeedback.generatedBy === "ai"
+                    ? "AI Generated"
+                    : "Rule-based"}
                 </Badge>
               </div>
-              
+
               {aiFeedback.feedback && (
                 <div className="bg-green-50 border border-green-100 rounded-lg p-4">
                   <div className="flex items-start gap-3">
@@ -654,13 +791,17 @@ export default function MoodTracker() {
                       <MessageCircle className="w-5 h-5 text-green-600" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-green-900 text-sm">Feedback</h4>
-                      <p className="text-xs text-green-800 mt-1">{aiFeedback.feedback}</p>
+                      <h4 className="font-bold text-green-900 text-sm">
+                        Feedback
+                      </h4>
+                      <p className="text-xs text-green-800 mt-1">
+                        {aiFeedback.feedback}
+                      </p>
                     </div>
                   </div>
                 </div>
               )}
-              
+
               {aiFeedback.insight && (
                 <div className="bg-blue-50 border border-blue-100 rounded-lg p-4">
                   <div className="flex items-start gap-3">
@@ -668,13 +809,17 @@ export default function MoodTracker() {
                       <Lightbulb className="w-5 h-5 text-blue-600" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-blue-900 text-sm">Insight</h4>
-                      <p className="text-xs text-blue-800 mt-1">{aiFeedback.insight}</p>
+                      <h4 className="font-bold text-blue-900 text-sm">
+                        Insight
+                      </h4>
+                      <p className="text-xs text-blue-800 mt-1">
+                        {aiFeedback.insight}
+                      </p>
                     </div>
                   </div>
                 </div>
               )}
-              
+
               {aiFeedback.copingTip && (
                 <div className="bg-purple-50 border border-purple-100 rounded-lg p-4">
                   <div className="flex items-start gap-3">
@@ -682,13 +827,17 @@ export default function MoodTracker() {
                       <Brain className="w-5 h-5 text-purple-600" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-purple-900 text-sm">Coping Tip</h4>
-                      <p className="text-xs text-purple-800 mt-1">{aiFeedback.copingTip}</p>
+                      <h4 className="font-bold text-purple-900 text-sm">
+                        Coping Tip
+                      </h4>
+                      <p className="text-xs text-purple-800 mt-1">
+                        {aiFeedback.copingTip}
+                      </p>
                     </div>
                   </div>
                 </div>
               )}
-              
+
               {aiFeedback.encouragement && (
                 <div className="bg-amber-50 border border-amber-100 rounded-lg p-4">
                   <div className="flex items-start gap-3">
@@ -696,19 +845,21 @@ export default function MoodTracker() {
                       <Sparkles className="w-5 h-5 text-amber-600" />
                     </div>
                     <div>
-                      <h4 className="font-bold text-amber-900 text-sm">Encouragement</h4>
-                      <p className="text-xs text-amber-800 mt-1">{aiFeedback.encouragement}</p>
+                      <h4 className="font-bold text-amber-900 text-sm">
+                        Encouragement
+                      </h4>
+                      <p className="text-xs text-amber-800 mt-1">
+                        {aiFeedback.encouragement}
+                      </p>
                     </div>
                   </div>
                 </div>
               )}
             </div>
           )}
-          
+
           <DialogFooter>
-            <Button onClick={() => setShowFeedbackDialog(false)}>
-              Close
-            </Button>
+            <Button onClick={() => setShowFeedbackDialog(false)}>Close</Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
@@ -733,14 +884,18 @@ export default function MoodTracker() {
           <Card className="border-red-200 bg-red-50">
             <CardContent className="p-6 text-center">
               <AlertCircle className="w-8 h-8 text-red-500 mx-auto mb-2" />
-              <p className="text-red-700">Failed to load mood logs. Please try again.</p>
+              <p className="text-red-700">
+                Failed to load mood logs. Please try again.
+              </p>
             </CardContent>
           </Card>
         ) : moodLogs.length === 0 ? (
           <Card className="border-dashed">
             <CardContent className="p-8 text-center">
               <Moon className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-              <p className="text-muted-foreground">No mood logs yet. Log your first mood above!</p>
+              <p className="text-muted-foreground">
+                No mood logs yet. Log your first mood above!
+              </p>
             </CardContent>
           </Card>
         ) : (
@@ -749,20 +904,25 @@ export default function MoodTracker() {
               const moodConfig = getMoodConfig(log.mood);
               const MoodLogIcon = moodConfig.icon;
               return (
-                <Card key={log._id} className="hover:shadow-md transition-shadow">
+                <Card
+                  key={log._id}
+                  className="hover:shadow-md transition-shadow"
+                >
                   <CardContent className="p-4">
                     <div className="flex items-center gap-4">
                       <div
                         className={cn(
                           "h-12 w-12 rounded-full flex items-center justify-center border",
-                          moodConfig.color
+                          moodConfig.color,
                         )}
                       >
                         <MoodLogIcon className="w-6 h-6" />
                       </div>
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold capitalize">{log.mood}</span>
+                          <span className="font-semibold capitalize">
+                            {log.mood}
+                          </span>
                           <Badge variant="secondary" className="text-xs">
                             Score: {log.moodScore}/10
                           </Badge>
@@ -784,7 +944,11 @@ export default function MoodTracker() {
                         {log.factors && log.factors.length > 0 && (
                           <div className="flex gap-1 mt-2 flex-wrap">
                             {log.factors.map((factor) => (
-                              <Badge key={factor} variant="outline" className="text-xs">
+                              <Badge
+                                key={factor}
+                                variant="outline"
+                                className="text-xs"
+                              >
                                 {factor}
                               </Badge>
                             ))}
@@ -823,7 +987,10 @@ export default function MoodTracker() {
         )}
       </div>
 
-      <Dialog open={!!editingLog} onOpenChange={(open) => !open && setEditingLog(null)}>
+      <Dialog
+        open={!!editingLog}
+        onOpenChange={(open) => !open && setEditingLog(null)}
+      >
         <DialogContent className="sm:max-w-lg">
           <DialogHeader>
             <DialogTitle>Edit Mood Log</DialogTitle>
@@ -839,10 +1006,14 @@ export default function MoodTracker() {
                     return (
                       <button
                         key={mood.id}
-                        onClick={() => setEditingLog({ ...editingLog, mood: mood.id })}
+                        onClick={() =>
+                          setEditingLog({ ...editingLog, mood: mood.id })
+                        }
                         className={cn(
                           "p-2 rounded-lg border transition-all text-center",
-                          isSelected ? mood.color : "border-gray-200 hover:border-gray-300"
+                          isSelected
+                            ? mood.color
+                            : "border-gray-200 hover:border-gray-300",
                         )}
                       >
                         <Icon className="w-5 h-5 mx-auto" />
@@ -856,7 +1027,9 @@ export default function MoodTracker() {
                 <Label>Mood Score: {editingLog.moodScore}/10</Label>
                 <Slider
                   value={[editingLog.moodScore]}
-                  onValueChange={([val]) => setEditingLog({ ...editingLog, moodScore: val })}
+                  onValueChange={([val]) =>
+                    setEditingLog({ ...editingLog, moodScore: val })
+                  }
                   max={10}
                   min={1}
                   step={1}
@@ -867,7 +1040,9 @@ export default function MoodTracker() {
                 <div className="relative">
                   <Textarea
                     value={editingLog.notes || ""}
-                    onChange={(e) => setEditingLog({ ...editingLog, notes: e.target.value })}
+                    onChange={(e) =>
+                      setEditingLog({ ...editingLog, notes: e.target.value })
+                    }
                     rows={3}
                     className="pr-12"
                   />
@@ -877,16 +1052,22 @@ export default function MoodTracker() {
                     size="icon"
                     className={cn(
                       "absolute right-2 top-2 h-8 w-8",
-                      isRecordingEdit && "text-red-500 animate-pulse"
+                      isRecordingEdit && "text-red-500 animate-pulse",
                     )}
-                    onClick={() => startVoiceInput(
-                      (val) => setEditingLog({ ...editingLog, notes: val }),
-                      editingLog.notes || "",
-                      true
-                    )}
+                    onClick={() =>
+                      startVoiceInput(
+                        (val) => setEditingLog({ ...editingLog, notes: val }),
+                        editingLog.notes || "",
+                        true,
+                      )
+                    }
                     title={isRecordingEdit ? "Recording..." : "Voice input"}
                   >
-                    {isRecordingEdit ? <MicOff className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
+                    {isRecordingEdit ? (
+                      <MicOff className="w-4 h-4" />
+                    ) : (
+                      <Mic className="w-4 h-4" />
+                    )}
                   </Button>
                 </div>
               </div>
@@ -896,7 +1077,10 @@ export default function MoodTracker() {
             <Button variant="outline" onClick={() => setEditingLog(null)}>
               Cancel
             </Button>
-            <Button onClick={handleEditSave} disabled={updateMutation.isPending}>
+            <Button
+              onClick={handleEditSave}
+              disabled={updateMutation.isPending}
+            >
               {updateMutation.isPending ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
@@ -910,7 +1094,10 @@ export default function MoodTracker() {
         </DialogContent>
       </Dialog>
 
-      <AlertDialog open={!!editConfirmLog} onOpenChange={(open) => !open && setEditConfirmLog(null)}>
+      <AlertDialog
+        open={!!editConfirmLog}
+        onOpenChange={(open) => !open && setEditConfirmLog(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Edit Mood Log?</AlertDialogTitle>
@@ -934,19 +1121,25 @@ export default function MoodTracker() {
         </AlertDialogContent>
       </AlertDialog>
 
-      <AlertDialog open={!!deleteConfirmLog} onOpenChange={(open) => !open && setDeleteConfirmLog(null)}>
+      <AlertDialog
+        open={!!deleteConfirmLog}
+        onOpenChange={(open) => !open && setDeleteConfirmLog(null)}
+      >
         <AlertDialogContent>
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Mood Log?</AlertDialogTitle>
             <AlertDialogDescription>
-              This action cannot be undone. This will permanently delete this mood log entry.
+              This action cannot be undone. This will permanently delete this
+              mood log entry.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
             <AlertDialogAction
               className="bg-red-600 hover:bg-red-700"
-              onClick={() => deleteConfirmLog && deleteMutation.mutate(deleteConfirmLog._id)}
+              onClick={() =>
+                deleteConfirmLog && deleteMutation.mutate(deleteConfirmLog._id)
+              }
             >
               {deleteMutation.isPending ? (
                 <>

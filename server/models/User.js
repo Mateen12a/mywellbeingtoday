@@ -55,6 +55,9 @@ const userSchema = new mongoose.Schema({
     emailVerified: { type: Boolean, default: false },
     emailVerificationToken: { type: String },
     emailVerificationExpires: { type: Date },
+    otp: { type: String },
+    otpExpires: { type: Date },
+    otpAttempts: { type: Number, default: 0 },
     phoneVerified: { type: Boolean, default: false }
   },
   passwordReset: {
@@ -74,6 +77,8 @@ const userSchema = new mongoose.Schema({
     expiresAt: { type: Date }
   },
   lastLogin: { type: Date },
+  lastOtpVerifiedAt: { type: Date },
+  rememberMe: { type: Boolean, default: false },
   isActive: { type: Boolean, default: true },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }

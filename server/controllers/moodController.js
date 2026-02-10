@@ -3,6 +3,9 @@ import { AppError } from '../middlewares/errorHandler.js';
 import { logAction } from '../middlewares/auditLog.js';
 import { generateMoodFeedback } from '../services/aiService.js';
 import { autoGenerateReport } from '../services/reportService.js';
+import { createMoodNotification } from '../services/notificationService.js';
+import { sendNotification } from '../services/emailService.js';
+import { sendPushToUser } from '../services/pushService.js';
 
 export const createMoodLog = async (req, res, next) => {
   try {
@@ -27,6 +30,20 @@ export const createMoodLog = async (req, res, next) => {
     });
 
     await logAction(req.user._id, 'CREATE_MOOD', 'mood', moodLog._id, { mood, moodScore }, req);
+
+    createMoodNotification(req.user._id, mood, moodScore).catch(err => console.error('[NOTIFICATION]', err));
+    sendPushToUser(req.user._id, 'mood_logged').catch(err => console.error('[PUSH]', err));
+
+    if (req.user.settings?.notifications?.email !== false) {
+      sendNotification(
+        req.user.email,
+        req.user.profile?.firstName || 'there',
+        'Mood Tracked Successfully',
+        `<p>Your mood "${mood}" (score: ${moodScore}/10) has been recorded.</p><p>Keep tracking regularly for better wellbeing insights!</p>`,
+        null,
+        null
+      ).catch(err => console.error('[EMAIL]', err));
+    }
 
     // Generate AI feedback for this mood
     const recentMoods = await MoodLog.find({ userId: req.user._id })

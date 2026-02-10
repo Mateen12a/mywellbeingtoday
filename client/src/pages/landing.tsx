@@ -205,17 +205,6 @@ export default function Landing() {
         <div className="flex flex-col lg:flex-row items-center gap-8 sm:gap-10 lg:gap-16 py-8 sm:py-10 md:py-12 animate-in slide-in-from-bottom-4 duration-700 px-2 sm:px-4">
           {/* Left Content */}
           <div className="flex-1 z-10 space-y-5 sm:space-y-6 md:space-y-8 text-center lg:text-left">
-            {/* Badge */}
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-              className="inline-flex items-center gap-2.5 px-4 sm:px-5 py-2 sm:py-2.5 bg-primary/10 rounded-full text-primary text-sm sm:text-base font-semibold"
-            >
-              <Heart className="w-4 h-4 sm:w-5 sm:h-5 fill-primary stroke-primary animate-heart-pulse" />
-              Your personal wellness companion
-            </motion.div>
-
             {/* Main Headline */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -224,9 +213,9 @@ export default function Landing() {
               className="space-y-4 sm:space-y-5"
             >
               <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 leading-tight">
-                Take Control of{" "}
+                Your personal{" "}
                 <span className="text-primary relative">
-                  Your Health
+                  wellbeing companion
                   <svg
                     className="absolute -bottom-2 left-0 w-full h-3 text-primary/30"
                     viewBox="0 0 200 12"
@@ -242,8 +231,8 @@ export default function Landing() {
                 </span>
               </h1>
               <p className="text-lg sm:text-xl md:text-2xl text-slate-600 max-w-lg leading-relaxed mx-auto lg:mx-0">
-                Log your activities, track your mood, and connect with
-                healthcare providers.
+                Log your activities, track your mood, and connect with health
+                and social care.
               </p>
             </motion.div>
 
@@ -255,7 +244,7 @@ export default function Landing() {
               className="flex flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start"
             >
               {[
-                { icon: Activity, text: "Activity Tracking" },
+                { icon: Activity, text: "Activity Log in" },
                 { icon: Heart, text: "Mood Analysis" },
                 { icon: Users, text: "Provider Directory" },
               ].map((item, i) => (
@@ -311,7 +300,7 @@ export default function Landing() {
                 <ShieldCheck className="w-6 h-6 sm:w-7 sm:h-7 text-primary shrink-0" />
                 <div className="text-sm sm:text-base">
                   <p className="font-semibold text-slate-800">
-                    Trusted by healthcare professionals
+                    Trusted by health and social care providers
                   </p>
                   <p className="text-slate-500 hidden sm:block">
                     Secure, private, and verified
@@ -341,32 +330,33 @@ export default function Landing() {
       </section>
 
       {/* Why Wellbeing Matters Section */}
-      <section className="py-16 md:py-24 bg-gradient-to-b from-slate-50 to-white">
-        <div className="max-w-6xl mx-auto px-4">
-          <div className="text-center space-y-6 mb-16">
+      {/* <section className="py-16 md:py-24 bg-gradient-to-b from-slate-50 to-white">
+        <div className="max-w-6xl mx-auto px-4"> */}
+      {/* <div className="text-center space-y-6 mb-16">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5 }}
             >
-              <h2 
+              <h2
                 className="text-3xl md:text-4xl lg:text-5xl font-serif font-bold text-slate-900"
                 data-testid="text-wellbeing-section-title"
               >
                 Why Monitor Your Wellbeing?
               </h2>
-              <p 
+              <p
                 className="text-lg md:text-xl text-slate-600 max-w-3xl mx-auto mt-4 leading-relaxed"
                 data-testid="text-wellbeing-section-subtitle"
               >
-                AI-powered insights to help you understand your health patterns and connect with care when you need it.
+                AI-powered insights to help you understand your health patterns
+                and connect with care when you need it.
               </p>
             </motion.div>
-          </div>
+          </div> */}
 
-          {/* The Big Question */}
-          <motion.div
+      {/* The Big Question */}
+      {/* <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -374,9 +364,9 @@ export default function Landing() {
             className="bg-white rounded-3xl shadow-xl border border-slate-100 p-8 md:p-12 mb-12"
             data-testid="card-wellbeing-question"
           >
-            <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12">
-              {/* Faceless Avatar with Question Mark */}
-              <div className="flex-shrink-0" data-testid="img-avatar-question">
+            <div className="flex flex-col lg:flex-row items-center gap-8 lg:gap-12"> */}
+      {/* Faceless Avatar with Question Mark */}
+      {/* <div className="flex-shrink-0" data-testid="img-avatar-question">
                 <div className="relative">
                   <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 flex items-center justify-center">
                     <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-slate-200 to-slate-300 flex items-center justify-center">
@@ -387,27 +377,27 @@ export default function Landing() {
                     <HelpCircle className="w-5 h-5 text-amber-600" />
                   </div>
                 </div>
-              </div>
+              </div> */}
 
-              <div className="flex-1 text-center lg:text-left space-y-4">
-                <h3 
+      {/* <div className="flex-1 text-center lg:text-left space-y-4">
+                <h3
                   className="text-2xl md:text-3xl font-serif font-bold text-slate-800"
                   data-testid="text-question-title"
                 >
                   "I feel mostly fine. Why should I worry about my wellbeing?"
                 </h3>
-                <p 
+                <p
                   className="text-lg text-slate-600 leading-relaxed"
                   data-testid="text-question-description"
                 >
                   Your body sends quiet signals long before you feel unwell.
                 </p>
-              </div>
-            </div>
-          </motion.div>
+              </div> */}
+      {/* </div>
+          </motion.div> */}
 
-          {/* The Answer */}
-          <motion.div
+      {/* The Answer */}
+      {/* <motion.div
             initial={{ opacity: 0, y: 30 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
@@ -415,9 +405,9 @@ export default function Landing() {
             className="bg-gradient-to-br from-primary/5 to-blue-50 rounded-3xl p-8 md:p-12 mb-16"
             data-testid="card-wellbeing-answer"
           >
-            <div className="flex flex-col lg:flex-row-reverse items-center gap-8 lg:gap-12">
-              {/* Faceless Avatar with Puzzle (Thinking) */}
-              <div className="flex-shrink-0" data-testid="img-avatar-thinking">
+            <div className="flex flex-col lg:flex-row-reverse items-center gap-8 lg:gap-12"> */}
+      {/* Faceless Avatar with Puzzle (Thinking) */}
+      {/* <div className="flex-shrink-0" data-testid="img-avatar-thinking">
                 <div className="relative">
                   <div className="w-32 h-32 md:w-40 md:h-40 rounded-full bg-gradient-to-br from-primary/10 to-primary/20 flex items-center justify-center">
                     <div className="w-24 h-24 md:w-32 md:h-32 rounded-full bg-gradient-to-br from-primary/20 to-primary/30 flex items-center justify-center">
@@ -428,48 +418,52 @@ export default function Landing() {
                     <Puzzle className="w-5 h-5 text-primary" />
                   </div>
                 </div>
-              </div>
+              </div> */}
 
-              <div className="flex-1 text-center lg:text-left space-y-4">
-                <h3 
+      {/* <div className="flex-1 text-center lg:text-left space-y-4">
+                <h3
                   className="text-2xl md:text-3xl font-serif font-bold text-primary"
                   data-testid="text-answer-title"
                 >
                   Catch problems early
                 </h3>
-                <p 
+                <p
                   className="text-lg text-slate-700 leading-relaxed"
                   data-testid="text-answer-description"
                 >
-                  Spot early warning signs like poor sleep and rising stress before they become serious health issues.
+                  Spot early warning signs like poor sleep and rising stress
+                  before they become serious health issues.
                 </p>
-              </div>
-            </div>
-          </motion.div>
+              </div> */}
+      {/* </div>
+          </motion.div> */}
 
-          {/* How It Works - Simple Steps */}
-          <div className="grid md:grid-cols-3 gap-8">
+      {/* How It Works - Simple Steps */}
+      {/* <div className="grid md:grid-cols-3 gap-8">
             {[
               {
                 icon: Monitor,
                 iconBg: "bg-blue-100",
                 iconColor: "text-blue-600",
                 title: "Easy Setup",
-                description: "Log your activities and mood in seconds from any device.",
+                description:
+                  "Log your activities and mood in seconds from any device.",
               },
               {
                 icon: Brain,
                 iconBg: "bg-primary/10",
                 iconColor: "text-primary",
                 title: "AI Insights",
-                description: "Get personalised tips based on your unique patterns.",
+                description:
+                  "Get personalised tips based on your unique patterns.",
               },
               {
                 icon: Users,
                 iconBg: "bg-green-100",
                 iconColor: "text-green-600",
                 title: "Connect with Care",
-                description: "Find healthcare providers near you when you need support.",
+                description:
+                  "Find healthcare providers near you when you need support.",
               },
             ].map((step, i) => (
               <motion.div
@@ -479,21 +473,23 @@ export default function Landing() {
                 viewport={{ once: true }}
                 transition={{ duration: 0.5, delay: i * 0.1 }}
               >
-                <Card 
+                <Card
                   className="h-full border-0 shadow-lg hover:shadow-xl transition-all duration-300 bg-white"
                   data-testid={`card-step-${i + 1}`}
                 >
                   <CardContent className="p-8 space-y-4 text-center">
-                    <div className={`w-16 h-16 mx-auto rounded-2xl ${step.iconBg} flex items-center justify-center`}>
+                    <div
+                      className={`w-16 h-16 mx-auto rounded-2xl ${step.iconBg} flex items-center justify-center`}
+                    >
                       <step.icon className={`w-8 h-8 ${step.iconColor}`} />
                     </div>
-                    <h3 
+                    <h3
                       className="text-xl font-bold font-serif text-slate-900"
                       data-testid={`text-step-title-${i + 1}`}
                     >
                       {step.title}
                     </h3>
-                    <p 
+                    <p
                       className="text-slate-600 leading-relaxed"
                       data-testid={`text-step-description-${i + 1}`}
                     >
@@ -503,28 +499,30 @@ export default function Landing() {
                 </Card>
               </motion.div>
             ))}
-          </div>
+          </div> */}
 
-          {/* Prevention Message */}
-          <motion.div
+      {/* Prevention Message */}
+      {/* <motion.div
             initial={{ opacity: 0, y: 20 }}
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.5, delay: 0.3 }}
             className="mt-16 text-center"
           >
-            <div 
+            <div
               className="inline-flex items-center gap-3 bg-gradient-to-r from-primary/10 to-blue-100 px-6 py-4 rounded-2xl"
               data-testid="text-prevention-message"
             >
               <Clock className="w-6 h-6 text-primary" />
               <p className="text-lg font-medium text-slate-700">
-                <span className="text-primary font-bold">Prevention is better than cure.</span>
+                <span className="text-primary font-bold">
+                  Prevention is better than cure.
+                </span>
               </p>
             </div>
-          </motion.div>
-        </div>
-      </section>
+          </motion.div> */}
+      {/* </div>
+      </section> */}
 
       {/* Core Benefits */}
       <section className="space-y-12">
@@ -533,7 +531,8 @@ export default function Landing() {
             Holistic support at your fingertips
           </h2>
           <p className="text-gray-800 font-medium text-lg">
-            Tools to maintain balance, track progress, and find help when you need it.
+            Tools to maintain balance, track progress, and find help when you
+            need it.
           </p>
         </div>
 
@@ -552,7 +551,7 @@ export default function Landing() {
             {
               icon: Users,
               title: "Provider Directory",
-              desc: "Find certified healthcare providers when you need support.",
+              desc: "Find certified health and social care providers when you need support.",
             },
           ].map((feature, i) => (
             <Card
@@ -576,17 +575,17 @@ export default function Landing() {
       </section>
 
       {/* Trust & CTA */}
-      <section 
+      <section
         className="bg-secondary/30 rounded-3xl p-8 md:p-16 text-center space-y-8 my-12"
         data-testid="section-cta-footer"
       >
-        <h2 
+        <h2
           className="text-3xl font-serif font-bold text-black"
           data-testid="text-cta-title"
         >
           Ready to prioritise your wellbeing?
         </h2>
-        <p 
+        <p
           className="text-gray-800 max-w-2xl mx-auto text-lg font-medium"
           data-testid="text-cta-description"
         >
@@ -594,8 +593,8 @@ export default function Landing() {
         </p>
         <div className="flex justify-center gap-4">
           <Link href="/auth/register">
-            <Button 
-              size="lg" 
+            <Button
+              size="lg"
               className="px-8 shadow-xl"
               data-testid="button-create-account-footer"
             >

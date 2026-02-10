@@ -27,11 +27,11 @@ export const generateToken = (userId, role, expiresIn = '1h') => {
   );
 };
 
-export const generateRefreshToken = (userId) => {
+export const generateRefreshToken = (userId, rememberMe = false) => {
   return jwt.sign(
     { userId, type: 'refresh' },
     JWT_SECRET,
-    { expiresIn: '7d' }
+    { expiresIn: rememberMe ? '7d' : '48h' }
   );
 };
 

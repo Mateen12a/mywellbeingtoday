@@ -830,58 +830,213 @@ const EMERGENCY_NUMBERS: { [key: string]: { number: string; label: string; descr
   US: [
     { number: "911", label: "Emergency Services", description: "Police, Fire, Ambulance" },
     { number: "988", label: "Suicide & Crisis Lifeline", description: "24/7 Mental Health Support" },
+    { number: "211", label: "Community Services", description: "Social Services Helpline" },
   ],
   CA: [
     { number: "911", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+    { number: "988", label: "Suicide Crisis Helpline", description: "24/7 Mental Health Support" },
+  ],
+  MX: [
+    { number: "911", label: "Emergencias", description: "Police, Fire, Ambulance" },
+    { number: "065", label: "Cruz Roja", description: "Red Cross Ambulance" },
+  ],
+  JM: [
+    { number: "119", label: "Emergency Services", description: "Police" },
+    { number: "110", label: "Fire", description: "Fire Department" },
+  ],
+  TT: [
+    { number: "999", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+    { number: "990", label: "Ambulance", description: "Medical Emergency" },
+  ],
+  BB: [
+    { number: "211", label: "Emergency Services", description: "Police" },
+    { number: "511", label: "Ambulance", description: "Medical Emergency" },
+  ],
+  CR: [
+    { number: "911", label: "Emergencias", description: "Police, Fire, Ambulance" },
+  ],
+  PA: [
+    { number: "911", label: "Emergencias", description: "Police, Fire, Ambulance" },
+  ],
+  GT: [
+    { number: "110", label: "Bomberos", description: "Fire & Ambulance" },
+    { number: "120", label: "Policía", description: "Police Emergency" },
+  ],
+  BR: [
+    { number: "192", label: "SAMU", description: "Ambulância" },
+    { number: "190", label: "Polícia", description: "Police Emergency" },
+    { number: "193", label: "Bombeiros", description: "Fire Department" },
+    { number: "188", label: "CVV", description: "Crisis & Suicide Prevention" },
+  ],
+  AR: [
+    { number: "107", label: "SAME", description: "Medical Emergency" },
+    { number: "911", label: "Emergencias", description: "Police Emergency" },
+    { number: "100", label: "Bomberos", description: "Fire Department" },
+  ],
+  CL: [
+    { number: "131", label: "Ambulancia", description: "Medical Emergency" },
+    { number: "133", label: "Carabineros", description: "Police" },
+    { number: "132", label: "Bomberos", description: "Fire Department" },
+  ],
+  CO: [
+    { number: "123", label: "Emergencias", description: "Police, Fire, Ambulance" },
+    { number: "125", label: "Cruz Roja", description: "Red Cross" },
+  ],
+  PE: [
+    { number: "105", label: "Policía", description: "Police Emergency" },
+    { number: "116", label: "Bomberos", description: "Fire & Ambulance" },
+  ],
+  VE: [
+    { number: "171", label: "Emergencias", description: "Unified Emergency" },
+  ],
+  EC: [
+    { number: "911", label: "ECU 911", description: "Unified Emergency" },
+  ],
+  UY: [
+    { number: "911", label: "Emergencias", description: "Police Emergency" },
+    { number: "105", label: "Ambulancia", description: "Medical Emergency" },
+  ],
+  PY: [
+    { number: "911", label: "Emergencias", description: "Unified Emergency" },
+  ],
+  BO: [
+    { number: "110", label: "Policía", description: "Police Emergency" },
+    { number: "118", label: "Ambulancia", description: "Medical Emergency" },
   ],
   GB: [
     { number: "999", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+    { number: "112", label: "European Emergency", description: "Alternative Emergency Number" },
     { number: "111", label: "NHS Non-Emergency", description: "Medical Advice Line" },
+    { number: "116 123", label: "Samaritans", description: "24/7 Emotional Support" },
   ],
-  AU: [
-    { number: "000", label: "Emergency Services", description: "Police, Fire, Ambulance" },
-    { number: "13 11 14", label: "Lifeline Australia", description: "24/7 Crisis Support" },
-  ],
-  IN: [
-    { number: "112", label: "Emergency Services", description: "Unified Emergency Number" },
-    { number: "108", label: "Ambulance", description: "Medical Emergency" },
-  ],
-  DE: [
-    { number: "112", label: "Notruf", description: "Fire, Ambulance" },
-    { number: "110", label: "Polizei", description: "Police Emergency" },
+  IE: [
+    { number: "999", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+    { number: "112", label: "European Emergency", description: "Alternative Emergency Number" },
   ],
   FR: [
     { number: "112", label: "Urgences Européennes", description: "European Emergency" },
     { number: "15", label: "SAMU", description: "Medical Emergency" },
+    { number: "18", label: "Pompiers", description: "Fire Department" },
+    { number: "17", label: "Police Secours", description: "Police Emergency" },
   ],
-  IT: [
-    { number: "112", label: "Emergenze", description: "Unified Emergency Number" },
-    { number: "118", label: "Pronto Soccorso", description: "Medical Emergency" },
-  ],
-  ES: [
-    { number: "112", label: "Emergencias", description: "Unified Emergency Number" },
+  DE: [
+    { number: "112", label: "Notruf", description: "Fire & Ambulance" },
+    { number: "110", label: "Polizei", description: "Police Emergency" },
+    { number: "0800 111 0 111", label: "Telefonseelsorge", description: "Crisis Helpline" },
   ],
   NL: [
     { number: "112", label: "Alarmnummer", description: "Police, Fire, Ambulance" },
+    { number: "0900 0113", label: "Zelfmoordpreventie", description: "Suicide Prevention" },
   ],
   BE: [
     { number: "112", label: "Urgences", description: "European Emergency" },
     { number: "101", label: "Police", description: "Police Emergency" },
+    { number: "1813", label: "Zelfmoordlijn", description: "Suicide Prevention" },
+  ],
+  LU: [
+    { number: "112", label: "Urgences", description: "Emergency Services" },
+    { number: "113", label: "Police", description: "Police Emergency" },
+  ],
+  IT: [
+    { number: "112", label: "Emergenze", description: "Unified Emergency Number" },
+    { number: "118", label: "Pronto Soccorso", description: "Medical Emergency" },
+    { number: "115", label: "Vigili del Fuoco", description: "Fire Department" },
+  ],
+  ES: [
+    { number: "112", label: "Emergencias", description: "Unified Emergency Number" },
+    { number: "024", label: "Línea de Atención", description: "Suicide Prevention" },
+  ],
+  PT: [
+    { number: "112", label: "Emergência", description: "Unified Emergency Number" },
+  ],
+  GR: [
+    { number: "112", label: "Emergency", description: "Unified Emergency" },
+    { number: "166", label: "EKAB", description: "Medical Emergency" },
+    { number: "100", label: "Astynomia", description: "Police" },
+  ],
+  SE: [
+    { number: "112", label: "SOS Alarm", description: "Emergency Services" },
+    { number: "1177", label: "Vårdguiden", description: "Healthcare Advice" },
+  ],
+  NO: [
+    { number: "113", label: "Ambulanse", description: "Medical Emergency" },
+    { number: "112", label: "Politi", description: "Police Emergency" },
+    { number: "110", label: "Brannvesen", description: "Fire Department" },
+  ],
+  DK: [
+    { number: "112", label: "Alarm", description: "Emergency Services" },
+    { number: "1813", label: "Lægevagten", description: "Medical Helpline (Copenhagen)" },
+  ],
+  FI: [
+    { number: "112", label: "Hätänumero", description: "Emergency Services" },
+  ],
+  IS: [
+    { number: "112", label: "Neyðarlína", description: "Emergency Services" },
   ],
   AT: [
     { number: "112", label: "Euronotruf", description: "European Emergency" },
     { number: "144", label: "Rettung", description: "Ambulance" },
+    { number: "142", label: "Telefonseelsorge", description: "Crisis Helpline" },
   ],
   CH: [
     { number: "112", label: "European Emergency", description: "Unified Emergency" },
     { number: "144", label: "Sanität", description: "Ambulance" },
+    { number: "143", label: "Die Dargebotene Hand", description: "Crisis Support" },
   ],
-  NZ: [
-    { number: "111", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+  PL: [
+    { number: "112", label: "Numer Alarmowy", description: "Emergency Services" },
+    { number: "999", label: "Pogotowie", description: "Ambulance" },
+  ],
+  CZ: [
+    { number: "112", label: "Tísňová linka", description: "Emergency Services" },
+    { number: "155", label: "Záchranná služba", description: "Ambulance" },
+  ],
+  SK: [
+    { number: "112", label: "Tiesňové volanie", description: "Emergency Services" },
+    { number: "155", label: "Záchranná služba", description: "Ambulance" },
+  ],
+  HU: [
+    { number: "112", label: "Segélyhívó", description: "Emergency Services" },
+    { number: "104", label: "Mentők", description: "Ambulance" },
+  ],
+  RO: [
+    { number: "112", label: "Urgențe", description: "Emergency Services" },
+  ],
+  BG: [
+    { number: "112", label: "Спешна помощ", description: "Emergency Services" },
+  ],
+  HR: [
+    { number: "112", label: "Hitna služba", description: "Emergency Services" },
+  ],
+  RS: [
+    { number: "112", label: "Hitna pomoć", description: "Emergency Services" },
+    { number: "194", label: "Hitna pomoć", description: "Ambulance" },
+  ],
+  SI: [
+    { number: "112", label: "Klic v sili", description: "Emergency Services" },
+  ],
+  UA: [
+    { number: "112", label: "Екстрена допомога", description: "Emergency Services" },
+    { number: "103", label: "Швидка допомога", description: "Ambulance" },
+  ],
+  RU: [
+    { number: "112", label: "Экстренная помощь", description: "Emergency Services" },
+    { number: "103", label: "Скорая помощь", description: "Ambulance" },
+  ],
+  EE: [
+    { number: "112", label: "Häirekeskus", description: "Emergency Services" },
+  ],
+  LV: [
+    { number: "112", label: "Ārkārtas izsaukums", description: "Emergency Services" },
+    { number: "113", label: "Neatliekamā palīdzība", description: "Ambulance" },
+  ],
+  LT: [
+    { number: "112", label: "Pagalbos telefonas", description: "Emergency Services" },
   ],
   JP: [
     { number: "119", label: "Fire/Ambulance", description: "消防・救急" },
     { number: "110", label: "Police", description: "警察" },
+    { number: "0570-064-556", label: "Yorisoi Hotline", description: "24/7 Crisis Support" },
   ],
   KR: [
     { number: "119", label: "Fire/Ambulance", description: "소방/응급" },
@@ -890,21 +1045,161 @@ const EMERGENCY_NUMBERS: { [key: string]: { number: string; label: string; descr
   CN: [
     { number: "120", label: "Ambulance", description: "医疗急救" },
     { number: "110", label: "Police", description: "报警" },
+    { number: "119", label: "Fire", description: "火警" },
   ],
-  BR: [
-    { number: "192", label: "SAMU", description: "Ambulância" },
-    { number: "190", label: "Polícia", description: "Police Emergency" },
+  TW: [
+    { number: "119", label: "Fire/Ambulance", description: "消防/急救" },
+    { number: "110", label: "Police", description: "警察" },
   ],
-  MX: [
-    { number: "911", label: "Emergencias", description: "Police, Fire, Ambulance" },
+  HK: [
+    { number: "999", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+  ],
+  MO: [
+    { number: "999", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+  ],
+  SG: [
+    { number: "995", label: "Emergency", description: "Fire & Ambulance" },
+    { number: "999", label: "Police", description: "Police Emergency" },
+  ],
+  MY: [
+    { number: "999", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+    { number: "112", label: "MERS 999", description: "Mobile Emergency" },
+  ],
+  TH: [
+    { number: "191", label: "Police", description: "ตำรวจ" },
+    { number: "1669", label: "Ambulance", description: "Medical Emergency" },
+  ],
+  PH: [
+    { number: "911", label: "Emergency Services", description: "Unified Emergency" },
+  ],
+  ID: [
+    { number: "112", label: "Emergency", description: "Unified Emergency" },
+    { number: "118", label: "Ambulans", description: "Medical Emergency" },
+  ],
+  VN: [
+    { number: "115", label: "Cấp cứu", description: "Ambulance" },
+    { number: "113", label: "Công an", description: "Police" },
+    { number: "114", label: "Cứu hỏa", description: "Fire" },
+  ],
+  IN: [
+    { number: "112", label: "Emergency Services", description: "Unified Emergency Number" },
+    { number: "108", label: "Ambulance", description: "Medical Emergency" },
+    { number: "100", label: "Police", description: "Police Emergency" },
+    { number: "iCall: 9152987821", label: "iCall", description: "Mental Health Support" },
+  ],
+  PK: [
+    { number: "115", label: "Edhi Foundation", description: "Ambulance" },
+    { number: "1122", label: "Rescue", description: "Emergency Rescue" },
+  ],
+  BD: [
+    { number: "999", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+  ],
+  LK: [
+    { number: "119", label: "Police", description: "Police Emergency" },
+    { number: "110", label: "Ambulance", description: "Medical Emergency" },
+  ],
+  NP: [
+    { number: "102", label: "Police", description: "Police Emergency" },
+    { number: "101", label: "Fire", description: "Fire Department" },
+  ],
+  AE: [
+    { number: "999", label: "Emergency Services", description: "Police" },
+    { number: "998", label: "Ambulance", description: "Medical Emergency" },
+    { number: "997", label: "Fire", description: "Fire Department" },
+  ],
+  SA: [
+    { number: "911", label: "Emergency Services", description: "Unified Emergency" },
+    { number: "997", label: "Ambulance", description: "Medical Emergency" },
+  ],
+  QA: [
+    { number: "999", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+  ],
+  KW: [
+    { number: "112", label: "Emergency Services", description: "Unified Emergency" },
+  ],
+  BH: [
+    { number: "999", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+  ],
+  OM: [
+    { number: "9999", label: "Royal Oman Police", description: "Emergency" },
+  ],
+  IL: [
+    { number: "100", label: "Police", description: "משטרה" },
+    { number: "101", label: "Magen David Adom", description: "Ambulance" },
+    { number: "102", label: "Fire", description: "כיבוי אש" },
+  ],
+  TR: [
+    { number: "112", label: "Acil Yardım", description: "Emergency Services" },
+    { number: "155", label: "Polis", description: "Police" },
+  ],
+  AU: [
+    { number: "000", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+    { number: "112", label: "Mobile Emergency", description: "From Mobile Phones" },
+    { number: "13 11 14", label: "Lifeline Australia", description: "24/7 Crisis Support" },
+  ],
+  NZ: [
+    { number: "111", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+    { number: "1737", label: "Need to Talk?", description: "Mental Health Support" },
+  ],
+  FJ: [
+    { number: "911", label: "Emergency Services", description: "Police, Fire, Ambulance" },
   ],
   ZA: [
     { number: "10111", label: "Police", description: "SAPS Emergency" },
     { number: "10177", label: "Ambulance", description: "Medical Emergency" },
+    { number: "112", label: "Mobile Emergency", description: "From Mobile Phones" },
+  ],
+  NG: [
+    { number: "112", label: "Emergency Services", description: "Unified Emergency" },
+    { number: "199", label: "Fire Service", description: "Fire Emergency" },
+  ],
+  KE: [
+    { number: "999", label: "Emergency Services", description: "Police, Fire, Ambulance" },
+    { number: "112", label: "Mobile Emergency", description: "From Mobile Phones" },
+  ],
+  GH: [
+    { number: "112", label: "Emergency Services", description: "Unified Emergency" },
+    { number: "193", label: "Ambulance", description: "Medical Emergency" },
+  ],
+  EG: [
+    { number: "123", label: "Ambulance", description: "Medical Emergency" },
+    { number: "122", label: "Police", description: "Police Emergency" },
+    { number: "180", label: "Fire", description: "Fire Department" },
+  ],
+  MA: [
+    { number: "15", label: "Ambulance", description: "SAMU" },
+    { number: "19", label: "Police", description: "Police Urbaine" },
+  ],
+  TN: [
+    { number: "190", label: "Police", description: "Police Secours" },
+    { number: "198", label: "Protection Civile", description: "Emergency Services" },
+  ],
+  ET: [
+    { number: "911", label: "Emergency Services", description: "Unified Emergency" },
+  ],
+  TZ: [
+    { number: "112", label: "Emergency Services", description: "Unified Emergency" },
+    { number: "114", label: "Police", description: "Police Emergency" },
+  ],
+  UG: [
+    { number: "999", label: "Emergency Services", description: "Police" },
+    { number: "112", label: "Mobile Emergency", description: "From Mobile Phones" },
+  ],
+  RW: [
+    { number: "112", label: "Emergency Services", description: "Unified Emergency" },
+  ],
+  SN: [
+    { number: "17", label: "Police", description: "Police Secours" },
+    { number: "18", label: "Pompiers", description: "Fire & Ambulance" },
+  ],
+  CI: [
+    { number: "110", label: "Police Secours", description: "Police Emergency" },
+    { number: "180", label: "SAMU", description: "Medical Emergency" },
   ],
   DEFAULT: [
     { number: "112", label: "International Emergency", description: "Works in most countries" },
     { number: "911", label: "North American Standard", description: "US, Canada, Mexico" },
+    { number: "999", label: "Commonwealth Standard", description: "UK, Malaysia, others" },
   ],
 };
 
@@ -915,6 +1210,8 @@ interface EmergencyTabContentProps {
 
 const EmergencyTabContent = ({ emergencyProviders, isLoadingProviders }: EmergencyTabContentProps) => {
   const [userCountry, setUserCountry] = useState<string | null>(null);
+  const [userCity, setUserCity] = useState<string | null>(null);
+  const [userRegion, setUserRegion] = useState<string | null>(null);
   const [locationLoading, setLocationLoading] = useState(true);
   const [locationError, setLocationError] = useState<string | null>(null);
 
@@ -933,6 +1230,8 @@ const EmergencyTabContent = ({ emergencyProviders, isLoadingProviders }: Emergen
               const data = await response.json();
               if (data.countryCode) {
                 setUserCountry(data.countryCode);
+                setUserCity(data.city || data.locality || null);
+                setUserRegion(data.principalSubdivision || null);
               } else {
                 await fallbackToIP();
               }
@@ -959,6 +1258,8 @@ const EmergencyTabContent = ({ emergencyProviders, isLoadingProviders }: Emergen
         const data = await response.json();
         if (data.country_code) {
           setUserCountry(data.country_code);
+          setUserCity(data.city || null);
+          setUserRegion(data.region || null);
         } else {
           setLocationError("Could not detect your location");
         }
@@ -975,6 +1276,11 @@ const EmergencyTabContent = ({ emergencyProviders, isLoadingProviders }: Emergen
     : EMERGENCY_NUMBERS.DEFAULT;
 
   const countryName = userCountry ? new Intl.DisplayNames(['en'], { type: 'region' }).of(userCountry) : null;
+  const locationDisplay = userCity && countryName 
+    ? `${userCity}, ${countryName}` 
+    : userRegion && countryName
+    ? `${userRegion}, ${countryName}`
+    : countryName || null;
 
   return (
     <div className="space-y-6" data-testid="emergency-tab-content">
@@ -996,8 +1302,8 @@ const EmergencyTabContent = ({ emergencyProviders, isLoadingProviders }: Emergen
                   "Detecting your location..."
                 ) : locationError ? (
                   "Showing international emergency numbers"
-                ) : countryName ? (
-                  `Emergency numbers for ${countryName}`
+                ) : locationDisplay ? (
+                  `Emergency numbers for ${locationDisplay}`
                 ) : (
                   "International emergency numbers"
                 )}
@@ -1034,7 +1340,7 @@ const EmergencyTabContent = ({ emergencyProviders, isLoadingProviders }: Emergen
           {!userCountry && !locationLoading && (
             <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 text-sm text-amber-800 dark:text-amber-200 flex items-start gap-2">
               <Info className="w-4 h-4 mt-0.5 shrink-0" />
-              <p>Enable location services to see emergency numbers specific to your area.</p>
+              <p>Allow location access to see emergency numbers and providers specific to your area.</p>
             </div>
           )}
         </CardContent>
@@ -1048,7 +1354,12 @@ const EmergencyTabContent = ({ emergencyProviders, isLoadingProviders }: Emergen
             </div>
             <div>
               <CardTitle className="text-base sm:text-lg font-bold text-black dark:text-white">Emergency Service Providers</CardTitle>
-              <CardDescription className="text-sm">Verified emergency healthcare providers near you</CardDescription>
+              <CardDescription className="text-sm">
+                {locationDisplay 
+                  ? `Verified emergency healthcare providers near ${locationDisplay}`
+                  : 'Verified emergency healthcare providers near you'
+                }
+              </CardDescription>
             </div>
           </div>
         </CardHeader>
@@ -1067,8 +1378,13 @@ const EmergencyTabContent = ({ emergencyProviders, isLoadingProviders }: Emergen
           ) : (
             <div className="text-center py-8 text-muted-foreground">
               <Ambulance className="w-12 h-12 mx-auto mb-3 opacity-40" />
-              <p className="font-medium">No emergency service providers available in your area.</p>
-              <p className="text-sm mt-1">Please use the emergency numbers above for immediate assistance.</p>
+              <p className="font-medium text-base">No emergency providers listed for your area yet</p>
+              <p className="text-sm mt-2 max-w-sm mx-auto">
+                {locationDisplay 
+                  ? `We're still building our provider network in ${locationDisplay}. Please use the emergency numbers above for immediate help.`
+                  : `We're still expanding our provider network. Please use the emergency numbers above for immediate help.`
+                }
+              </p>
             </div>
           )}
         </CardContent>

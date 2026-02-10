@@ -1,10 +1,12 @@
 import crypto from 'crypto';
 import { User, Provider } from '../models/index.js';
 import { generateToken, generateRefreshToken, verifyToken } from '../middlewares/auth.js';
-import { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail } from '../services/emailService.js';
+import { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail, sendOTPEmail, sendNotification } from '../services/emailService.js';
+import { createLoginNotification, createRegistrationNotification } from '../services/notificationService.js';
 import { logAction } from '../middlewares/auditLog.js';
 import { AppError } from '../middlewares/errorHandler.js';
 import { USER_ROLES } from '../config/constants.js';
+import { sendPushToUser } from '../services/pushService.js';
 
 export const register = async (req, res, next) => {
   try {
@@ -19,8 +21,8 @@ export const register = async (req, res, next) => {
       ? USER_ROLES.USER 
       : (role || USER_ROLES.USER);
 
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOtp = crypto.createHash('sha256').update(otpCode).digest('hex');
 
     const user = await User.create({
       email: email.toLowerCase(),
@@ -32,8 +34,8 @@ export const register = async (req, res, next) => {
         displayName: `${firstName || ''} ${lastName || ''}`.trim()
       },
       verification: {
-        emailVerificationToken: verificationToken,
-        emailVerificationExpires: verificationExpires
+        otp: hashedOtp,
+        otpExpires: new Date(Date.now() + 10 * 60 * 1000)
       },
       consent: {
         termsAccepted: true,
@@ -43,21 +45,16 @@ export const register = async (req, res, next) => {
       }
     });
 
-    const baseUrl = process.env.APP_URL || `https://${process.env.REPLIT_DEV_DOMAIN}`;
-    await sendVerificationEmail(user.email, user.profile.firstName, `${baseUrl}/verify-email?token=${verificationToken}`);
-
-    const accessToken = generateToken(user._id, user.role);
-    const refreshToken = generateRefreshToken(user._id);
+    await sendOTPEmail(user.email, user.profile.firstName || 'there', otpCode);
 
     await logAction(user._id, 'REGISTER', 'user', user._id, { email: user.email }, req);
 
     res.status(201).json({
       success: true,
-      message: 'Registration successful. Please check your email to verify your account.',
+      message: 'Registration successful. Please check your email for your verification code.',
       data: {
-        user: user.toJSON(),
-        accessToken,
-        refreshToken
+        email: user.email,
+        requiresVerification: true
       }
     });
   } catch (error) {
@@ -74,8 +71,8 @@ export const registerProvider = async (req, res, next) => {
       throw new AppError('Email already registered', 409, 'EMAIL_EXISTS');
     }
 
-    const verificationToken = crypto.randomBytes(32).toString('hex');
-    const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000);
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOtp = crypto.createHash('sha256').update(otpCode).digest('hex');
 
     const user = await User.create({
       email: email.toLowerCase(),
@@ -87,8 +84,8 @@ export const registerProvider = async (req, res, next) => {
         displayName: `${firstName || ''} ${lastName || ''}`.trim()
       },
       verification: {
-        emailVerificationToken: verificationToken,
-        emailVerificationExpires: verificationExpires
+        otp: hashedOtp,
+        otpExpires: new Date(Date.now() + 10 * 60 * 1000)
       },
       consent: {
         termsAccepted: true,
@@ -142,22 +139,16 @@ export const registerProvider = async (req, res, next) => {
       });
     }
 
-    const baseUrl = process.env.APP_URL || `https://${process.env.REPLIT_DEV_DOMAIN}`;
-    await sendVerificationEmail(user.email, user.profile.firstName, `${baseUrl}/verify-email?token=${verificationToken}`);
-
-    const accessToken = generateToken(user._id, user.role);
-    const refreshToken = generateRefreshToken(user._id);
+    await sendOTPEmail(user.email, user.profile.firstName || 'there', otpCode);
 
     await logAction(user._id, 'REGISTER_PROVIDER', 'user', user._id, { email: user.email }, req);
 
     res.status(201).json({
       success: true,
-      message: 'Provider registration successful. Please check your email to verify your account.',
+      message: 'Registration successful. Please check your email for your verification code.',
       data: {
-        user: user.toJSON(),
-        provider: provider?.toJSON(),
-        accessToken,
-        refreshToken
+        email: user.email,
+        requiresVerification: true
       }
     });
   } catch (error) {
@@ -167,7 +158,7 @@ export const registerProvider = async (req, res, next) => {
 
 export const login = async (req, res, next) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, rememberMe } = req.body;
 
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
@@ -183,17 +174,51 @@ export const login = async (req, res, next) => {
       throw new AppError('Invalid email or password', 401, 'INVALID_CREDENTIALS');
     }
 
-    // Note: Email verification is recommended but not required for login
-    // Providers can access their dashboard to see verification status
-    // This matches the behavior after registration where they're logged in immediately
+    if (!user.verification.emailVerified) {
+      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const hashedOtp = crypto.createHash('sha256').update(otpCode).digest('hex');
+
+      user.verification.otp = hashedOtp;
+      user.verification.otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+      user.verification.otpAttempts = 0;
+      user.rememberMe = !!rememberMe;
+      await user.save();
+
+      await sendOTPEmail(user.email, user.profile.firstName || 'there', otpCode);
+
+      return res.json({
+        success: true,
+        message: 'Please verify your email.',
+        data: {
+          email: user.email,
+          requiresVerification: true
+        }
+      });
+    }
 
     user.lastLogin = new Date();
+    user.lastOtpVerifiedAt = new Date();
+    user.rememberMe = !!rememberMe;
     await user.save();
 
-    const accessToken = generateToken(user._id, user.role);
-    const refreshToken = generateRefreshToken(user._id);
+    const accessToken = generateToken(user._id, user.role, rememberMe ? '7d' : '2h');
+    const refreshToken = generateRefreshToken(user._id, !!rememberMe);
 
     await logAction(user._id, 'LOGIN', 'user', user._id, { email: user.email }, req);
+
+    createLoginNotification(user._id, user.profile.firstName || 'there').catch(err => console.error('[NOTIFICATION]', err));
+    sendPushToUser(user._id, 'login').catch(err => console.error('[PUSH]', err));
+
+    if (user.settings?.notifications?.email !== false) {
+      sendNotification(
+        user.email,
+        user.profile.firstName || 'there',
+        'New Login to Your Account',
+        `<p>A new login was detected on your account at ${new Date().toLocaleString('en-GB', { dateStyle: 'long', timeStyle: 'short' })}.</p><p>If this wasn't you, please change your password immediately.</p>`,
+        null,
+        null
+      ).catch(err => console.error('[EMAIL]', err));
+    }
 
     res.json({
       success: true,
@@ -201,7 +226,8 @@ export const login = async (req, res, next) => {
       data: {
         user: user.toJSON(),
         accessToken,
-        refreshToken
+        refreshToken,
+        rememberMe: !!rememberMe
       }
     });
   } catch (error) {
@@ -240,8 +266,30 @@ export const refreshToken = async (req, res, next) => {
       throw new AppError('User not found or inactive', 401, 'USER_NOT_FOUND');
     }
 
-    const accessToken = generateToken(user._id, user.role);
-    const newRefreshToken = generateRefreshToken(user._id);
+    if (!user.rememberMe) {
+      const twoHoursAgo = new Date(Date.now() - 2 * 60 * 60 * 1000);
+      if (!user.lastOtpVerifiedAt || user.lastOtpVerifiedAt < twoHoursAgo) {
+        const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+        const hashedOtp = crypto.createHash('sha256').update(otpCode).digest('hex');
+        user.verification.otp = hashedOtp;
+        user.verification.otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+        user.verification.otpAttempts = 0;
+        await user.save();
+        await sendOTPEmail(user.email, user.profile.firstName || 'there', otpCode);
+
+        return res.json({
+          success: true,
+          message: 'Security verification required.',
+          data: {
+            requiresOtpReverification: true,
+            email: user.email
+          }
+        });
+      }
+    }
+
+    const accessToken = generateToken(user._id, user.role, user.rememberMe ? '7d' : '2h');
+    const newRefreshToken = generateRefreshToken(user._id, user.rememberMe);
 
     res.json({
       success: true,
@@ -474,6 +522,149 @@ export const verifyPassword = async (req, res, next) => {
     res.json({
       success: true,
       message: 'Password verified successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const verifyOTP = async (req, res, next) => {
+  try {
+    const { email, otp } = req.body;
+    
+    if (!email || !otp) {
+      throw new AppError('Email and verification code are required', 400, 'MISSING_FIELDS');
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      throw new AppError('Invalid verification code', 400, 'INVALID_OTP');
+    }
+
+    if (user.verification.otpAttempts >= 5) {
+      throw new AppError('Too many attempts. Please request a new code.', 429, 'TOO_MANY_ATTEMPTS');
+    }
+
+    if (!user.verification.otpExpires || user.verification.otpExpires < new Date()) {
+      throw new AppError('Verification code has expired. Please request a new one.', 400, 'OTP_EXPIRED');
+    }
+
+    const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+    if (hashedOtp !== user.verification.otp) {
+      user.verification.otpAttempts = (user.verification.otpAttempts || 0) + 1;
+      await user.save();
+      throw new AppError('Invalid verification code', 400, 'INVALID_OTP');
+    }
+
+    user.verification.emailVerified = true;
+    user.verification.otp = undefined;
+    user.verification.otpExpires = undefined;
+    user.verification.otpAttempts = 0;
+    user.lastLogin = new Date();
+    user.lastOtpVerifiedAt = new Date();
+    await user.save();
+
+    await sendWelcomeEmail(user.email, user.profile.firstName || 'there');
+
+    const accessToken = generateToken(user._id, user.role, user.rememberMe ? '7d' : '2h');
+    const refreshToken = generateRefreshToken(user._id, user.rememberMe);
+
+    await logAction(user._id, 'VERIFY_OTP', 'user', user._id, null, req);
+
+    createRegistrationNotification(user._id, user.profile.firstName || 'there').catch(err => console.error('[NOTIFICATION]', err));
+    sendPushToUser(user._id, 'register').catch(err => console.error('[PUSH]', err));
+
+    res.json({
+      success: true,
+      message: 'Email verified successfully',
+      data: {
+        user: user.toJSON(),
+        accessToken,
+        refreshToken
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resendOTP = async (req, res, next) => {
+  try {
+    const { email } = req.body;
+    
+    if (!email) {
+      throw new AppError('Email is required', 400, 'MISSING_FIELDS');
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      return res.json({ success: true, message: 'If an account exists, a new code has been sent.' });
+    }
+
+    if (user.verification?.emailVerified) {
+      return res.json({ success: true, message: 'Email is already verified.' });
+    }
+
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOtp = crypto.createHash('sha256').update(otpCode).digest('hex');
+    
+    user.verification.otp = hashedOtp;
+    user.verification.otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+    user.verification.otpAttempts = 0;
+    await user.save();
+
+    await sendOTPEmail(user.email, user.profile.firstName || 'there', otpCode);
+
+    res.json({
+      success: true,
+      message: 'A new verification code has been sent to your email.'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const reverifyOTP = async (req, res, next) => {
+  try {
+    const { email, otp } = req.body;
+    if (!email || !otp) {
+      throw new AppError('Email and verification code are required', 400, 'MISSING_FIELDS');
+    }
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      throw new AppError('Invalid verification code', 400, 'INVALID_OTP');
+    }
+    if (user.verification.otpAttempts >= 5) {
+      throw new AppError('Too many attempts. Please request a new code.', 429, 'TOO_MANY_ATTEMPTS');
+    }
+    if (!user.verification.otpExpires || user.verification.otpExpires < new Date()) {
+      throw new AppError('Verification code has expired. Please request a new one.', 400, 'OTP_EXPIRED');
+    }
+    const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+    if (hashedOtp !== user.verification.otp) {
+      user.verification.otpAttempts = (user.verification.otpAttempts || 0) + 1;
+      await user.save();
+      throw new AppError('Invalid verification code', 400, 'INVALID_OTP');
+    }
+    user.verification.otp = undefined;
+    user.verification.otpExpires = undefined;
+    user.verification.otpAttempts = 0;
+    user.lastOtpVerifiedAt = new Date();
+    await user.save();
+
+    const accessToken = generateToken(user._id, user.role, user.rememberMe ? '7d' : '2h');
+    const refreshToken = generateRefreshToken(user._id, user.rememberMe);
+
+    await logAction(user._id, 'REVERIFY_OTP', 'user', user._id, null, req);
+
+    res.json({
+      success: true,
+      message: 'Verification successful',
+      data: {
+        user: user.toJSON(),
+        accessToken,
+        refreshToken
+      }
     });
   } catch (error) {
     next(error);

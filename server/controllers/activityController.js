@@ -3,6 +3,9 @@ import { AppError } from '../middlewares/errorHandler.js';
 import { logAction } from '../middlewares/auditLog.js';
 import { generateActivitySuggestions } from '../services/aiService.js';
 import { autoGenerateReport } from '../services/reportService.js';
+import { createActivityNotification } from '../services/notificationService.js';
+import { sendNotification } from '../services/emailService.js';
+import { sendPushToUser } from '../services/pushService.js';
 
 export const createActivity = async (req, res, next) => {
   try {
@@ -26,6 +29,20 @@ export const createActivity = async (req, res, next) => {
     });
 
     await logAction(req.user._id, 'CREATE_ACTIVITY', 'activity', activity._id, { category, title }, req);
+
+    createActivityNotification(req.user._id, category, title).catch(err => console.error('[NOTIFICATION]', err));
+    sendPushToUser(req.user._id, 'activity_logged', { title }).catch(err => console.error('[PUSH]', err));
+
+    if (req.user.settings?.notifications?.email !== false) {
+      sendNotification(
+        req.user.email,
+        req.user.profile?.firstName || 'there',
+        'Activity Logged Successfully',
+        `<p>Your ${category} activity "${title}" has been recorded.</p><p>Great job staying active and tracking your wellbeing!</p>`,
+        null,
+        null
+      ).catch(err => console.error('[EMAIL]', err));
+    }
 
     // Generate AI suggestions for this activity
     const recentActivities = await ActivityLog.find({ userId: req.user._id })

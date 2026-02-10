@@ -14,3 +14,5 @@ export { default as SupportTicket } from './SupportTicket.js';
 export { default as Subscription } from './Subscription.js';
 export { default as ProviderChatConversation } from './ProviderChatConversation.js';
 export { default as ProviderChatMessage } from './ProviderChatMessage.js';
+export { default as Notification } from './Notification.js';
+export { default as PushSubscription } from './PushSubscription.js';

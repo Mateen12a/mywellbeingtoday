@@ -22,8 +22,8 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string) => Promise<{ success: boolean; message?: string }>;
-  register: (email: string, password: string, firstName: string, lastName: string) => Promise<{ success: boolean; message?: string }>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; message?: string; requiresVerification?: boolean; email?: string }>;
+  register: (email: string, password: string, firstName: string, lastName: string) => Promise<{ success: boolean; message?: string; requiresVerification?: boolean; email?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -79,9 +79,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     initAuth();
   }, []);
 
-  const login = async (email: string, password: string) => {
+  const login = async (email: string, password: string, rememberMe: boolean = false) => {
     try {
-      const response = await api.login(email, password);
+      const response = await api.login(email, password, rememberMe);
+      if (response.success && response.data?.requiresVerification) {
+        return { success: true, requiresVerification: true, email: response.data.email };
+      }
       if (response.success && response.data?.user) {
         const user = response.data.user;
         setUser(user);
@@ -98,6 +101,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const register = async (email: string, password: string, firstName: string, lastName: string) => {
     try {
       const response = await api.register(email, password, firstName, lastName);
+      if (response.success && response.data?.requiresVerification) {
+        return { success: true, requiresVerification: true, email: response.data.email };
+      }
       if (response.success && response.data?.user) {
         const user = response.data.user;
         setUser(user);

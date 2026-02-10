@@ -10,6 +10,8 @@ import messageRoutes from './messageRoutes.js';
 import certificateRoutes from './certificateRoutes.js';
 import supportRoutes from './supportRoutes.js';
 import subscriptionRoutes from './subscriptionRoutes.js';
+import notificationRoutes from './notificationRoutes.js';
+import pushRoutes from './pushRoutes.js';
 
 const router = Router();
 
@@ -33,5 +35,7 @@ router.use('/messages', messageRoutes);
 router.use('/certificates', certificateRoutes);
 router.use('/support', supportRoutes);
 router.use('/subscription', subscriptionRoutes);
+router.use('/notifications', notificationRoutes);
+router.use('/push', pushRoutes);
 
 export default router;

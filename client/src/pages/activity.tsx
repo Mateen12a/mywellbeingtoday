@@ -503,14 +503,13 @@ export default function ActivityLog() {
   return (
     <div className="max-w-2xl mx-auto space-y-6 sm:space-y-8 animate-in slide-in-from-bottom-4 duration-500 px-4 sm:px-6">
       <div className="space-y-1 sm:space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">Log Activity</h1>
-        <p className="text-sm sm:text-base text-muted-foreground">Record your daily habits, thoughts, and small wins.</p>
+        <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">Log in activity</h1>
       </div>
 
       <Card className="border-secondary/50 shadow-lg">
         <CardHeader className="pb-4 sm:pb-6">
           <CardTitle className="text-lg sm:text-xl">New Entry</CardTitle>
-          <CardDescription className="text-xs sm:text-sm">What have you been up to today?</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Log in and act on what you do today</CardDescription>
         </CardHeader>
         <CardContent className="space-y-4 sm:space-y-6">
           
@@ -556,7 +555,7 @@ export default function ActivityLog() {
           </div>
 
           <div className="flex flex-col space-y-2">
-            <Label className="text-sm sm:text-base">Category</Label>
+            <Label className="text-sm sm:text-base">Select category</Label>
             <Select value={category} onValueChange={(val) => {
               setCategory(val);
               if (val !== 'other') setCustomCategory("");
@@ -589,7 +588,7 @@ export default function ActivityLog() {
           )}
 
           <div className="flex flex-col space-y-2">
-            <Label className="text-sm sm:text-base">Activity Title</Label>
+            <Label className="text-sm sm:text-base">Type of activity</Label>
             <Input 
               placeholder="e.g., Morning yoga, Team meeting, etc." 
               value={title}
@@ -601,36 +600,29 @@ export default function ActivityLog() {
 
           <div className="space-y-2">
             <div className="flex items-center justify-between">
-              <Label className="text-sm sm:text-base">Description / Notes</Label>
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Mic className="h-3 w-3" /> Voice available
-              </span>
-            </div>
-            <div className="relative">
-              <Textarea 
-                placeholder="Describe your experience... (tap the mic to use voice)" 
-                className="min-h-[120px] sm:min-h-[150px] rounded-xl resize-none pr-12 text-sm sm:text-base"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
-                data-testid="textarea-activity-description"
-              />
+              <Label className="text-sm sm:text-base">Briefly describe</Label>
               <Button
-                size="icon"
+                size="sm"
                 variant={isRecording ? "destructive" : "secondary"}
                 className={cn(
-                  "absolute bottom-2 sm:bottom-4 right-2 sm:right-4 rounded-full transition-all duration-300",
+                  "rounded-full transition-all duration-300 h-7 px-2.5 gap-1.5 text-xs",
                   isRecording && "animate-pulse"
                 )}
                 onClick={() => toggleVoice(false)}
                 title="Voice Input"
                 data-testid="button-voice-activity"
               >
-                <Mic className="h-4 w-4" />
+                <Mic className="h-3 w-3" />
+                {isRecording ? "Listening..." : "Voice available"}
               </Button>
             </div>
-            {isRecording && (
-              <p className="text-xs text-primary animate-pulse font-medium">Listening...</p>
-            )}
+            <Textarea 
+              placeholder="Describe your experience..." 
+              className="min-h-[120px] sm:min-h-[150px] rounded-xl resize-none text-sm sm:text-base"
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              data-testid="textarea-activity-description"
+            />
           </div>
 
           <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row justify-end gap-2">

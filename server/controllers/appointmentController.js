@@ -1,8 +1,10 @@
 import { Appointment, Provider, WellbeingReport } from '../models/index.js';
-import { sendAppointmentConfirmation } from '../services/emailService.js';
+import { sendAppointmentConfirmation, sendNotification } from '../services/emailService.js';
+import { createAppointmentBookedNotification, createAppointmentCancelledNotification } from '../services/notificationService.js';
 import { AppError } from '../middlewares/errorHandler.js';
 import { logAction } from '../middlewares/auditLog.js';
 import { APPOINTMENT_STATUS } from '../config/constants.js';
+import { sendPushToUser } from '../services/pushService.js';
 
 export const createAppointment = async (req, res, next) => {
   try {
@@ -73,6 +75,10 @@ export const createAppointment = async (req, res, next) => {
     );
 
     await logAction(req.user._id, 'CREATE_APPOINTMENT', 'appointment', appointment._id, { providerId, type }, req);
+
+    const providerFullName = `${provider.userId.profile?.firstName || ''} ${provider.userId.profile?.lastName || ''}`.trim() || 'Provider';
+    createAppointmentBookedNotification(req.user._id, providerFullName, appointmentDate).catch(err => console.error('[NOTIFICATION]', err));
+    sendPushToUser(req.user._id, 'appointment_booked', { providerName: providerFullName }).catch(err => console.error('[PUSH]', err));
 
     res.status(201).json({
       success: true,
@@ -216,6 +222,11 @@ export const cancelAppointment = async (req, res, next) => {
     await appointment.save();
 
     await logAction(req.user._id, 'CANCEL_APPOINTMENT', 'appointment', appointment._id, { reason }, req);
+
+    const cancelProvider = await Provider.findById(appointment.providerId).populate('userId', 'profile');
+    const providerName = cancelProvider ? `${cancelProvider.userId.profile?.firstName || ''} ${cancelProvider.userId.profile?.lastName || ''}`.trim() || 'Provider' : 'Provider';
+    createAppointmentCancelledNotification(req.user._id, providerName, appointment.dateTime).catch(err => console.error('[NOTIFICATION]', err));
+    sendPushToUser(req.user._id, 'appointment_cancelled', { providerName }).catch(err => console.error('[PUSH]', err));
 
     res.json({
       success: true,

@@ -294,6 +294,15 @@ export default function ProviderRegister() {
         providerData
       );
 
+      if (response.success && response.data?.requiresVerification) {
+        toast({
+          title: "Check your email",
+          description: "We've sent a verification code to your email.",
+        });
+        setLocation(`/auth/verify?email=${encodeURIComponent(formData.email)}`);
+        return;
+      }
+
       if (response.success && response.data?.user) {
         invalidateAllQueries();
         setShowSuccessDialog(true);
