@@ -34,4 +34,21 @@ router.post('/mood-suggestion', async (req, res) => {
   }
 });
 
+router.get('/simple-insights', async (req, res, next) => {
+  try {
+    const { generateSimpleInsights } = await import('../services/aiService.js');
+    const insights = await generateSimpleInsights({
+      avgMood: parseFloat(req.query.avgMood) || 0,
+      avgStress: req.query.avgStress ? parseFloat(req.query.avgStress) : null,
+      avgEnergy: req.query.avgEnergy ? parseFloat(req.query.avgEnergy) : null,
+      totalActivities: parseInt(req.query.totalActivities) || 0,
+      moodTrend: req.query.moodTrend || null,
+      stressTrend: req.query.stressTrend || null
+    });
+    res.json({ success: true, data: { insights } });
+  } catch (error) {
+    next(error);
+  }
+});
+
 export default router;

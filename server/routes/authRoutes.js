@@ -18,6 +18,7 @@ router.post('/resend-otp', authController.resendOTP);
 router.post('/resend-verification', authenticate, authController.resendVerification);
 router.post('/forgot-password', authController.forgotPassword);
 router.post('/reset-password', authController.resetPassword);
+router.post('/reset-password-otp', authController.resetPasswordWithOTP);
 router.get('/profile', authenticate, authController.getProfile);
 router.put('/profile', authenticate, validateProfileUpdate, authController.updateProfile);
 router.post('/change-password', authenticate, authController.changePassword);

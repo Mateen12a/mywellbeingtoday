@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Calendar as CalendarIcon, Printer, TrendingUp, TrendingDown, Minus, Loader2, Clock, Sun, Sunrise, Moon, Info, HelpCircle, Activity, Heart, Zap, Brain, Sparkles, ChevronDown, Lightbulb, Target, BedDouble } from "lucide-react";
+import { Calendar as CalendarIcon, Printer, TrendingUp, TrendingDown, Minus, Loader2, Clock, Sun, Sunrise, Moon, Info, HelpCircle, Activity, Heart, Zap, Brain, Sparkles, ChevronDown, BedDouble } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Area, AreaChart, CartesianGrid, XAxis, YAxis, ResponsiveContainer, Tooltip as RechartsTooltip, BarChart, Bar, Legend } from "recharts";
 import { format } from "date-fns";
@@ -33,33 +33,16 @@ const getTimeOfDayLabel = (timeOfDay: string) => {
   }
 };
 
-const getMoodEmoji = (mood: string) => {
-  const moods: Record<string, string> = {
-    'happy': '😊',
-    'calm': '😌',
-    'tired': '😴',
-    'stressed': '😰',
-    'sad': '😢',
-    'anxious': '😟',
-    'excited': '🎉',
-    'neutral': '😐',
-    'content': '🙂',
-    'energetic': '⚡',
-    'focused': '🎯',
-    'relaxed': '😇',
-  };
-  return moods[mood?.toLowerCase()] || '🙂';
-};
 
 const getScoreLevel = (score: number, maxScore: number = 10) => {
   const percentage = (score / maxScore) * 100;
-  if (percentage >= 70) return { level: 'good', color: 'bg-green-500', textColor: 'text-green-700', bgColor: 'bg-green-100', emoji: '✨' };
-  if (percentage >= 40) return { level: 'moderate', color: 'bg-yellow-500', textColor: 'text-yellow-700', bgColor: 'bg-yellow-100', emoji: '🌤️' };
-  return { level: 'low', color: 'bg-red-500', textColor: 'text-red-700', bgColor: 'bg-red-100', emoji: '💪' };
+  if (percentage >= 70) return { level: 'good', color: 'bg-green-500', textColor: 'text-green-700', bgColor: 'bg-green-100' };
+  if (percentage >= 40) return { level: 'moderate', color: 'bg-yellow-500', textColor: 'text-yellow-700', bgColor: 'bg-yellow-100' };
+  return { level: 'low', color: 'bg-red-500', textColor: 'text-red-700', bgColor: 'bg-red-100' };
 };
 
 const getWellbeingBadge = (score: number, maxScore: number = 10) => {
-  const { level, textColor, bgColor, emoji } = getScoreLevel(score, maxScore);
+  const { level, textColor, bgColor } = getScoreLevel(score, maxScore);
   const labels: Record<string, string> = {
     'good': 'Great',
     'moderate': 'Moderate',
@@ -67,7 +50,7 @@ const getWellbeingBadge = (score: number, maxScore: number = 10) => {
   };
   return (
     <Badge className={`${bgColor} ${textColor} border-0 font-medium`}>
-      {emoji} {labels[level]}
+      {labels[level]}
     </Badge>
   );
 };
@@ -104,22 +87,6 @@ const getScoreExplanation = (type: 'mood' | 'stress' | 'energy' | 'wellbeing', s
   return type === 'stress' ? explanations[type][stressLevel] : explanations[type][level];
 };
 
-const getActivityEmoji = (category: string) => {
-  const emojis: Record<string, string> = {
-    'exercise': '🏃',
-    'meditation': '🧘',
-    'sleep': '😴',
-    'social': '👥',
-    'work': '💼',
-    'hobby': '🎨',
-    'nutrition': '🥗',
-    'outdoors': '🌳',
-    'reading': '📚',
-    'music': '🎵',
-    'other': '✨'
-  };
-  return emojis[category?.toLowerCase()] || '✨';
-};
 
 const ScoreProgressBar = ({ score, maxScore = 10, label, showTooltip = true, tooltipText }: { 
   score: number; 
@@ -163,7 +130,6 @@ const ScoreProgressBar = ({ score, maxScore = 10, label, showTooltip = true, too
 
 const WhatThisMeansCard = ({ type, score, maxScore = 10 }: { type: 'mood' | 'stress' | 'energy' | 'wellbeing'; score: number; maxScore?: number }) => {
   const explanation = getScoreExplanation(type, score, maxScore);
-  const { emoji } = getScoreLevel(score, maxScore);
   
   const icons: Record<string, any> = {
     mood: Heart,
@@ -183,7 +149,6 @@ const WhatThisMeansCard = ({ type, score, maxScore = 10 }: { type: 'mood' | 'str
         <div className="flex-1">
           <div className="flex items-center gap-1 mb-1">
             <span className="text-sm font-medium text-slate-700">What this means</span>
-            <span>{emoji}</span>
           </div>
           <p className="text-xs text-slate-600 leading-relaxed">{explanation}</p>
         </div>
@@ -193,167 +158,17 @@ const WhatThisMeansCard = ({ type, score, maxScore = 10 }: { type: 'mood' | 'str
 };
 
 interface AIInsight {
-  icon: React.ReactNode;
   title: string;
   description: string;
   type: 'mood' | 'activity' | 'sleep' | 'stress';
   priority: 'high' | 'medium' | 'low';
 }
 
-const generateAIInsights = (
-  avgMood: number,
-  avgStress: number | null,
-  avgEnergy: number | null,
-  totalActivities: number,
-  moodTrend: string | undefined,
-  stressTrend: string | undefined,
-  sleepTrend: string | undefined,
-  activityTrend: string | undefined,
-  latestReport: any
-): AIInsight[] => {
-  const insights: AIInsight[] = [];
-
-  if (moodTrend === 'improving') {
-    insights.push({
-      icon: <TrendingUp className="h-4 w-4 text-green-600" />,
-      title: 'Mood on the Rise',
-      description: 'Your mood has been improving! Whatever you\'ve been doing is working. Keep up with activities that bring you joy and maintain your current positive habits.',
-      type: 'mood',
-      priority: 'low'
-    });
-  } else if (moodTrend === 'declining') {
-    insights.push({
-      icon: <Heart className="h-4 w-4 text-rose-600" />,
-      title: 'Mood Needs Attention',
-      description: 'Your mood has been declining recently. Consider scheduling enjoyable activities, connecting with friends, or practicing self-care. Small positive actions can help turn things around.',
-      type: 'mood',
-      priority: 'high'
-    });
-  } else if (avgMood > 0 && avgMood < 5) {
-    insights.push({
-      icon: <Heart className="h-4 w-4 text-amber-600" />,
-      title: 'Focus on Mood Boosters',
-      description: 'Your mood score is below average. Try incorporating activities you enjoy, spending time outdoors, or reaching out to loved ones for support.',
-      type: 'mood',
-      priority: 'medium'
-    });
-  }
-
-  if (avgStress && avgStress > 7) {
-    insights.push({
-      icon: <Brain className="h-4 w-4 text-red-600" />,
-      title: 'High Stress Detected',
-      description: 'Your stress levels are elevated. Consider incorporating relaxation techniques like deep breathing, meditation, or gentle exercise. Taking regular breaks can also help reduce stress.',
-      type: 'stress',
-      priority: 'high'
-    });
-  } else if (avgStress && avgStress > 5) {
-    insights.push({
-      icon: <Brain className="h-4 w-4 text-amber-600" />,
-      title: 'Manage Your Stress',
-      description: 'Your stress is at a moderate level. Continue monitoring and try to identify triggers. Regular physical activity and adequate sleep can help keep stress in check.',
-      type: 'stress',
-      priority: 'medium'
-    });
-  } else if (avgStress && avgStress <= 4 && stressTrend !== 'increasing') {
-    insights.push({
-      icon: <Brain className="h-4 w-4 text-green-600" />,
-      title: 'Great Stress Management',
-      description: 'You\'re doing an excellent job managing stress. Your levels are low and healthy. Keep up with whatever techniques are working for you!',
-      type: 'stress',
-      priority: 'low'
-    });
-  }
-
-  if (sleepTrend === 'declining') {
-    insights.push({
-      icon: <BedDouble className="h-4 w-4 text-indigo-600" />,
-      title: 'Sleep Quality Declining',
-      description: 'Your sleep quality seems to be declining. Try establishing a consistent bedtime routine, limiting screen time before bed, and creating a relaxing sleep environment.',
-      type: 'sleep',
-      priority: 'high'
-    });
-  } else if (sleepTrend === 'improving') {
-    insights.push({
-      icon: <BedDouble className="h-4 w-4 text-green-600" />,
-      title: 'Sleep Improving',
-      description: 'Your sleep patterns are improving! Quality sleep is essential for wellbeing. Continue with your current sleep habits to maintain this positive trend.',
-      type: 'sleep',
-      priority: 'low'
-    });
-  }
-
-  if (totalActivities < 5) {
-    insights.push({
-      icon: <Activity className="h-4 w-4 text-blue-600" />,
-      title: 'Increase Activity Logging',
-      description: 'You have few activities logged. Regular activity tracking helps identify patterns. Try logging at least one activity per day to get better insights.',
-      type: 'activity',
-      priority: 'medium'
-    });
-  } else if (activityTrend === 'improving') {
-    insights.push({
-      icon: <Target className="h-4 w-4 text-green-600" />,
-      title: 'Activity Levels Rising',
-      description: 'Your activity levels are increasing! Physical activity positively impacts mood, energy, and stress. Keep building on this momentum.',
-      type: 'activity',
-      priority: 'low'
-    });
-  } else if (activityTrend === 'declining') {
-    insights.push({
-      icon: <Activity className="h-4 w-4 text-amber-600" />,
-      title: 'Activity Levels Dropping',
-      description: 'Your activity has decreased recently. Even short walks or light exercises can help maintain energy and mood. Try setting small, achievable activity goals.',
-      type: 'activity',
-      priority: 'medium'
-    });
-  }
-
-  if (avgEnergy && avgEnergy < 4) {
-    insights.push({
-      icon: <Zap className="h-4 w-4 text-orange-600" />,
-      title: 'Boost Your Energy',
-      description: 'Your energy levels are low. Focus on getting adequate sleep, staying hydrated, and eating nutritious foods. Short bursts of physical activity can also help increase energy.',
-      type: 'mood',
-      priority: 'high'
-    });
-  }
-
-  if (latestReport?.analysis?.areasForImprovement?.length > 0) {
-    const area = latestReport.analysis.areasForImprovement[0];
-    insights.push({
-      icon: <Lightbulb className="h-4 w-4 text-purple-600" />,
-      title: 'Focus Area',
-      description: `Based on your data: ${area}. Working on this area can have a positive impact on your overall wellbeing.`,
-      type: 'mood',
-      priority: 'medium'
-    });
-  }
-
-  if (insights.length === 0) {
-    if (avgMood >= 7 && (!avgStress || avgStress < 5)) {
-      insights.push({
-        icon: <Sparkles className="h-4 w-4 text-green-600" />,
-        title: 'You\'re Thriving!',
-        description: 'Your wellbeing metrics look great! Your mood is positive and stress is well-managed. Continue your current habits and keep logging to track your progress.',
-        type: 'mood',
-        priority: 'low'
-      });
-    } else {
-      insights.push({
-        icon: <Sparkles className="h-4 w-4 text-blue-600" />,
-        title: 'Keep Tracking',
-        description: 'Continue logging your mood and activities to receive personalized AI insights. The more data you provide, the better we can understand your patterns and offer helpful suggestions.',
-        type: 'mood',
-        priority: 'low'
-      });
-    }
-  }
-
-  return insights.slice(0, 4).sort((a, b) => {
-    const priorityOrder = { high: 0, medium: 1, low: 2 };
-    return priorityOrder[a.priority] - priorityOrder[b.priority];
-  });
+const insightTypeIcons: Record<string, React.ReactNode> = {
+  mood: <Heart className="h-4 w-4 text-rose-600" />,
+  activity: <Activity className="h-4 w-4 text-blue-600" />,
+  stress: <Brain className="h-4 w-4 text-amber-600" />,
+  sleep: <BedDouble className="h-4 w-4 text-indigo-600" />,
 };
 
 const AISuggestionsCard = ({
@@ -363,9 +178,6 @@ const AISuggestionsCard = ({
   totalActivities,
   moodTrend,
   stressTrend,
-  sleepTrend,
-  activityTrend,
-  latestReport,
   isLoading
 }: {
   avgMood: number;
@@ -374,17 +186,28 @@ const AISuggestionsCard = ({
   totalActivities: number;
   moodTrend: string | undefined;
   stressTrend: string | undefined;
-  sleepTrend: string | undefined;
-  activityTrend: string | undefined;
-  latestReport: any;
   isLoading: boolean;
 }) => {
   const [isOpen, setIsOpen] = useState(true);
 
-  const insights = useMemo(() => 
-    generateAIInsights(avgMood, avgStress, avgEnergy, totalActivities, moodTrend, stressTrend, sleepTrend, activityTrend, latestReport),
-    [avgMood, avgStress, avgEnergy, totalActivities, moodTrend, stressTrend, sleepTrend, activityTrend, latestReport]
-  );
+  const { data: insightsData, isLoading: isLoadingInsights } = useQuery({
+    queryKey: ['simple-insights', avgMood, avgStress, avgEnergy, totalActivities, moodTrend, stressTrend],
+    queryFn: async () => {
+      const response = await api.getSimpleInsights({
+        avgMood,
+        avgStress,
+        avgEnergy,
+        totalActivities,
+        moodTrend: moodTrend || undefined,
+        stressTrend: stressTrend || undefined,
+      });
+      return (response.data as any)?.insights as AIInsight[] || [];
+    },
+    staleTime: 5 * 60 * 1000,
+    enabled: !isLoading && avgMood > 0,
+  });
+
+  const insights: AIInsight[] = insightsData || [];
 
   const getPriorityStyles = (priority: string) => {
     switch (priority) {
@@ -397,7 +220,7 @@ const AISuggestionsCard = ({
     }
   };
 
-  if (isLoading) {
+  if (isLoading || isLoadingInsights) {
     return (
       <Card className="bg-gradient-to-br from-violet-50 via-purple-50 to-fuchsia-50 border-violet-100">
         <CardHeader className="pb-3">
@@ -455,7 +278,7 @@ const AISuggestionsCard = ({
                 >
                   <div className="flex items-start gap-3">
                     <div className="p-1.5 rounded-full bg-white shadow-sm">
-                      {insight.icon}
+                      {insightTypeIcons[insight.type] || insightTypeIcons.mood}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-1">
@@ -558,7 +381,6 @@ export default function History() {
   const activityChartData = activityStats?.categoryBreakdown?.map((cat: any) => ({
     name: formatLabel(cat.category) || 'Other',
     value: cat.count || 0,
-    emoji: getActivityEmoji(cat.category),
   })) || [];
 
   const groupedTodayMoods = useMemo(() => {
@@ -586,12 +408,11 @@ export default function History() {
   const latestReportScore = latestReport?.overallScore;
   const moodTrend = latestReport?.analysis?.trends?.mood;
   const activityTrend = latestReport?.analysis?.trends?.activity;
-  const sleepTrend = latestReport?.analysis?.trends?.sleep;
   const stressTrend = latestReport?.analysis?.trends?.stress;
   const reportDate = latestReport?.createdAt ? new Date(latestReport.createdAt) : null;
   
   const getTrendDisplay = (trend: string | undefined, numericValue?: number | null) => {
-    const baseDisplay = { icon: <Minus className="h-4 w-4" />, text: 'stable', color: 'text-gray-600', label: 'Stable', emoji: '➡️' };
+    const baseDisplay = { icon: <Minus className="h-4 w-4" />, text: 'stable', color: 'text-gray-600', label: 'Stable' };
     
     if (!trend) return baseDisplay;
     if (trend === 'improving' || trend === 'increasing') {
@@ -599,8 +420,7 @@ export default function History() {
         icon: <TrendingUp className="h-4 w-4" />, 
         text: 'improving', 
         color: 'text-green-600',
-        label: numericValue ? `Improving (${numericValue.toFixed(1)}/10)` : 'Improving',
-        emoji: '📈'
+        label: numericValue ? `Improving (${numericValue.toFixed(1)}/10)` : 'Improving'
       };
     }
     if (trend === 'declining' || trend === 'decreasing') {
@@ -608,8 +428,7 @@ export default function History() {
         icon: <TrendingDown className="h-4 w-4" />, 
         text: 'declining', 
         color: 'text-red-600',
-        label: numericValue ? `Declining (${numericValue.toFixed(1)}/10)` : 'Declining',
-        emoji: '📉'
+        label: numericValue ? `Declining (${numericValue.toFixed(1)}/10)` : 'Declining'
       };
     }
     return { 
@@ -670,9 +489,6 @@ export default function History() {
                   totalActivities={todayActivities?.activities?.length || totalActivities}
                   moodTrend={moodTrend}
                   stressTrend={stressTrend}
-                  sleepTrend={sleepTrend}
-                  activityTrend={activityTrend}
-                  latestReport={latestReport}
                   isLoading={isLoading}
                 />
 
@@ -701,9 +517,7 @@ export default function History() {
                               {todayMood?.summary?.avgScore ? todayMood.summary.avgScore.toFixed(1) : '—'}
                             </span>
                             <span className="text-sm text-green-600">/10</span>
-                            {todayMood?.summary?.latestMood && (
-                              <span className="text-2xl ml-2">{getMoodEmoji(todayMood.summary.latestMood)}</span>
-                            )}
+                            
                           </div>
                           {todayMood?.summary?.avgScore && (
                             <Progress 
@@ -713,8 +527,8 @@ export default function History() {
                           )}
                           <p className="text-xs text-muted-foreground">
                             {todayMood?.summary?.logsCount 
-                              ? `📊 ${todayMood.summary.logsCount} log${todayMood.summary.logsCount > 1 ? 's' : ''} today`
-                              : '📝 No mood logged yet today'}
+                              ? `${todayMood.summary.logsCount} log${todayMood.summary.logsCount > 1 ? 's' : ''} today`
+                              : 'No mood logged yet today'}
                           </p>
                         </CardContent>
                       </Card>
@@ -728,7 +542,7 @@ export default function History() {
                             </CardTitle>
                             {(todayActivities?.activities?.length || 0) > 0 && (
                               <Badge className="bg-blue-100 text-blue-700 border-0">
-                                🎯 Active
+                                Active
                               </Badge>
                             )}
                           </div>
@@ -742,11 +556,11 @@ export default function History() {
                           </div>
                           <p className="text-xs text-muted-foreground">
                             {todayActivities?.summary?.totalDuration 
-                              ? `⏱️ ${todayActivities.summary.totalDuration} mins total`
-                              : '🚀 Start logging activities'}
+                              ? `${todayActivities.summary.totalDuration} mins total`
+                              : 'Start logging activities'}
                           </p>
                           <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
-                            💡 <span className="font-medium">Tip:</span> Regular activity logging helps track your wellness patterns
+                            <span className="font-medium">Tip:</span> Regular activity logging helps track your wellness patterns
                           </div>
                         </CardContent>
                       </Card>
@@ -767,9 +581,7 @@ export default function History() {
                               {todayMood?.summary?.avgEnergy ? todayMood.summary.avgEnergy.toFixed(1) : '—'}
                             </span>
                             <span className="text-sm text-orange-600">/10</span>
-                            <span className="text-xl ml-2">
-                              {todayMood?.summary?.avgEnergy >= 7 ? '⚡' : todayMood?.summary?.avgEnergy >= 4 ? '🔋' : '🪫'}
-                            </span>
+                            
                           </div>
                           {todayMood?.summary?.avgEnergy && (
                             <Progress 
@@ -842,13 +654,12 @@ export default function History() {
                                       </div>
                                       <div className="flex-1">
                                         <div className="flex items-center gap-2 flex-wrap">
-                                          <span className="text-xl">{getMoodEmoji(log.mood)}</span>
                                           <span className="font-medium capitalize">{log.mood}</span>
                                           {getWellbeingBadge(log.moodScore || 5)}
                                         </div>
                                         {log.notes && (
                                           <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
-                                            💭 {log.notes}
+                                            {log.notes}
                                           </p>
                                         )}
                                       </div>
@@ -880,7 +691,7 @@ export default function History() {
                       <div className="flex flex-col items-center justify-center py-12 text-center">
                         <Clock className="h-12 w-12 text-muted-foreground/50 mb-4" />
                         <p className="text-muted-foreground mb-2">No mood entries yet today</p>
-                        <p className="text-sm text-muted-foreground">📝 Log your mood to track how you feel throughout the day</p>
+                        <p className="text-sm text-muted-foreground">Log your mood to track how you feel throughout the day</p>
                       </div>
                     )}
                   </CardContent>
@@ -895,9 +706,6 @@ export default function History() {
                   totalActivities={totalActivities}
                   moodTrend={moodTrend}
                   stressTrend={stressTrend}
-                  sleepTrend={sleepTrend}
-                  activityTrend={activityTrend}
-                  latestReport={latestReport}
                   isLoading={isLoading}
                 />
 
@@ -928,7 +736,7 @@ export default function History() {
                             <span className="text-sm text-green-600">/10</span>
                             {avgMood > 0 && (
                               <span className={`text-xs font-medium flex items-center ml-2 px-2 py-0.5 rounded-full ${moodTrendDisplay.color} bg-white/50`}>
-                                {moodTrendDisplay.emoji} {moodTrendDisplay.text}
+                                {moodTrendDisplay.text}
                               </span>
                             )}
                           </div>
@@ -939,11 +747,11 @@ export default function History() {
                             />
                           )}
                           <p className="text-xs text-muted-foreground">
-                            {avgMood > 7 ? '🌟 Feeling positive!' : avgMood > 5 ? '🌤️ Stable mood this period' : avgMood > 0 ? '💪 Room for improvement' : 'No mood data yet'}
+                            {avgMood > 7 ? 'Feeling positive!' : avgMood > 5 ? 'Stable mood this period' : avgMood > 0 ? 'Room for improvement' : 'No mood data yet'}
                           </p>
                           {totalMoodLogs > 0 && (
                             <p className="text-xs text-green-700 font-medium">
-                              📊 Based on {totalMoodLogs} mood log{totalMoodLogs !== 1 ? 's' : ''}
+                              Based on {totalMoodLogs} mood log{totalMoodLogs !== 1 ? 's' : ''}
                             </p>
                           )}
                           {avgMood > 0 && <WhatThisMeansCard type="mood" score={avgMood} />}
@@ -959,7 +767,7 @@ export default function History() {
                             </CardTitle>
                             {totalActivities > 10 && (
                               <Badge className="bg-blue-100 text-blue-700 border-0">
-                                🏆 Consistent
+                                Consistent
                               </Badge>
                             )}
                           </div>
@@ -968,20 +776,18 @@ export default function History() {
                           <div className="flex items-baseline gap-2">
                             <span className="text-4xl font-bold text-blue-700">{totalActivities}</span>
                             <span className="text-sm text-blue-600">sessions</span>
-                            <span className="text-xl ml-2">
-                              {totalActivities >= 20 ? '🏆' : totalActivities >= 10 ? '🎯' : totalActivities > 0 ? '🚀' : '📝'}
-                            </span>
+                            
                           </div>
                           <p className="text-xs text-muted-foreground">
-                            {totalActivities > 10 ? '🌟 Great consistency!' : totalActivities > 0 ? '💪 Keep logging activities' : '🚀 Start logging activities'}
+                            {totalActivities > 10 ? 'Great consistency!' : totalActivities > 0 ? 'Keep logging activities' : 'Start logging activities'}
                           </p>
                           {totalActivityMinutes > 0 && (
                             <p className="text-xs text-blue-700 font-medium">
-                              ⏱️ {totalActivityMinutes} total minutes active
+                              {totalActivityMinutes} total minutes active
                             </p>
                           )}
                           <div className="text-xs text-blue-600 bg-blue-50/50 p-2 rounded">
-                            💡 <span className="font-medium">What this means:</span> Regular activity tracking helps identify what activities boost your wellbeing most.
+                            <span className="font-medium">What this means:</span> Regular activity tracking helps identify what activities boost your wellbeing most.
                           </div>
                         </CardContent>
                       </Card>
@@ -1002,11 +808,7 @@ export default function History() {
                               {latestReportScore || '—'}
                             </span>
                             {latestReportScore && <span className="text-sm text-purple-600">/100</span>}
-                            {latestReportScore && (
-                              <span className="text-xl ml-2">
-                                {latestReportScore >= 70 ? '🌟' : latestReportScore >= 40 ? '🌤️' : '💪'}
-                              </span>
-                            )}
+                            
                           </div>
                           {latestReportScore && (
                             <Progress 
@@ -1015,11 +817,11 @@ export default function History() {
                             />
                           )}
                           <p className="text-xs text-muted-foreground">
-                            {latestReportScore ? `Level: ${latestReport?.wellbeingLevel}` : '📊 Generate a report to see your score'}
+                            {latestReportScore ? `Level: ${latestReport?.wellbeingLevel}` : 'Generate a report to see your score'}
                           </p>
                           {reportDate && (
                             <p className="text-xs text-purple-700 font-medium">
-                              📅 Report from {format(reportDate, 'MMM d, yyyy')} at {format(reportDate, 'h:mm a')}
+                              Report from {format(reportDate, 'MMM d, yyyy')} at {format(reportDate, 'h:mm a')}
                             </p>
                           )}
                           {latestReportScore && <WhatThisMeansCard type="wellbeing" score={latestReportScore} maxScore={100} />}
@@ -1073,14 +875,14 @@ export default function History() {
                             <RechartsTooltip 
                               contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                             />
-                            <Area type="monotone" dataKey="mood" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorMood)" name="😊 Mood (1-10)" />
-                            <Area type="monotone" dataKey="stress" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorStress)" name="😰 Stress (1-10)" />
+                            <Area type="monotone" dataKey="mood" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorMood)" name="Mood (1-10)" />
+                            <Area type="monotone" dataKey="stress" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorStress)" name="Stress (1-10)" />
                             <Legend verticalAlign="top" height={36}/>
                           </AreaChart>
                         </ResponsiveContainer>
                       ) : (
                         <div className="flex flex-col items-center justify-center h-full text-center">
-                          <p className="text-muted-foreground mb-2">📊 No mood data available for this period</p>
+                          <p className="text-muted-foreground mb-2">No mood data available for this period</p>
                           <p className="text-sm text-muted-foreground">Start logging your daily mood to see trends here</p>
                         </div>
                       )}
@@ -1103,7 +905,7 @@ export default function History() {
                         Detailed Wellbeing Analysis
                         {reportDate && (
                           <Badge variant="outline" className="ml-auto font-normal text-xs">
-                            📅 {format(reportDate, 'MMM d, yyyy')} at {format(reportDate, 'h:mm a')}
+                            {format(reportDate, 'MMM d, yyyy')} at {format(reportDate, 'h:mm a')}
                           </Badge>
                         )}
                       </CardTitle>
@@ -1115,7 +917,7 @@ export default function History() {
                           <div className="flex items-center gap-2 mb-2">
                             <span className={`${moodTrendDisplay.color}`}>{moodTrendDisplay.icon}</span>
                             <span className="text-sm font-medium text-green-900">Mood</span>
-                            <span className="ml-auto">{moodTrendDisplay.emoji}</span>
+                            
                           </div>
                           <div className="text-2xl font-bold text-green-700">
                             {avgMood > 0 ? avgMood.toFixed(1) : '—'}
@@ -1129,7 +931,7 @@ export default function History() {
                           <div className="flex items-center gap-2 mb-2">
                             <span className={`${stressTrendDisplay.color}`}>{stressTrendDisplay.icon}</span>
                             <span className="text-sm font-medium text-orange-900">Stress</span>
-                            <span className="ml-auto">{avgStress && avgStress < 4 ? '😌' : avgStress && avgStress < 7 ? '😐' : '😰'}</span>
+                            
                           </div>
                           <div className="text-2xl font-bold text-orange-700">
                             {avgStress ? avgStress.toFixed(1) : '—'}
@@ -1143,7 +945,7 @@ export default function History() {
                           <div className="flex items-center gap-2 mb-2">
                             <Zap className="h-4 w-4 text-cyan-600" />
                             <span className="text-sm font-medium text-cyan-900">Energy</span>
-                            <span className="ml-auto">{avgEnergy && avgEnergy >= 7 ? '⚡' : avgEnergy && avgEnergy >= 4 ? '🔋' : '🪫'}</span>
+                            
                           </div>
                           <div className="text-2xl font-bold text-cyan-700">
                             {avgEnergy ? avgEnergy.toFixed(1) : '—'}
@@ -1157,7 +959,7 @@ export default function History() {
                           <div className="flex items-center gap-2 mb-2">
                             <span className={`${activityTrendDisplay.color}`}>{activityTrendDisplay.icon}</span>
                             <span className="text-sm font-medium text-indigo-900">Activity</span>
-                            <span className="ml-auto">{totalActivities >= 10 ? '🏆' : totalActivities > 0 ? '🎯' : '📝'}</span>
+                            
                           </div>
                           <div className="text-2xl font-bold text-indigo-700">
                             {totalActivityMinutes}
@@ -1170,7 +972,7 @@ export default function History() {
                       {latestReport.analysis?.summary && (
                         <div className="p-4 rounded-lg bg-gray-50 border mb-4">
                           <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
-                            📋 Summary
+                            Summary
                           </h4>
                           <p className="text-sm text-muted-foreground">{latestReport.analysis.summary}</p>
                         </div>
@@ -1179,7 +981,7 @@ export default function History() {
                       {latestReport.recommendations && latestReport.recommendations.length > 0 && (
                         <div className="p-4 rounded-lg bg-amber-50 border border-amber-100">
                           <h4 className="font-medium text-sm mb-3 text-amber-900 flex items-center gap-2">
-                            💡 Personalized Recommendations
+                            Personalized Recommendations
                           </h4>
                           <ul className="space-y-2">
                             {latestReport.recommendations.slice(0, 4).map((rec: any, i: number) => (
@@ -1211,7 +1013,7 @@ export default function History() {
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2">
-                      😊 Detailed Mood Analysis
+                      Detailed Mood Analysis
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Info className="h-4 w-4 text-muted-foreground cursor-help" />
@@ -1250,14 +1052,14 @@ export default function History() {
                         <RechartsTooltip 
                           contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.9)', borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                         />
-                        <Area type="monotone" dataKey="mood" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorMoodDetailed)" name="💜 Mood Level" />
-                        <Area type="monotone" dataKey="energy" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill="url(#colorEnergy)" name="⚡ Energy Level" />
+                        <Area type="monotone" dataKey="mood" stroke="#8b5cf6" strokeWidth={3} fillOpacity={1} fill="url(#colorMoodDetailed)" name="Mood Level" />
+                        <Area type="monotone" dataKey="energy" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill="url(#colorEnergy)" name="Energy Level" />
                         <Legend verticalAlign="top" height={36}/>
                       </AreaChart>
                     </ResponsiveContainer>
                   ) : (
                     <div className="flex flex-col items-center justify-center h-full text-center">
-                      <p className="text-muted-foreground mb-2">📊 No mood data available</p>
+                      <p className="text-muted-foreground mb-2">No mood data available</p>
                       <p className="text-sm text-muted-foreground">Log your mood daily to see detailed analysis</p>
                     </div>
                   )}
@@ -1292,7 +1094,7 @@ export default function History() {
                 <div className="flex items-center justify-between">
                   <div>
                     <CardTitle className="flex items-center gap-2">
-                      🎯 Activity Breakdown
+                      Activity Breakdown
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <Info className="h-4 w-4 text-muted-foreground cursor-help" />
@@ -1324,7 +1126,7 @@ export default function History() {
                     </ResponsiveContainer>
                   ) : (
                     <div className="flex flex-col items-center justify-center h-full text-center">
-                      <p className="text-muted-foreground mb-2">📊 No activity data available</p>
+                      <p className="text-muted-foreground mb-2">No activity data available</p>
                       <p className="text-sm text-muted-foreground">Log your activities to see what keeps you well</p>
                     </div>
                   )}

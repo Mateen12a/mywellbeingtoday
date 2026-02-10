@@ -750,21 +750,43 @@ export function Reverify() {
 }
 
 export function Recovery() {
-  const [sent, setSent] = useState(false);
+  const [step, setStep] = useState<'email' | 'otp' | 'password'>('email');
   const [email, setEmail] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [otp, setOtp] = useState(['', '', '', '', '', '']);
+  const [newPassword, setNewPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [resendCooldown, setResendCooldown] = useState(0);
+  const [, setLocation] = useLocation();
+  const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
   const { toast } = useToast();
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  useEffect(() => {
+    if (resendCooldown > 0) {
+      const timer = setTimeout(() => setResendCooldown(prev => prev - 1), 1000);
+      return () => clearTimeout(timer);
+    }
+  }, [resendCooldown]);
+
+  const maskEmail = (email: string) => {
+    const [local, domain] = email.split('@');
+    if (!domain) return email;
+    return `${local[0]}${'*'.repeat(Math.max(local.length - 1, 2))}@${domain}`;
+  };
+
+  const handleEmailSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
 
     try {
       await api.forgotPassword(email);
-      setSent(true);
+      setStep('otp');
+      setResendCooldown(60);
       toast({
         title: "Check your email",
-        description: "If an account exists, we've sent recovery instructions.",
+        description: "If an account exists, we've sent a verification code.",
       });
     } catch (error: any) {
       toast({
@@ -777,10 +799,110 @@ export function Recovery() {
     }
   };
 
+  const handleOtpChange = (index: number, value: string) => {
+    if (!/^\d*$/.test(value)) return;
+    const newOtp = [...otp];
+    newOtp[index] = value.slice(-1);
+    setOtp(newOtp);
+    if (value && index < 5) {
+      inputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleOtpKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && !otp[index] && index > 0) {
+      inputRefs.current[index - 1]?.focus();
+    }
+  };
+
+  const handleOtpPaste = (e: React.ClipboardEvent) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData('text').replace(/\D/g, '').slice(0, 6);
+    if (pastedData.length === 6) {
+      setOtp(pastedData.split(''));
+      inputRefs.current[5]?.focus();
+    }
+  };
+
+  const handleOtpSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = otp.join('');
+    if (code.length !== 6) {
+      toast({ title: "Invalid code", description: "Please enter the full 6-digit code", variant: "destructive" });
+      return;
+    }
+    setStep('password');
+  };
+
+  const handleResend = async () => {
+    try {
+      await api.forgotPassword(email);
+      setResendCooldown(60);
+      setOtp(['', '', '', '', '', '']);
+      toast({ title: "Code sent", description: "A new verification code has been sent to your email." });
+    } catch (error: any) {
+      toast({ title: "Error", description: error.message || "Could not resend code", variant: "destructive" });
+    }
+  };
+
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+
+    const passwordValidation = validatePassword(newPassword);
+    if (!passwordValidation.isValid) {
+      toast({
+        title: "Password doesn't meet requirements",
+        description: passwordValidation.errors[0],
+        variant: "destructive",
+      });
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      toast({
+        title: "Passwords don't match",
+        description: "Please make sure your passwords match",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      const code = otp.join('');
+      const response = await api.resetPasswordWithOTP(email, code, newPassword);
+      if (response.success) {
+        toast({
+          title: "Password reset successful",
+          description: "You can now sign in with your new password.",
+        });
+        setLocation('/auth/login');
+      }
+    } catch (error: any) {
+      if (error.message?.includes('expired') || error.message?.includes('Invalid verification')) {
+        setStep('otp');
+        setOtp(['', '', '', '', '', '']);
+      }
+      toast({
+        title: "Reset failed",
+        description: error.message || "An error occurred",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const stepSubtitles = {
+    email: "Enter your email to receive a verification code",
+    otp: `Enter the code sent to ${maskEmail(email)}`,
+    password: "Create your new password",
+  };
+
   return (
-    <AuthLayout title="Reset Password" subtitle="Enter your email to receive recovery instructions">
-      {!sent ? (
-        <form onSubmit={handleSubmit} className="space-y-4">
+    <AuthLayout title="Reset Password" subtitle={stepSubtitles[step]}>
+      {step === 'email' && (
+        <form onSubmit={handleEmailSubmit} className="space-y-4">
           <div className="space-y-2">
             <Label htmlFor="email">Email</Label>
             <div className="relative">
@@ -798,7 +920,7 @@ export function Recovery() {
             </div>
           </div>
           <Button type="submit" className="w-full rounded-xl" size="lg" disabled={isLoading}>
-            {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</> : "Send Link"}
+            {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Sending...</> : "Send Code"}
           </Button>
           <Link href="/auth/login">
             <Button variant="ghost" className="w-full">
@@ -806,18 +928,106 @@ export function Recovery() {
             </Button>
           </Link>
         </form>
-      ) : (
-        <div className="text-center space-y-4">
-          <div className="h-12 w-12 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto">
-            <Shield className="h-6 w-6" />
+      )}
+
+      {step === 'otp' && (
+        <form onSubmit={handleOtpSubmit} className="space-y-6">
+          <div className="space-y-4 text-center">
+            <div className="flex justify-center gap-2" onPaste={handleOtpPaste}>
+              {otp.map((digit, index) => (
+                <Input
+                  key={index}
+                  ref={(el) => { inputRefs.current[index] = el; }}
+                  className="w-11 h-14 text-center text-xl font-bold rounded-lg"
+                  maxLength={1}
+                  value={digit}
+                  onChange={(e) => handleOtpChange(index, e.target.value)}
+                  onKeyDown={(e) => handleOtpKeyDown(index, e)}
+                  disabled={isLoading}
+                  inputMode="numeric"
+                  autoFocus={index === 0}
+                />
+              ))}
+            </div>
+            <p className="text-xs text-muted-foreground">
+              Didn't receive code?{' '}
+              {resendCooldown > 0 ? (
+                <span className="text-muted-foreground">Resend in {resendCooldown}s</span>
+              ) : (
+                <button type="button" onClick={handleResend} className="text-primary hover:underline font-medium">Resend</button>
+              )}
+            </p>
           </div>
-          <p className="text-muted-foreground">
-            If an account exists for that email, we've sent instructions to reset your password.
-          </p>
-          <Link href="/auth/login">
-            <Button className="w-full rounded-xl">Return to Login</Button>
-          </Link>
-        </div>
+          <Button type="submit" className="w-full rounded-xl" size="lg" disabled={otp.join('').length !== 6}>
+            Continue
+          </Button>
+          <div className="text-center">
+            <button type="button" onClick={() => { setStep('email'); setOtp(['', '', '', '', '', '']); }} className="text-sm text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="inline mr-1 h-3 w-3" /> Use different email
+            </button>
+          </div>
+        </form>
+      )}
+
+      {step === 'password' && (
+        <form onSubmit={handlePasswordSubmit} className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="newPassword">New Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="newPassword"
+                type={showPassword ? "text" : "password"}
+                className="pl-9 pr-9 rounded-xl"
+                value={newPassword}
+                onChange={(e) => setNewPassword(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
+              >
+                {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            <PasswordStrengthIndicator password={newPassword} />
+          </div>
+          <div className="space-y-2">
+            <Label htmlFor="confirmNewPassword">Confirm New Password</Label>
+            <div className="relative">
+              <Lock className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="confirmNewPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                className="pl-9 pr-9 rounded-xl"
+                value={confirmPassword}
+                onChange={(e) => setConfirmPassword(e.target.value)}
+                required
+                disabled={isLoading}
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-2.5 text-muted-foreground hover:text-foreground"
+              >
+                {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+              </button>
+            </div>
+            {confirmPassword && newPassword !== confirmPassword && (
+              <p className="text-xs text-red-500">Passwords do not match</p>
+            )}
+          </div>
+          <Button type="submit" className="w-full rounded-xl" size="lg" disabled={isLoading}>
+            {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" /> Resetting...</> : "Reset Password"}
+          </Button>
+          <div className="text-center">
+            <button type="button" onClick={() => setStep('otp')} className="text-sm text-muted-foreground hover:text-foreground">
+              <ArrowLeft className="inline mr-1 h-3 w-3" /> Back to verification
+            </button>
+          </div>
+        </form>
       )}
     </AuthLayout>
   );

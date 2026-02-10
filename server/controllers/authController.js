@@ -337,25 +337,77 @@ export const forgotPassword = async (req, res, next) => {
     if (!user) {
       return res.json({
         success: true,
-        message: 'If an account exists, a password reset link will be sent'
+        message: 'If an account exists, a password reset code will be sent',
+        data: { requiresOTP: true, email: email.toLowerCase() }
       });
     }
 
-    const resetToken = crypto.randomBytes(32).toString('hex');
-    user.passwordReset = {
-      token: resetToken,
-      expires: new Date(Date.now() + 60 * 60 * 1000)
-    };
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOtp = crypto.createHash('sha256').update(otpCode).digest('hex');
+    user.verification.otp = hashedOtp;
+    user.verification.otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+    user.verification.otpAttempts = 0;
+    user.verification.otpContext = 'password_reset';
     await user.save();
 
-    const baseUrl = process.env.APP_URL || `https://${process.env.REPLIT_DEV_DOMAIN}`;
-    await sendPasswordResetEmail(user.email, user.profile.firstName, `${baseUrl}/reset-password?token=${resetToken}`);
+    await sendPasswordResetEmail(user.email, user.profile.firstName || 'there', otpCode);
 
     await logAction(user._id, 'FORGOT_PASSWORD', 'user', user._id, null, req);
 
     res.json({
       success: true,
-      message: 'If an account exists, a password reset link will be sent'
+      message: 'If an account exists, a password reset code will be sent',
+      data: { requiresOTP: true, email: user.email }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const resetPasswordWithOTP = async (req, res, next) => {
+  try {
+    const { email, otp, newPassword } = req.body;
+
+    if (!email || !otp || !newPassword) {
+      throw new AppError('Email, verification code, and new password are required', 400, 'MISSING_FIELDS');
+    }
+
+    const user = await User.findOne({ email: email.toLowerCase() });
+    if (!user) {
+      throw new AppError('Invalid verification code', 400, 'INVALID_OTP');
+    }
+
+    if (user.verification.otpContext !== 'password_reset') {
+      throw new AppError('Invalid verification code', 400, 'INVALID_OTP');
+    }
+
+    if (user.verification.otpAttempts >= 5) {
+      throw new AppError('Too many attempts. Please request a new code.', 429, 'TOO_MANY_ATTEMPTS');
+    }
+
+    if (!user.verification.otpExpires || user.verification.otpExpires < new Date()) {
+      throw new AppError('Verification code has expired. Please request a new one.', 400, 'OTP_EXPIRED');
+    }
+
+    const hashedOtp = crypto.createHash('sha256').update(otp).digest('hex');
+    if (hashedOtp !== user.verification.otp) {
+      user.verification.otpAttempts = (user.verification.otpAttempts || 0) + 1;
+      await user.save();
+      throw new AppError('Invalid verification code', 400, 'INVALID_OTP');
+    }
+
+    user.password = newPassword;
+    user.verification.otp = undefined;
+    user.verification.otpExpires = undefined;
+    user.verification.otpAttempts = 0;
+    user.verification.otpContext = undefined;
+    await user.save();
+
+    await logAction(user._id, 'RESET_PASSWORD', 'user', user._id, null, req);
+
+    res.json({
+      success: true,
+      message: 'Password reset successful'
     });
   } catch (error) {
     next(error);

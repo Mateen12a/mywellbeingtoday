@@ -1470,6 +1470,73 @@ Be supportive and positive in your rationale. If the activity suggests the perso
   }
 }
 
+export async function generateSimpleInsights(dataPoints) {
+  if (!model) {
+    return generateFallbackSimpleInsights(dataPoints);
+  }
+  
+  try {
+    const prompt = `You are a friendly wellbeing assistant. Based on the user's data, give 2-4 simple, easy-to-understand suggestions. Write like you're talking to a friend - no jargon, no medical terms, keep each suggestion to 1-2 short sentences.
+
+USER DATA:
+- Average Mood: ${dataPoints.avgMood}/10
+- Average Stress: ${dataPoints.avgStress || 'unknown'}/10  
+- Average Energy: ${dataPoints.avgEnergy || 'unknown'}/10
+- Activities Logged: ${dataPoints.totalActivities}
+- Mood Trend: ${dataPoints.moodTrend || 'unknown'}
+- Stress Trend: ${dataPoints.stressTrend || 'unknown'}
+
+Return a JSON array of objects with:
+- "title": very short title (2-4 words)
+- "description": simple advice in plain everyday language (1-2 sentences max)
+- "type": one of "mood", "activity", "stress", "sleep"
+- "priority": "high", "medium", or "low"
+
+Example good descriptions:
+- "Your mood has been going up lately. Keep doing what makes you feel good!"
+- "You seem stressed. Try taking a few slow deep breaths when things feel heavy."
+- "You haven't logged much activity. Even a short walk can help you feel better."
+
+Return ONLY the JSON array, no other text.`;
+
+    const result = await model.generateContent(prompt);
+    const text = result.response.text();
+    const jsonMatch = text.match(/\[[\s\S]*\]/);
+    if (jsonMatch) {
+      const insights = JSON.parse(jsonMatch[0]);
+      return insights.slice(0, 4).map(i => ({
+        title: i.title || 'Tip',
+        description: i.description || '',
+        type: i.type || 'mood',
+        priority: ['high', 'medium', 'low'].includes(i.priority) ? i.priority : 'medium'
+      }));
+    }
+    return generateFallbackSimpleInsights(dataPoints);
+  } catch (error) {
+    console.error('[AI SERVICE] Simple insights error:', error.message);
+    return generateFallbackSimpleInsights(dataPoints);
+  }
+}
+
+function generateFallbackSimpleInsights(dataPoints) {
+  const insights = [];
+  if (dataPoints.avgMood > 0 && dataPoints.avgMood < 5) {
+    insights.push({ title: 'Lift Your Mood', description: 'Your mood has been a bit low. Try doing something you enjoy, even for just a few minutes.', type: 'mood', priority: 'high' });
+  } else if (dataPoints.avgMood >= 7) {
+    insights.push({ title: 'Keep It Up', description: 'You have been feeling good lately. Whatever you are doing is working!', type: 'mood', priority: 'low' });
+  }
+  if (dataPoints.avgStress && dataPoints.avgStress > 6) {
+    insights.push({ title: 'Ease the Stress', description: 'Your stress seems high. Try taking a few slow breaths or stepping away for a moment.', type: 'stress', priority: 'high' });
+  }
+  if (dataPoints.totalActivities < 3) {
+    insights.push({ title: 'Get Moving', description: 'You have not logged many activities. Even a short walk can help you feel better.', type: 'activity', priority: 'medium' });
+  }
+  if (insights.length === 0) {
+    insights.push({ title: 'Keep Tracking', description: 'Log your mood and activities regularly to get better suggestions.', type: 'mood', priority: 'low' });
+  }
+  return insights;
+}
+
 export default {
   analyzeWellbeing,
   generateRecommendations,
@@ -1485,5 +1552,6 @@ export default {
   generateCertificateSuggestion,
   generateChatTitle,
   generateProviderChatTitle,
-  generateMoodSuggestion
+  generateMoodSuggestion,
+  generateSimpleInsights
 };

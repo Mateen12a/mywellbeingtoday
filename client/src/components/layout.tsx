@@ -5,7 +5,6 @@ const logo = "/logo5.png"; // Keeping reference just in case, but unused for now
 import fingertip from "@assets/fingertip.png";
 import {
   Menu,
-  X,
   User,
   Settings,
   LogOut,
@@ -18,16 +17,16 @@ import {
   MapPin,
   MessageSquare,
   Sparkles,
-  Users,
-  Shield,
-  Database,
-  BarChart3,
-  Globe,
-  Stethoscope,
   AlertTriangle,
-  Bell
+  Bell,
+  Lock,
+  PartyPopper,
+  Smile,
+  Footprints,
+  XCircle,
+  CheckCircle
 } from "lucide-react";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { cn } from "@/lib/utils";
 import { motion, AnimatePresence } from "framer-motion";
@@ -104,16 +103,17 @@ function NotificationBell() {
   };
 
   const getNotificationIcon = (type: string) => {
+    const iconClass = "h-4 w-4 text-muted-foreground";
     switch (type) {
-      case 'login': return '🔐';
-      case 'register': case 'welcome': return '🎉';
-      case 'mood_logged': return '😊';
-      case 'activity_logged': return '🏃';
-      case 'appointment_booked': case 'appointment_confirmed': return '📅';
-      case 'appointment_cancelled': return '❌';
-      case 'emergency': return '🚨';
-      case 'provider_verified': return '✅';
-      default: return '🔔';
+      case 'login': return <Lock className={iconClass} />;
+      case 'register': case 'welcome': return <PartyPopper className={iconClass} />;
+      case 'mood_logged': return <Smile className={iconClass} />;
+      case 'activity_logged': return <Footprints className={iconClass} />;
+      case 'appointment_booked': case 'appointment_confirmed': return <CalendarCheck className={iconClass} />;
+      case 'appointment_cancelled': return <XCircle className={iconClass} />;
+      case 'emergency': return <AlertTriangle className={iconClass} />;
+      case 'provider_verified': return <CheckCircle className={iconClass} />;
+      default: return <Bell className={iconClass} />;
     }
   };
 
@@ -153,7 +153,7 @@ function NotificationBell() {
                   }`}
                   onClick={() => handleNotificationClick(notification)}
                 >
-                  <span className="text-lg shrink-0 mt-0.5">{getNotificationIcon(notification.type)}</span>
+                  <span className="shrink-0 mt-0.5">{getNotificationIcon(notification.type)}</span>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2">
                       <p className={`text-sm truncate ${!notification.read ? 'font-semibold' : 'font-medium'}`}>
@@ -182,6 +182,8 @@ export default function Layout({ children }: { children: React.ReactNode }) {
   const [showMobileTitle, setShowMobileTitle] = useState(false);
   const { isAuthenticated, logout, user } = useAuth();
 
+  const [showPushBanner, setShowPushBanner] = useState(false);
+
   const isAdmin = location.startsWith("/admin/") || location === "/admin";
   const isAdminLogin = location === "/admin-login";
   const isProvider = location.startsWith("/provider-dashboard") || location.startsWith("/provider-settings") || location.startsWith("/provider-ai-assistant");
@@ -205,6 +207,37 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       });
     }
   }, [user]);
+
+  useEffect(() => {
+    if (!user || !isPushSupported() || getPushPermissionStatus() !== 'default') return;
+
+    const DISMISS_KEY = 'push_banner_dismissed_at';
+    const dismissedAt = localStorage.getItem(DISMISS_KEY);
+    if (dismissedAt) {
+      const sevenDays = 7 * 24 * 60 * 60 * 1000;
+      if (Date.now() - parseInt(dismissedAt, 10) < sevenDays) return;
+    }
+
+    registerServiceWorker();
+
+    const timer = setTimeout(() => {
+      if (getPushPermissionStatus() === 'default') {
+        setShowPushBanner(true);
+      }
+    }, 5000);
+
+    return () => clearTimeout(timer);
+  }, [user]);
+
+  const handleEnablePush = useCallback(async () => {
+    setShowPushBanner(false);
+    await subscribeToPushNotifications();
+  }, []);
+
+  const handleDismissPushBanner = useCallback(() => {
+    setShowPushBanner(false);
+    localStorage.setItem('push_banner_dismissed_at', Date.now().toString());
+  }, []);
 
   // Typing effect logic for mobile/tablet dashboard
   useEffect(() => {
@@ -516,6 +549,35 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </div>
         </div>
       </header>
+
+      <AnimatePresence>
+        {showPushBanner && (
+          <motion.div
+            initial={{ opacity: 0, y: -40 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -40 }}
+            transition={{ duration: 0.3 }}
+            className="w-full bg-primary/10 border-b border-primary/20 px-4 py-3"
+          >
+            <div className="container mx-auto flex items-center justify-between gap-3 max-w-7xl">
+              <div className="flex items-center gap-3 min-w-0">
+                <Bell className="h-5 w-5 text-primary shrink-0" />
+                <p className="text-sm text-foreground">
+                  Enable notifications to stay updated on your wellbeing journey
+                </p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0">
+                <Button size="sm" variant="default" onClick={handleEnablePush} className="h-8 text-xs">
+                  Enable
+                </Button>
+                <Button size="sm" variant="ghost" onClick={handleDismissPushBanner} className="h-8 text-xs text-muted-foreground">
+                  Not now
+                </Button>
+              </div>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
       {/* Main Content */}
       <main className="flex-1 container mx-auto px-4 py-1 md:py-8 max-w-7xl animate-in fade-in duration-500">

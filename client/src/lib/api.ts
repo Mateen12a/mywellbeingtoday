@@ -284,6 +284,13 @@ class ApiClient {
     });
   }
 
+  async resetPasswordWithOTP(email: string, otp: string, newPassword: string) {
+    return this.request('/auth/reset-password-otp', {
+      method: 'POST',
+      body: JSON.stringify({ email, otp, newPassword }),
+    });
+  }
+
   async createActivity(data: any) {
     return this.request<{ activity: any }>('/activities', {
       method: 'POST',
@@ -1019,6 +1026,17 @@ class ApiClient {
 
   async getPushSubscriptionStatus(): Promise<ApiResponse> {
     return this.request('/push/status');
+  }
+
+  async getSimpleInsights(params: { avgMood: number; avgStress?: number | null; avgEnergy?: number | null; totalActivities: number; moodTrend?: string; stressTrend?: string }) {
+    const query = new URLSearchParams();
+    query.set('avgMood', String(params.avgMood));
+    if (params.avgStress != null) query.set('avgStress', String(params.avgStress));
+    if (params.avgEnergy != null) query.set('avgEnergy', String(params.avgEnergy));
+    query.set('totalActivities', String(params.totalActivities));
+    if (params.moodTrend) query.set('moodTrend', params.moodTrend);
+    if (params.stressTrend) query.set('stressTrend', params.stressTrend);
+    return this.request(`/ai/simple-insights?${query.toString()}`);
   }
 
   async getMoodSuggestion(activityData: { category: string; title: string; description?: string }) {
