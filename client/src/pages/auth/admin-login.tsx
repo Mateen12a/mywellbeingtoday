@@ -44,8 +44,18 @@ export default function AdminLogin() {
     
     try {
       // Use AuthContext login to properly set state and tokens
-      const result = await login(formData.email, formData.password);
+      const result = await login(formData.email, formData.password, formData.rememberMe);
       
+      if (result.requiresVerification) {
+        toast({
+          title: "Verification required",
+          description: result.isLoginVerification ? "A verification code has been sent to your email." : "Please verify your email to continue.",
+        });
+        const verifyUrl = `/auth/verify?email=${encodeURIComponent(formData.email)}${result.isLoginVerification ? '&type=login' : ''}`;
+        setLocation(verifyUrl);
+        return;
+      }
+
       if (result.success) {
         // Get the user from localStorage after successful login
         const loggedInUser = api.getUser();

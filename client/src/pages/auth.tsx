@@ -57,9 +57,10 @@ export function Login() {
       if (result.requiresVerification) {
         toast({
           title: "Verification required",
-          description: "Please verify your email to continue.",
+          description: result.isLoginVerification ? "A verification code has been sent to your email." : "Please verify your email to continue.",
         });
-        setLocation(`/auth/verify?email=${encodeURIComponent(email)}`);
+        const verifyUrl = `/auth/verify?email=${encodeURIComponent(email)}${result.isLoginVerification ? '&type=login' : ''}`;
+        setLocation(verifyUrl);
         return;
       }
       
@@ -471,6 +472,7 @@ export function Verify() {
 
   const params = new URLSearchParams(window.location.search);
   const email = params.get('email') || '';
+  const isLoginVerification = params.get('type') === 'login';
 
   const [otp, setOtp] = useState(['', '', '', '', '', '']);
   const [isLoading, setIsLoading] = useState(false);
@@ -529,8 +531,9 @@ export function Verify() {
       if (response.success && response.data) {
         api.setTokens(response.data.accessToken, response.data.refreshToken);
         api.setUser(response.data.user);
-        toast({ title: "Email verified!", description: "Welcome to MyWellbeingToday" });
-        window.location.href = response.data.user.role === 'provider' ? '/provider-dashboard' : '/dashboard';
+        toast({ title: isLoginVerification ? "Identity verified!" : "Email verified!", description: isLoginVerification ? "Logged in successfully" : "Welcome to MyWellbeingToday" });
+        const role = response.data.user.role;
+        window.location.href = (role === 'admin' || role === 'manager') ? '/admin/dashboard' : role === 'provider' ? '/provider-dashboard' : '/dashboard';
       } else {
         toast({ title: "Verification failed", description: response.message || "Invalid code", variant: "destructive" });
         setOtp(['', '', '', '', '', '']);
@@ -560,7 +563,7 @@ export function Verify() {
   }
 
   return (
-    <AuthLayout title="Verify Email" subtitle={`Enter the code sent to ${maskEmail(email)}`}>
+    <AuthLayout title={isLoginVerification ? "Verify Your Identity" : "Verify Email"} subtitle={`Enter the code sent to ${maskEmail(email)}`}>
       <form onSubmit={handleVerify} className="space-y-6">
         <div className="space-y-4 text-center">
           <div className="flex justify-center gap-2" onPaste={handlePaste}>

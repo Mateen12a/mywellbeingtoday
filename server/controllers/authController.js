@@ -174,60 +174,26 @@ export const login = async (req, res, next) => {
       throw new AppError('Invalid email or password', 401, 'INVALID_CREDENTIALS');
     }
 
-    if (!user.verification.emailVerified) {
-      const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
-      const hashedOtp = crypto.createHash('sha256').update(otpCode).digest('hex');
+    const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const hashedOtp = crypto.createHash('sha256').update(otpCode).digest('hex');
 
-      user.verification.otp = hashedOtp;
-      user.verification.otpExpires = new Date(Date.now() + 10 * 60 * 1000);
-      user.verification.otpAttempts = 0;
-      user.rememberMe = !!rememberMe;
-      await user.save();
-
-      await sendOTPEmail(user.email, user.profile.firstName || 'there', otpCode);
-
-      return res.json({
-        success: true,
-        message: 'Please verify your email.',
-        data: {
-          email: user.email,
-          requiresVerification: true
-        }
-      });
-    }
-
-    user.lastLogin = new Date();
-    user.lastOtpVerifiedAt = new Date();
+    const isLoginVerification = user.verification.emailVerified;
+    user.verification.otp = hashedOtp;
+    user.verification.otpExpires = new Date(Date.now() + 10 * 60 * 1000);
+    user.verification.otpAttempts = 0;
+    user.verification.otpContext = isLoginVerification ? 'login' : 'registration';
     user.rememberMe = !!rememberMe;
     await user.save();
 
-    const accessToken = generateToken(user._id, user.role, rememberMe ? '7d' : '2h');
-    const refreshToken = generateRefreshToken(user._id, !!rememberMe);
+    await sendOTPEmail(user.email, user.profile.firstName || 'there', otpCode);
 
-    await logAction(user._id, 'LOGIN', 'user', user._id, { email: user.email }, req);
-
-    createLoginNotification(user._id, user.profile.firstName || 'there').catch(err => console.error('[NOTIFICATION]', err));
-    sendPushToUser(user._id, 'login').catch(err => console.error('[PUSH]', err));
-
-    if (user.settings?.notifications?.email !== false) {
-      sendNotification(
-        user.email,
-        user.profile.firstName || 'there',
-        'New Login to Your Account',
-        `<p>A new login was detected on your account at ${new Date().toLocaleString('en-GB', { dateStyle: 'long', timeStyle: 'short' })}.</p><p>If this wasn't you, please change your password immediately.</p>`,
-        null,
-        null
-      ).catch(err => console.error('[EMAIL]', err));
-    }
-
-    res.json({
+    return res.json({
       success: true,
-      message: 'Login successful',
+      message: 'Please verify your identity.',
       data: {
-        user: user.toJSON(),
-        accessToken,
-        refreshToken,
-        rememberMe: !!rememberMe
+        email: user.email,
+        requiresVerification: true,
+        isLoginVerification
       }
     });
   } catch (error) {
@@ -556,31 +522,50 @@ export const verifyOTP = async (req, res, next) => {
       throw new AppError('Invalid verification code', 400, 'INVALID_OTP');
     }
 
+    const isLoginContext = user.verification.otpContext === 'login';
+
     user.verification.emailVerified = true;
     user.verification.otp = undefined;
     user.verification.otpExpires = undefined;
     user.verification.otpAttempts = 0;
+    user.verification.otpContext = undefined;
     user.lastLogin = new Date();
     user.lastOtpVerifiedAt = new Date();
     await user.save();
 
-    await sendWelcomeEmail(user.email, user.profile.firstName || 'there');
-
     const accessToken = generateToken(user._id, user.role, user.rememberMe ? '7d' : '2h');
     const refreshToken = generateRefreshToken(user._id, user.rememberMe);
 
-    await logAction(user._id, 'VERIFY_OTP', 'user', user._id, null, req);
+    if (isLoginContext) {
+      await logAction(user._id, 'LOGIN', 'user', user._id, { email: user.email }, req);
+      createLoginNotification(user._id, user.profile.firstName || 'there').catch(err => console.error('[NOTIFICATION]', err));
+      sendPushToUser(user._id, 'login').catch(err => console.error('[PUSH]', err));
 
-    createRegistrationNotification(user._id, user.profile.firstName || 'there').catch(err => console.error('[NOTIFICATION]', err));
-    sendPushToUser(user._id, 'register').catch(err => console.error('[PUSH]', err));
+      if (user.settings?.notifications?.email !== false) {
+        sendNotification(
+          user.email,
+          user.profile.firstName || 'there',
+          'New Login to Your Account',
+          `<p>A new login was detected on your account at ${new Date().toLocaleString('en-GB', { dateStyle: 'long', timeStyle: 'short' })}.</p><p>If this wasn't you, please change your password immediately.</p>`,
+          null,
+          null
+        ).catch(err => console.error('[EMAIL]', err));
+      }
+    } else {
+      await sendWelcomeEmail(user.email, user.profile.firstName || 'there');
+      await logAction(user._id, 'VERIFY_OTP', 'user', user._id, null, req);
+      createRegistrationNotification(user._id, user.profile.firstName || 'there').catch(err => console.error('[NOTIFICATION]', err));
+      sendPushToUser(user._id, 'register').catch(err => console.error('[PUSH]', err));
+    }
 
     res.json({
       success: true,
-      message: 'Email verified successfully',
+      message: isLoginContext ? 'Login verified successfully' : 'Email verified successfully',
       data: {
         user: user.toJSON(),
         accessToken,
-        refreshToken
+        refreshToken,
+        rememberMe: user.rememberMe
       }
     });
   } catch (error) {
@@ -599,10 +584,6 @@ export const resendOTP = async (req, res, next) => {
     const user = await User.findOne({ email: email.toLowerCase() });
     if (!user) {
       return res.json({ success: true, message: 'If an account exists, a new code has been sent.' });
-    }
-
-    if (user.verification?.emailVerified) {
-      return res.json({ success: true, message: 'Email is already verified.' });
     }
 
     const otpCode = Math.floor(100000 + Math.random() * 900000).toString();

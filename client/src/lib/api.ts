@@ -186,7 +186,7 @@ class ApiClient {
   }
 
   async login(email: string, password: string, rememberMe: boolean = false) {
-    const response = await this.request<{ user: any; accessToken: string; refreshToken: string; requiresVerification?: boolean; email?: string; rememberMe?: boolean }>(
+    const response = await this.request<{ user: any; accessToken: string; refreshToken: string; requiresVerification?: boolean; email?: string; rememberMe?: boolean; isLoginVerification?: boolean }>(
       '/auth/login',
       {
         method: 'POST',

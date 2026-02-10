@@ -22,7 +22,7 @@ interface AuthContextType {
   user: User | null;
   isLoading: boolean;
   isAuthenticated: boolean;
-  login: (email: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; message?: string; requiresVerification?: boolean; email?: string }>;
+  login: (email: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; message?: string; requiresVerification?: boolean; email?: string; isLoginVerification?: boolean }>;
   register: (email: string, password: string, firstName: string, lastName: string) => Promise<{ success: boolean; message?: string; requiresVerification?: boolean; email?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
@@ -83,7 +83,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await api.login(email, password, rememberMe);
       if (response.success && response.data?.requiresVerification) {
-        return { success: true, requiresVerification: true, email: response.data.email };
+        return { success: true, requiresVerification: true, email: response.data.email, isLoginVerification: response.data.isLoginVerification };
       }
       if (response.success && response.data?.user) {
         const user = response.data.user;
@@ -137,19 +137,6 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       }
     } catch {
       // Silent fail
-    }
-  };
-
-  const getDashboardPath = () => {
-    if (!user) return '/';
-    switch (user.role) {
-      case 'admin':
-      case 'manager':
-        return '/admin/dashboard';
-      case 'provider':
-        return '/provider-dashboard';
-      default:
-        return '/dashboard';
     }
   };
 
