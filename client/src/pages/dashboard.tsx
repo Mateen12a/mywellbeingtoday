@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from "react";
+import { useState, useMemo } from "react";
 import { formatLabel } from "@/lib/utils";
 import {
   Card,
@@ -21,7 +21,6 @@ import {
   Bell,
   AlertCircle,
   Loader2,
-  X,
   TrendingUp,
   MessageCircle,
   Sparkles,
@@ -286,11 +285,6 @@ export default function Dashboard() {
   const avatarUrl = user?.profile?.avatarUrl;
   const userStatus = (user as any)?.status || "active";
 
-  const [promptDismissed, setPromptDismissed] = useState(() => {
-    const dismissed = localStorage.getItem('dailyPromptDismissed');
-    return dismissed === getTodayKey();
-  });
-
   const isReady = !!user && !authLoading;
 
   const { data: activitiesData, isLoading: activitiesLoading } = useQuery({
@@ -405,7 +399,7 @@ export default function Dashboard() {
 
   const hasLoggedActivityToday = (todayActivities?.activities?.length || 0) > 0;
   const hasLoggedMoodToday = (todayMood?.moodLogs?.length || 0) > 0;
-  const showDailyPrompt = !promptDismissed && (!hasLoggedActivityToday || !hasLoggedMoodToday);
+  const showDailyPrompt = (!hasLoggedActivityToday || !hasLoggedMoodToday);
 
   const wellbeingScore = useMemo(() => {
     if (latestReportData?.report?.overallScore) {
@@ -559,10 +553,6 @@ export default function Dashboard() {
     return suggestions.sort((a, b) => a.priority - b.priority).slice(0, 4);
   }, [hasLoggedMoodToday, hasLoggedActivityToday, isHighStress, hasUpcomingAppointment, hasUsedAIAssistant, hasReports, upcomingAppointmentData]);
 
-  const dismissPrompt = () => {
-    localStorage.setItem('dailyPromptDismissed', getTodayKey());
-    setPromptDismissed(true);
-  };
 
   const moodChartData = useMemo(() => {
     if (moodStats?.daily?.length > 0) {
@@ -667,16 +657,7 @@ export default function Dashboard() {
         <Card className="border-2 border-primary/30 bg-gradient-to-r from-primary/5 via-secondary/20 to-primary/5 shadow-md relative overflow-hidden">
           <div className="absolute top-0 left-0 w-32 h-32 bg-primary/10 rounded-full blur-2xl -ml-16 -mt-16 pointer-events-none" />
           <div className="absolute bottom-0 right-0 w-32 h-32 bg-secondary/30 rounded-full blur-2xl -mr-16 -mb-16 pointer-events-none" />
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={dismissPrompt}
-            className="absolute top-2 right-2 sm:top-3 sm:right-3 rounded-full bg-white/70 border border-gray-200 shadow-sm z-10"
-            data-testid="button-dismiss-prompt"
-          >
-            <X className="h-4 w-4 text-gray-600" />
-          </Button>
-          <CardContent className="p-3 sm:p-4 lg:p-6 relative z-10 pr-12 sm:pr-14">
+          <CardContent className="p-3 sm:p-4 lg:p-6 relative z-10">
             <div className="flex flex-col gap-3">
               <div className="flex items-start gap-3">
                 <div className="h-9 sm:h-11 w-9 sm:w-11 rounded-full bg-primary/20 flex items-center justify-center shrink-0">

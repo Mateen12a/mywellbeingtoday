@@ -311,7 +311,7 @@ const AISuggestionsCard = ({
 };
 
 export default function History() {
-  const [timeRange, setTimeRange] = useState("week");
+  const [timeRange, setTimeRange] = useState("month");
   
   const days = timeRange === "today" ? 1 : timeRange === "week" ? 7 : timeRange === "month" ? 30 : 365;
   const isToday = timeRange === "today";

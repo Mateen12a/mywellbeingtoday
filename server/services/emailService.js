@@ -3,7 +3,7 @@ import { Resend } from 'resend';
 const apiKey = process.env.RESEND_API_KEY;
 const resend = apiKey ? new Resend(apiKey) : null;
 
-const SENDER_EMAIL = process.env.RESEND_SENDER_EMAIL || 'onboarding@resend.dev';
+const SENDER_EMAIL = `MYWELLBEINGTODAY <${process.env.RESEND_SENDER_EMAIL || 'onboarding@resend.dev'}>`;
 
 const COLORS = {
   primary: '#97b5cb',
@@ -19,7 +19,7 @@ const FONT_STACK = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
 
 const createEmailHeader = () => `
 <!--[if mso]>
-<v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;height:90px;">
+<v:rect xmlns:v="urn:schemas-microsoft-com:vml" fill="true" stroke="false" style="width:600px;height:140px;">
   <v:fill type="gradient" color="${COLORS.primary}" color2="${COLORS.secondary}" angle="135" />
   <v:textbox inset="0,0,0,0" style="mso-fit-shape-to-text:false;">
     <center>
@@ -33,6 +33,17 @@ const createEmailHeader = () => `
           <td align="center" style="background:linear-gradient(135deg, ${COLORS.primary} 0%, ${COLORS.secondary} 100%); padding:0;">
       <!--<![endif]-->
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+              <tr>
+                <td align="center" style="padding-bottom:12px;">
+                  <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                    <tr>
+                      <td align="center" valign="middle" width="50" height="50" style="width:50px; height:50px; background-color:${COLORS.white}; border-radius:25px; mso-border-alt:none; font-family:${FONT_STACK}; font-size:20px; font-weight:700; color:${COLORS.primary}; text-align:center; line-height:50px;">
+                        mw
+                      </td>
+                    </tr>
+                  </table>
+                </td>
+              </tr>
               <tr>
                 <td align="center" style="font-family:${FONT_STACK}; font-size:28px; font-weight:700; color:${COLORS.white}; letter-spacing:-0.5px; line-height:1.2;">
                   mywellbeingtoday

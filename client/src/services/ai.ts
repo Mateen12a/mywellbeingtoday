@@ -265,8 +265,8 @@ export const AIService = {
     await api.delete(`/wellbeing/conversations/${conversationId}`);
   },
 
-  sendMessage: async (conversationId: string, message: string): Promise<{ userMessage: ChatMessageData; assistantMessage: ChatMessageData & { answer: string; sources: string[]; actions?: AIAction[] } }> => {
-    const response = await api.post<any>(`/wellbeing/conversations/${conversationId}/messages`, { message });
+  sendMessage: async (conversationId: string, message: string, attachment?: { type: string; name: string; base64: string; mimeType: string }): Promise<{ userMessage: ChatMessageData; assistantMessage: ChatMessageData & { answer: string; sources: string[]; actions?: AIAction[] } }> => {
+    const response = await api.post<any>(`/wellbeing/conversations/${conversationId}/messages`, { message, attachment });
     if (response.success && response.data) {
       return response.data;
     }

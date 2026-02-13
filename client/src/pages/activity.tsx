@@ -239,6 +239,10 @@ export default function ActivityLog() {
         });
         if (suggestionResponse.success && suggestionResponse.data?.suggestion) {
           setAiMoodSuggestion(suggestionResponse.data.suggestion);
+          const matchingMood = MOOD_OPTIONS.find(m => m.value === suggestionResponse.data?.suggestion?.suggestedMood);
+          if (matchingMood) {
+            setSelectedMood(matchingMood.value);
+          }
         }
       } catch (error) {
         console.error('Failed to fetch AI mood suggestion:', error);
@@ -661,9 +665,9 @@ export default function ActivityLog() {
           {aiSuggestions && moodFlowState === 'idle' && (
             <div className="space-y-3 my-2 animate-in fade-in duration-300">
               <div className="flex justify-center">
-                <Badge variant={aiSuggestions.generatedBy === 'ai' ? 'default' : 'secondary'} className="gap-1">
+                <Badge variant="default" className="gap-1">
                   <Bot className="w-3 h-3" />
-                  {aiSuggestions.generatedBy === 'ai' ? 'AI Generated' : 'Rule-based'}
+                  AI Generated
                 </Badge>
               </div>
               
@@ -776,17 +780,17 @@ export default function ActivityLog() {
                       <div className="flex items-center gap-2 flex-wrap">
                         <span className="text-sm font-semibold text-purple-900">Suggested Mood:</span>
                         <Badge 
-                          variant={aiMoodSuggestion.generatedBy === 'ai' ? 'default' : 'secondary'} 
+                          variant="default" 
                           className="gap-1 text-xs"
                           data-testid="badge-mood-suggestion-type"
                         >
                           <Sparkles className="w-3 h-3" />
-                          {aiMoodSuggestion.generatedBy === 'ai' ? 'AI Generated' : 'Rule-based'}
+                          AI Generated
                         </Badge>
                       </div>
                       <div className="flex gap-2 flex-wrap">
                         <Badge className="bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200">
-                          {MOOD_OPTIONS.find(m => m.value === aiMoodSuggestion.suggestedMood)?.emoji || '🎯'} {aiMoodSuggestion.suggestedMood}
+                          {aiMoodSuggestion.suggestedMood}
                         </Badge>
                         {aiMoodSuggestion.alternativeMood && (
                           <Badge variant="outline" className="text-purple-600 border-purple-200">
@@ -795,6 +799,7 @@ export default function ActivityLog() {
                         )}
                       </div>
                       <p className="text-xs text-purple-800 mt-1">{aiMoodSuggestion.rationale}</p>
+                      <p className="text-[10px] text-purple-500 mt-1.5 font-medium italic">Tap the highlighted mood below to confirm</p>
                     </div>
                   </div>
                 </div>
@@ -804,6 +809,7 @@ export default function ActivityLog() {
                 {MOOD_OPTIONS.map((mood) => {
                   const isSuggested = aiMoodSuggestion?.suggestedMood === mood.value;
                   const isAlternative = aiMoodSuggestion?.alternativeMood === mood.value;
+                  const isSelected = selectedMood === mood.value;
                   return (
                     <button
                       key={mood.value}
@@ -813,7 +819,8 @@ export default function ActivityLog() {
                         "flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl border-2 transition-all duration-200 min-h-[80px] sm:min-h-[90px] touch-manipulation active:scale-95 relative",
                         mood.color,
                         isSuggested && "ring-2 ring-purple-500 ring-offset-2",
-                        isAlternative && "ring-1 ring-purple-300"
+                        isAlternative && "ring-1 ring-purple-300",
+                        isSelected && isSuggested && "scale-105 shadow-md"
                       )}
                     >
                       {isSuggested && (
@@ -1169,7 +1176,7 @@ export default function ActivityLog() {
           <FadeInContent className="grid gap-4">
             {activities.map((activity: any) => (
               <Card key={activity._id} className="hover:bg-secondary/10 transition-colors group">
-                <CardContent className="p-4 flex items-start gap-4">
+                <CardContent className="p-3 sm:p-4 flex items-start gap-2 sm:gap-4">
                   <div className={cn(
                     "h-10 w-10 rounded-full flex items-center justify-center shrink-0",
                     getCategoryColor(activity.category)
@@ -1177,7 +1184,7 @@ export default function ActivityLog() {
                     {getCategoryIcon(activity.category)}
                   </div>
                   <div className="flex-1 space-y-1 min-w-0">
-                    <div className="flex justify-between items-start gap-2">
+                    <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-0 sm:gap-2">
                       <h3 className="font-bold text-foreground truncate">{activity.title}</h3>
                       <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
                         {format(new Date(activity.date), "MMM d, h:mm a")}
@@ -1190,7 +1197,7 @@ export default function ActivityLog() {
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     <Button
                       size="icon"
                       variant="ghost"

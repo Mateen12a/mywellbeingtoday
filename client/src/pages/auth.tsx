@@ -538,12 +538,12 @@ export function Verify() {
         toast({ title: "Verification failed", description: response.message || "Invalid code", variant: "destructive" });
         setOtp(['', '', '', '', '', '']);
         inputRefs.current[0]?.focus();
+        setIsLoading(false);
       }
     } catch (error: any) {
       toast({ title: "Verification failed", description: error.message || "Invalid or expired code", variant: "destructive" });
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
-    } finally {
       setIsLoading(false);
     }
   };
@@ -677,12 +677,12 @@ export function Reverify() {
         toast({ title: "Verification failed", description: response.message || "Invalid code", variant: "destructive" });
         setOtp(['', '', '', '', '', '']);
         inputRefs.current[0]?.focus();
+        setIsLoading(false);
       }
     } catch (error: any) {
       toast({ title: "Verification failed", description: error.message || "Invalid or expired code", variant: "destructive" });
       setOtp(['', '', '', '', '', '']);
       inputRefs.current[0]?.focus();
-    } finally {
       setIsLoading(false);
     }
   };
