@@ -214,7 +214,7 @@ export default function Landing() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="space-y-4 sm:space-y-5"
             >
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-serif font-bold text-slate-900 leading-tight">
+              <h1 className="text-3xl sm:text-4xl md:text-[2.8rem] lg:text-5xl font-serif font-bold text-slate-900 leading-tight">
                 Your personal{" "}
                 <span className="text-primary relative">
                   wellbeing companion

@@ -23,7 +23,7 @@ function getLogoAttachments() {
   return [{
     filename: 'logo.png',
     content: LOGO_BUFFER,
-    content_id: LOGO_CID,
+    contentId: LOGO_CID,
   }];
 }
 
