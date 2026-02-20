@@ -21,7 +21,7 @@ self.addEventListener('push', function(event) {
     };
 
     event.waitUntil(
-      self.registration.showNotification(data.title || 'MyWellbeingToday', options)
+      self.registration.showNotification(data.title || 'mywellbeingtoday', options)
     );
   } catch (err) {
     console.error('[SW] Push event error:', err);

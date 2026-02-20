@@ -4,7 +4,7 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Link, useLocation, Redirect } from "wouter";
 import { useState, useRef, useEffect } from "react";
-import { Eye, EyeOff, ArrowLeft, Mail, Lock, User, Shield, Stethoscope, Building, FileText, Loader2 } from "lucide-react";
+import { Eye, EyeOff, ArrowLeft, Mail, Lock, User, Shield, Stethoscope, Building, FileText, Loader2, Briefcase } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, getDashboardPath } from "@/contexts/AuthContext";
@@ -183,6 +183,9 @@ export function Register() {
     email: "",
     password: "",
     confirmPassword: "",
+    occupation: "",
+    occupationOther: "",
+    organisation: "",
   });
   const { toast } = useToast();
   const { register, user, isLoading: authLoading } = useAuth();
@@ -197,7 +200,7 @@ export function Register() {
     return <Redirect to={getDashboardPath(user.role)} />;
   }
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setFormData({ ...formData, [e.target.id]: e.target.value });
   };
 
@@ -261,11 +264,34 @@ export function Register() {
     setIsLoading(true);
 
     try {
+      if (!formData.occupation) {
+        toast({
+          title: "Occupation required",
+          description: "Please select your occupation",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
+      if (formData.occupation === "other" && !formData.occupationOther.trim()) {
+        toast({
+          title: "Please specify occupation",
+          description: "Please enter your occupation",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       const result = await register(
         formData.email,
         formData.password,
         formData.firstName,
-        formData.lastName
+        formData.lastName,
+        formData.occupation,
+        formData.occupationOther,
+        formData.organisation
       );
       
       if (result.requiresVerification) {
@@ -302,7 +328,7 @@ export function Register() {
   };
 
   return (
-    <AuthLayout title="Create Account" subtitle="Join MyWellbeingToday">
+    <AuthLayout title="Create Account" subtitle="Join mywellbeingtoday">
       <Tabs defaultValue="user" className="w-full mb-6" onValueChange={setUserType}>
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="user">User</TabsTrigger>
@@ -390,6 +416,64 @@ export function Register() {
           </div>
         </div>
         
+        <div className="space-y-2">
+          <Label htmlFor="occupation">Occupation <span className="text-red-500">*</span></Label>
+          <div className="relative">
+            <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <select
+              id="occupation"
+              className="flex h-9 w-full rounded-xl border border-input bg-transparent pl-9 pr-3 py-1 text-sm shadow-sm transition-colors placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50"
+              value={formData.occupation}
+              onChange={handleChange}
+              required
+              disabled={isLoading}
+            >
+              <option value="">Select occupation...</option>
+              <option value="student">Student</option>
+              <option value="employed">Employed</option>
+              <option value="self-employed">Self-employed</option>
+              <option value="unemployed">Unemployed</option>
+              <option value="retired">Retired</option>
+              <option value="homemaker">Homemaker</option>
+              <option value="carer">Carer</option>
+              <option value="other">Other (please specify)</option>
+            </select>
+          </div>
+        </div>
+
+        {formData.occupation === "other" && (
+          <div className="space-y-2">
+            <Label htmlFor="occupationOther">Please specify <span className="text-red-500">*</span></Label>
+            <div className="relative">
+              <Briefcase className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+              <Input
+                id="occupationOther"
+                placeholder="Your occupation"
+                className="pl-9 rounded-xl"
+                value={formData.occupationOther}
+                onChange={handleChange}
+                required
+                disabled={isLoading}
+              />
+            </div>
+          </div>
+        )}
+
+        <div className="space-y-2">
+          <Label htmlFor="organisation">Organisation <span className="text-muted-foreground text-xs">(optional)</span></Label>
+          <div className="relative">
+            <Building className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input
+              id="organisation"
+              placeholder="Your organisation"
+              className="pl-9 rounded-xl"
+              value={formData.organisation}
+              onChange={handleChange}
+              disabled={isLoading}
+            />
+          </div>
+        </div>
+
         <div className="space-y-2">
           <Label htmlFor="password">Password <span className="text-red-500">*</span></Label>
           <div className="relative">
@@ -531,7 +615,7 @@ export function Verify() {
       if (response.success && response.data) {
         api.setTokens(response.data.accessToken, response.data.refreshToken);
         api.setUser(response.data.user);
-        toast({ title: isLoginVerification ? "Identity verified!" : "Email verified!", description: isLoginVerification ? "Logged in successfully" : "Welcome to MyWellbeingToday" });
+        toast({ title: isLoginVerification ? "Identity verified!" : "Email verified!", description: isLoginVerification ? "Logged in successfully" : "Welcome to mywellbeingtoday" });
         const role = response.data.user.role;
         window.location.href = (role === 'admin' || role === 'manager') ? '/admin/dashboard' : role === 'provider' ? '/provider-dashboard' : '/dashboard';
       } else {

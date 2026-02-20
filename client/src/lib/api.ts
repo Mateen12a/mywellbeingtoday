@@ -151,12 +151,12 @@ class ApiClient {
     }
   }
 
-  async register(email: string, password: string, firstName: string, lastName: string) {
+  async register(email: string, password: string, firstName: string, lastName: string, occupation?: string, occupationOther?: string, organisation?: string) {
     const response = await this.request<{ user: any; accessToken: string; refreshToken: string; requiresVerification?: boolean; email?: string }>(
       '/auth/register',
       {
         method: 'POST',
-        body: JSON.stringify({ email, password, firstName, lastName }),
+        body: JSON.stringify({ email, password, firstName, lastName, occupation, occupationOther, organisation }),
       }
     );
 

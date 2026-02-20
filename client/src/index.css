@@ -49,8 +49,8 @@
   --color-chart-4: hsl(var(--chart-4));
   --color-chart-5: hsl(var(--chart-5));
 
-  --font-sans: 'Nunito', sans-serif;
-  --font-serif: 'Merriweather', serif;
+  --font-sans: 'Roboto', sans-serif;
+  --font-serif: 'Montserrat', sans-serif;
   
   --radius: 1rem; /* Softer, rounder feel */
 }

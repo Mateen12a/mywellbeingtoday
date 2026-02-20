@@ -10,7 +10,7 @@ import { sendPushToUser } from '../services/pushService.js';
 
 export const register = async (req, res, next) => {
   try {
-    const { email, password, firstName, lastName, role } = req.body;
+    const { email, password, firstName, lastName, role, occupation, occupationOther, organisation } = req.body;
 
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
@@ -31,7 +31,10 @@ export const register = async (req, res, next) => {
       profile: {
         firstName: firstName || '',
         lastName: lastName || '',
-        displayName: `${firstName || ''} ${lastName || ''}`.trim()
+        displayName: `${firstName || ''} ${lastName || ''}`.trim(),
+        occupation: occupation || '',
+        occupationOther: occupationOther || '',
+        organisation: organisation || ''
       },
       verification: {
         otp: hashedOtp,

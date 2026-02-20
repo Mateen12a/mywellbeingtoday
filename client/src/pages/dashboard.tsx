@@ -206,7 +206,7 @@ function getDynamicGreeting(params: DynamicGreetingParams): string {
 
   const topActivity = getMostCommonActivity(recentActivities);
   if (topActivity) {
-    return `Ready for some ${topActivity.toLowerCase()} or something new today?`;
+    return `Ready for something new today?`;
   }
 
   return "Ready to start your wellness journey today? Log an activity or mood to begin.";
@@ -668,11 +668,11 @@ export default function Dashboard() {
                     You haven't logged today yet!
                   </h3>
                   <p className="text-gray-700 text-xs sm:text-sm leading-snug">
-                    Track your {!hasLoggedMoodToday && !hasLoggedActivityToday 
-                      ? "mood and activities" 
+                    {!hasLoggedMoodToday && !hasLoggedActivityToday 
+                      ? "Track your mood and log your activity" 
                       : !hasLoggedMoodToday 
-                        ? "mood" 
-                        : "activities"} to stay on top of your wellbeing.
+                        ? "Track your mood" 
+                        : "Log your activity"} to stay on top of your wellbeing.
                   </p>
                 </div>
               </div>
@@ -681,7 +681,7 @@ export default function Dashboard() {
                   <Link href="/activity" className="flex-1 min-w-0">
                     <Button size="sm" className="w-full rounded-full shadow-sm text-xs sm:text-sm h-9">
                       <Activity className="w-3.5 h-3.5 mr-1.5 shrink-0" />
-                      <span>Log Activity</span>
+                      <span>Log activity</span>
                     </Button>
                   </Link>
                 )}
@@ -689,7 +689,7 @@ export default function Dashboard() {
                   <Link href="/mood" className="flex-1 min-w-0">
                     <Button variant="outline" size="sm" className="w-full rounded-full border-primary/30 text-xs sm:text-sm h-9">
                       <Heart className="w-3.5 h-3.5 mr-1.5 shrink-0" />
-                      <span>Track Mood</span>
+                      <span>Track your mood</span>
                     </Button>
                   </Link>
                 )}
@@ -709,7 +709,7 @@ export default function Dashboard() {
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1 flex-wrap">
-                    <h3 className="font-bold text-base sm:text-lg text-black">Your Wellbeing Status</h3>
+                    <h3 className="font-bold text-sm sm:text-base text-black">Your Wellbeing Status</h3>
                   </div>
                   <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
                     <div className="flex items-baseline gap-1 sm:gap-2">

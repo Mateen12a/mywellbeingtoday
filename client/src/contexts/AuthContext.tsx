@@ -23,7 +23,7 @@ interface AuthContextType {
   isLoading: boolean;
   isAuthenticated: boolean;
   login: (email: string, password: string, rememberMe?: boolean) => Promise<{ success: boolean; message?: string; requiresVerification?: boolean; email?: string; isLoginVerification?: boolean }>;
-  register: (email: string, password: string, firstName: string, lastName: string) => Promise<{ success: boolean; message?: string; requiresVerification?: boolean; email?: string }>;
+  register: (email: string, password: string, firstName: string, lastName: string, occupation?: string, occupationOther?: string, organisation?: string) => Promise<{ success: boolean; message?: string; requiresVerification?: boolean; email?: string }>;
   logout: () => Promise<void>;
   refreshUser: () => Promise<void>;
 }
@@ -98,9 +98,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
   };
 
-  const register = async (email: string, password: string, firstName: string, lastName: string) => {
+  const register = async (email: string, password: string, firstName: string, lastName: string, occupation?: string, occupationOther?: string, organisation?: string) => {
     try {
-      const response = await api.register(email, password, firstName, lastName);
+      const response = await api.register(email, password, firstName, lastName, occupation, occupationOther, organisation);
       if (response.success && response.data?.requiresVerification) {
         return { success: true, requiresVerification: true, email: response.data.email };
       }

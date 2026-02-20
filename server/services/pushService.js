@@ -80,7 +80,7 @@ export async function sendPushToUser(userId, notificationType, data = {}) {
       url: '/dashboard'
     },
     register: {
-      title: 'Welcome to MyWellbeingToday!',
+      title: 'Welcome to mywellbeingtoday!',
       body: 'Your account is set up. Start tracking your wellbeing today.',
       url: '/dashboard'
     },

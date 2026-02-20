@@ -44,8 +44,11 @@ const ACTIVITY_CATEGORIES = [
 const MOOD_OPTIONS = [
   { value: 'happy', label: 'Happy', emoji: '😊', score: 9, color: 'bg-green-100 text-green-600 hover:bg-green-200 border-green-200' },
   { value: 'calm', label: 'Calm', emoji: '😌', score: 7, color: 'bg-blue-100 text-blue-600 hover:bg-blue-200 border-blue-200' },
-  { value: 'neutral', label: 'Neutral', emoji: '😐', score: 5, color: 'bg-gray-100 text-gray-600 hover:bg-gray-200 border-gray-200' },
+  { value: 'energetic', label: 'Energetic', emoji: '⚡', score: 8, color: 'bg-emerald-100 text-emerald-600 hover:bg-emerald-200 border-emerald-200' },
+  { value: 'focused', label: 'Focused', emoji: '🎯', score: 7, color: 'bg-violet-100 text-violet-600 hover:bg-violet-200 border-violet-200' },
+  { value: 'hopeful', label: 'Hopeful', emoji: '🌟', score: 7, color: 'bg-amber-100 text-amber-600 hover:bg-amber-200 border-amber-200' },
   { value: 'tired', label: 'Tired', emoji: '😴', score: 4, color: 'bg-indigo-100 text-indigo-600 hover:bg-indigo-200 border-indigo-200' },
+  { value: 'anxious', label: 'Anxious', emoji: '😟', score: 3, color: 'bg-yellow-100 text-yellow-600 hover:bg-yellow-200 border-yellow-200' },
   { value: 'stressed', label: 'Stressed', emoji: '😰', score: 3, color: 'bg-orange-100 text-orange-600 hover:bg-orange-200 border-orange-200' },
   { value: 'sad', label: 'Sad', emoji: '😢', score: 2, color: 'bg-purple-100 text-purple-600 hover:bg-purple-200 border-purple-200' },
 ];
@@ -818,9 +821,9 @@ export default function ActivityLog() {
                       className={cn(
                         "flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl border-2 transition-all duration-200 min-h-[80px] sm:min-h-[90px] touch-manipulation active:scale-95 relative",
                         mood.color,
-                        isSuggested && "ring-2 ring-purple-500 ring-offset-2",
-                        isAlternative && "ring-1 ring-purple-300",
-                        isSelected && isSuggested && "scale-105 shadow-md"
+                        isSelected && "ring-2 ring-purple-500 ring-offset-2 scale-105 shadow-lg border-purple-400",
+                        !isSelected && isSuggested && "ring-2 ring-purple-400 ring-offset-1",
+                        !isSelected && isAlternative && "ring-1 ring-purple-300"
                       )}
                     >
                       {isSuggested && (

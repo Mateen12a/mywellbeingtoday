@@ -30,7 +30,7 @@ export async function createRegistrationNotification(userId, userName) {
   return createNotification(userId, {
     type: 'register',
     title: 'Welcome!',
-    message: `Welcome to MyWellbeingToday, ${userName}! Start tracking your wellbeing journey.`,
+    message: `Welcome to mywellbeingtoday, ${userName}! Start tracking your wellbeing journey.`,
     link: '/dashboard'
   });
 }

@@ -19,6 +19,7 @@ import {
   Zap,
 } from "lucide-react";
 import { Card, CardContent } from "@/components/ui/card";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { useState, useEffect } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -174,6 +175,7 @@ const HeroCarousel = () => {
 export default function Landing() {
   const { isAuthenticated, user, isLoading } = useAuth();
   const [, setLocation] = useLocation();
+  const [selectedFeature, setSelectedFeature] = useState<{ text: string; detail: string } | null>(null);
 
   useEffect(() => {
     if (!isLoading && isAuthenticated && user) {
@@ -231,8 +233,8 @@ export default function Landing() {
                 </span>
               </h1>
               <p className="text-lg sm:text-xl md:text-2xl text-slate-600 max-w-lg leading-relaxed mx-auto lg:mx-0">
-                Log your activities, track your mood, and connect with health
-                and social care.
+                Log your activities, track your mood, access your report, and
+                connect with health and social care providers near you.
               </p>
             </motion.div>
 
@@ -244,19 +246,21 @@ export default function Landing() {
               className="flex flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start"
             >
               {[
-                { icon: Activity, text: "Activity Log in" },
-                { icon: Heart, text: "Mood Analysis" },
-                { icon: Users, text: "Provider Directory" },
+                { icon: Activity, text: "Activity Log", detail: "Track your daily activities including exercise, meals, sleep, social interactions, and more. Build healthy habits by monitoring your routines." },
+                { icon: Heart, text: "Mood Analysis", detail: "Log and analyse your emotional wellbeing with AI-powered insights. Understand patterns in your mood and get personalised suggestions." },
+                { icon: FileText, text: "Wellbeing Report", detail: "Generate comprehensive wellbeing reports you can download and share with your healthcare providers for better-informed care." },
+                { icon: Users, text: "Provider Directory", detail: "Find certified health and social care providers near you. Book appointments and connect with professionals who can support your wellbeing journey." },
               ].map((item, i) => (
-                <div
+                <button
                   key={i}
-                  className="flex items-center gap-2 sm:gap-2.5 bg-white/80 backdrop-blur-sm px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl shadow-sm border border-slate-100"
+                  onClick={() => setSelectedFeature({ text: item.text, detail: item.detail })}
+                  className="flex items-center gap-2 sm:gap-2.5 bg-white/80 backdrop-blur-sm px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow duration-200"
                 >
                   <item.icon className="w-5 h-5 sm:w-5 sm:h-5 text-primary" />
                   <span className="text-sm sm:text-base font-medium text-slate-700">
                     {item.text}
                   </span>
-                </div>
+                </button>
               ))}
             </motion.div>
 
@@ -289,12 +293,12 @@ export default function Landing() {
               </Link>
             </motion.div>
 
-            {/* Trust Indicators */}
+            {/* Trust Indicators - Desktop only */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="flex items-center gap-4 sm:gap-6 pt-6 sm:pt-8 border-t border-slate-200 justify-center lg:justify-start"
+              className="hidden lg:flex items-center gap-4 sm:gap-6 pt-6 sm:pt-8 border-t border-slate-200 justify-center lg:justify-start"
             >
               <div className="flex items-center gap-3">
                 <ShieldCheck className="w-6 h-6 sm:w-7 sm:h-7 text-primary shrink-0" />
@@ -327,7 +331,37 @@ export default function Landing() {
             </div>
           </motion.div>
         </div>
+
+        {/* Trust Indicators - Mobile/Tablet only */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5, delay: 0.4 }}
+          className="flex lg:hidden items-center gap-4 sm:gap-6 pt-6 sm:pt-8 border-t border-slate-200 justify-center px-2 sm:px-4"
+        >
+          <div className="flex items-center gap-3">
+            <ShieldCheck className="w-6 h-6 sm:w-7 sm:h-7 text-primary shrink-0" />
+            <div className="text-sm sm:text-base">
+              <p className="font-semibold text-slate-800">
+                Trusted by health and social care providers
+              </p>
+              <p className="text-slate-500 hidden sm:block">
+                Secure, private, and verified
+              </p>
+            </div>
+          </div>
+        </motion.div>
       </section>
+
+      {/* Feature Detail Dialog */}
+      <Dialog open={!!selectedFeature} onOpenChange={(open) => !open && setSelectedFeature(null)}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{selectedFeature?.text}</DialogTitle>
+            <DialogDescription>{selectedFeature?.detail}</DialogDescription>
+          </DialogHeader>
+        </DialogContent>
+      </Dialog>
 
       {/* Why Wellbeing Matters Section */}
       {/* <section className="py-16 md:py-24 bg-gradient-to-b from-slate-50 to-white">
@@ -526,16 +560,6 @@ export default function Landing() {
 
       {/* Core Benefits */}
       <section className="space-y-12">
-        <div className="text-center max-w-2xl mx-auto space-y-4">
-          <h2 className="text-3xl md:text-4xl font-serif font-bold text-black">
-            Holistic support at your fingertips
-          </h2>
-          <p className="text-gray-800 font-medium text-lg">
-            Tools to maintain balance, track progress, and find help when you
-            need it.
-          </p>
-        </div>
-
         <div className="grid md:grid-cols-3 gap-8">
           {[
             {
@@ -544,14 +568,14 @@ export default function Landing() {
               desc: "Log activities and mood to identify patterns.",
             },
             {
-              icon: ShieldCheck,
-              title: "Private & Secure",
-              desc: "Your data stays private and protected.",
+              icon: FileText,
+              title: "Wellbeing Report",
+              desc: "Download your wellbeing report and share it with your providers.",
             },
             {
               icon: Users,
-              title: "Provider Directory",
-              desc: "Find certified health and social care providers when you need support.",
+              title: "Access Providers Directory and Emergency",
+              desc: "Find certified health and social care providers near you.",
             },
           ].map((feature, i) => (
             <Card
@@ -574,35 +598,6 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Trust & CTA */}
-      <section
-        className="bg-secondary/30 rounded-3xl p-8 md:p-16 text-center space-y-8 my-12"
-        data-testid="section-cta-footer"
-      >
-        <h2
-          className="text-3xl font-serif font-bold text-black"
-          data-testid="text-cta-title"
-        >
-          Ready to prioritise your wellbeing?
-        </h2>
-        <p
-          className="text-gray-800 max-w-2xl mx-auto text-lg font-medium"
-          data-testid="text-cta-description"
-        >
-          Start your personal health journey today.
-        </p>
-        <div className="flex justify-center gap-4">
-          <Link href="/auth/register">
-            <Button
-              size="lg"
-              className="px-8 shadow-xl"
-              data-testid="button-create-account-footer"
-            >
-              Create Free Account
-            </Button>
-          </Link>
-        </div>
-      </section>
     </div>
   );
 }

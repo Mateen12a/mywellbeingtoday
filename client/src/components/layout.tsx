@@ -343,7 +343,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden xl:flex items-center gap-6">
+          <nav className="hidden xl:flex items-center gap-4 ml-auto">
             {!isAuthenticated ? (
               <>
                 <Link href="/auth/login">

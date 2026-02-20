@@ -275,7 +275,7 @@ async function seed() {
       phone: '+44 7700 900000',
       address: { street: '1 Executive Plaza', city: 'London', postcode: 'EC1A 1AA', country: 'UK' },
       avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
-      bio: 'Chief platform administrator and system supervisor for MyWellbeingToday.'
+      bio: 'Chief platform administrator and system supervisor for mywellbeingtoday.'
     },
     settings: {
       notifications: { email: true, push: true, sms: true },

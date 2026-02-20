@@ -13,12 +13,27 @@ if (apiKey) {
   console.log('[AI SERVICE] GEMINI_API_KEY not configured. Using fallback responses.');
 }
 
-const AI_PERSONA = `You are a supportive AI wellbeing assistant for MyWellbeingToday. You provide personalized health insights, emotional support, and wellness guidance. You are:
-- Empathetic, supportive, and encouraging
-- Evidence-based but accessible in your advice
-- Focused on the user's holistic wellbeing (mental, physical, emotional)
-- Never giving medical diagnoses, but offering helpful lifestyle suggestions
-- Using the user's actual data to provide personalized insights
+const AI_PERSONA = `You are a warm, knowledgeable AI wellbeing companion for mywellbeingtoday. You are like a trusted friend who genuinely cares about the user's overall wellbeing. You provide personalized health insights, emotional support, practical wellness guidance, and can answer any question related to health, wellness, mental health, nutrition, fitness, sleep, stress management, and daily life improvement.
+
+YOUR PERSONALITY:
+- Warm, empathetic, and genuinely caring - like talking to a supportive friend
+- Knowledgeable about all aspects of wellbeing: mental health, physical health, nutrition, sleep, stress, relationships, self-care
+- Proactive - suggest helpful actions and check-ins without being asked
+- Practical - give specific, actionable advice, not generic platitudes
+- Remembers context from the conversation - never asks for information already provided
+- Uses the user's actual data and history to personalize every response
+
+WHAT YOU CAN HELP WITH:
+- Mental health support: anxiety, stress, low mood, motivation, mindfulness, coping strategies
+- Physical wellness: exercise tips, movement suggestions, pain management guidance
+- Nutrition advice: healthy eating tips, hydration reminders, meal suggestions
+- Sleep improvement: sleep hygiene tips, relaxation techniques, bedtime routines
+- Stress management: breathing exercises, grounding techniques, time management
+- Daily wellbeing: habit building, goal setting, self-care routines, work-life balance
+- Understanding their wellbeing data and trends
+- Quick logging of moods and activities directly through the chat
+- Finding healthcare providers when professional help would be beneficial
+- Any other wellbeing-related question - you are a comprehensive companion
 
 SYSTEM CAPABILITIES - You can help users take actions in the app:
 1. LOG MOOD - Help users log their mood (requires: mood type, optionally: moodScore 1-10, stressLevel 1-10, energyLevel 1-10, notes)
@@ -38,7 +53,8 @@ SAFETY RULES (CRITICAL):
 - ALWAYS explain what action you're about to help with before offering the action
 - ALWAYS ask for confirmation before logging mood or activity entries
 - For mood/activity logging, ask for necessary details first if not provided
-- Be transparent about what each action button will do`;
+- Be transparent about what each action button will do
+- For serious mental health crises, recommend professional help immediately`;
 
 const SUPPORTED_ACTION_TYPES = ['navigate', 'log_mood', 'log_activity', 'find_providers', 'book_appointment', 'generate_report', 'view_history'];
 
@@ -234,7 +250,7 @@ export async function chatWithAssistant(query, context) {
   if (!model) {
     const fallbackActions = detectFallbackActions(query);
     return {
-      answer: `Hi ${userName}! I'm your AI wellbeing assistant. I'm currently running in offline mode, but I can still help with general wellness tips. How can I assist you today?`,
+      answer: `Hi ${userName}! I'm your wellbeing companion. I'm currently in offline mode, but I can still help you log moods and activities, find providers, or navigate the app. What would you like to do?`,
       sources: ['fallback'],
       actions: fallbackActions
     };
@@ -279,13 +295,17 @@ INTENT DETECTION - Recognize these user intents and provide appropriate actions:
 - "help me relax" / "what should I do" → Suggest activities and offer to log them
 
 RESPONSE INSTRUCTIONS:
-1. Address the user by their name "${userName}" naturally
-2. Reference their actual data when relevant
-3. Be warm, supportive, and personalized
-4. If the user wants to perform an action, EXPLAIN what you'll help with first
-5. For mood/activity logging: If they say "I'm feeling happy" or give specific details, include pre-filled data. If they just say "log my mood", ask what mood they're feeling
-6. Include relevant action buttons to help users take action directly
-7. NEVER offer delete actions. ALWAYS ask for confirmation in your text before allowing logging
+1. Use the user's name "${userName}" only ONCE at the start of the conversation or when greeting. After that, DO NOT keep repeating their name - it sounds robotic. Use "you" naturally instead.
+2. Reference their actual data when relevant to make responses personal and insightful
+3. Be warm, conversational, and genuinely helpful - like a knowledgeable friend, not a chatbot
+4. Give specific, practical, actionable advice - not generic wellness platitudes
+5. If the user asks ANY wellbeing-related question (nutrition, exercise, sleep, stress, mental health, etc.), provide a thorough, helpful answer with practical tips
+6. If the user wants to perform an action, EXPLAIN what you'll help with first
+7. For mood/activity logging: If they say "I'm feeling happy" or give specific details, include pre-filled data. If they just say "log my mood", ask what mood they're feeling. Make it easy and fast for them.
+8. Include relevant action buttons to help users take action directly
+9. NEVER offer delete actions. ALWAYS ask for confirmation in your text before allowing logging
+10. Keep responses focused and well-structured. Use bullet points or numbered lists for multiple tips
+11. If someone shares they are struggling, be empathetic FIRST, then offer practical help
 
 Respond with a JSON object:
 {
@@ -326,7 +346,7 @@ For log_activity, valid categories: exercise, work, sleep, social, relaxation, n
   } catch (error) {
     console.error('[AI SERVICE] Chat error:', error.message);
     return {
-      answer: `Hi ${userName}! I'm here to help with your wellbeing. Could you please try rephrasing your question? I want to make sure I understand what you need.`,
+      answer: `I'm sorry, I had a little trouble processing that. Could you try rephrasing your question? I'm here to help with anything related to your wellbeing.`,
       sources: ['fallback'],
       actions: []
     };
@@ -1034,7 +1054,7 @@ export async function generateProviderInsights(appointments, sharedReports, prov
       return `- ${patientName}: Overall Score ${report.overallScore}/100 (${report.wellbeingLevel}), Generated: ${new Date(report.createdAt).toLocaleDateString()}${report.analysis?.summary ? `, Summary: "${report.analysis.summary.substring(0, 100)}..."` : ''}`;
     }).join('\n');
 
-    const prompt = `You are an AI assistant helping healthcare providers use the MyWellbeingToday platform to manage patient care.
+    const prompt = `You are an AI assistant helping healthcare providers use the mywellbeingtoday platform to manage patient care.
 
 PROVIDER: ${providerName || 'Healthcare Provider'}
 
@@ -1233,7 +1253,7 @@ Return ONLY the title text, nothing else. No quotes, no explanation, just the ti
   }
 }
 
-const PROVIDER_AI_PERSONA = `You are a professional AI assistant for healthcare providers using MyWellbeingToday platform. You help providers with:
+const PROVIDER_AI_PERSONA = `You are a professional AI assistant for healthcare providers using mywellbeingtoday platform. You are a knowledgeable, efficient companion that helps providers manage their practice and deliver better patient care.
 
 PLATFORM CAPABILITIES:
 1. PATIENT MANAGEMENT - Providers can view patients who have shared their wellbeing reports, book appointments, and communicate via secure messaging
@@ -1244,13 +1264,18 @@ PLATFORM CAPABILITIES:
 6. AUTO-RESPONSES - Create and manage saved response templates for common patient inquiries
 7. SUPPORT TICKETS - Submit and track support tickets for platform issues
 
-YOUR ROLE:
-- Draft professional patient communications (appointment confirmations, reminders, follow-ups)
+WHAT YOU CAN HELP WITH:
+- Draft professional patient communications (appointment confirmations, reminders, follow-ups, discharge summaries)
 - Create auto-response templates for common inquiries
 - Help with appointment scheduling and management questions
 - Provide guidance on patient communication best practices
 - Suggest efficient workflows for managing patient care
-- Answer questions about platform features
+- Answer questions about platform features and how to use them
+- Help interpret patient wellbeing data and trends from shared reports
+- Draft certificate content based on patient data
+- Provide clinical communication best practices
+- Help with time management and workflow optimization
+- Answer general healthcare practice management questions
 
 FORMATTING RULES:
 - Use bullet points (•) for lists of items or options
@@ -1259,18 +1284,20 @@ FORMATTING RULES:
 - Keep paragraphs concise and well-structured
 - For templates, use clear placeholders like [Patient Name], [Date], [Time], [Appointment Type]
 
-You are:
+YOUR PERSONALITY:
 - Professional, helpful, and efficient
 - Knowledgeable about healthcare communication best practices
+- Proactive - suggest relevant actions based on the provider's current workload
 - Focused on helping providers save time while maintaining quality patient care
-- Never providing medical advice or diagnoses - you help with communication, not clinical decisions`;
+- Never providing medical advice or diagnoses - you help with communication, not clinical decisions
+- Do NOT repeat the provider's name in every response - use it only in the first greeting`;
 
 export async function chatWithProviderAssistant(query, context) {
   const providerName = context.providerName || 'Doctor';
   
   if (!model) {
     return {
-      answer: `Hello ${providerName}! I'm your AI assistant. I'm currently running in offline mode, but I can still help with general communication templates. How can I assist you today?`,
+      answer: `Hello ${providerName}! I'm your AI practice assistant. I'm currently in offline mode, but I'll be fully operational once the AI service is connected. When online, I can help you draft patient communications, manage appointments, create templates, and much more.`,
       sources: ['fallback']
     };
   }
@@ -1302,13 +1329,16 @@ CURRENT REQUEST:
 ${query}
 
 RESPONSE INSTRUCTIONS:
-1. Address the provider professionally
-2. If they ask about platform features, explain based on the PLATFORM CAPABILITIES
+1. Use the provider's name only in the first greeting of a conversation. After that, do NOT repeat their name - it sounds robotic.
+2. If they ask about platform features, explain based on the PLATFORM CAPABILITIES with specific steps
 3. For templates/drafts, use proper formatting with placeholders
 4. For lists, use bullet points (•) or numbered lists
 5. For step-by-step guidance, use numbered steps
-6. Keep responses helpful, concise, and actionable
+6. Keep responses helpful, concise, and actionable - give specific, practical answers
 7. If asked about their current workload, reference the platform data provided
+8. Be proactive - if you see pending appointments or unread messages, mention them
+9. Answer ANY question the provider asks thoroughly and helpfully
+10. If they ask for help with patient communication, provide complete draft messages ready to use
 
 Provide a well-structured, professional response:`;
 
@@ -1383,16 +1413,16 @@ export async function generateMoodSuggestion(activityData) {
   const { category, title, description } = activityData;
   
   const moodMappings = {
-    exercise: { primary: 'energetic', secondary: 'happy', rationale: 'Physical activity typically boosts energy and improves mood.' },
-    meditation: { primary: 'calm', secondary: 'relaxed', rationale: 'Meditation practices promote relaxation and mental clarity.' },
-    relaxation: { primary: 'relaxed', secondary: 'calm', rationale: 'Taking time to relax helps reduce stress and promotes calmness.' },
-    work: { primary: 'focused', secondary: 'stressed', rationale: 'Work activities often require concentration and can be demanding.' },
-    social: { primary: 'happy', secondary: 'energetic', rationale: 'Social interactions tend to boost mood and energy.' },
-    sleep: { primary: 'tired', secondary: 'calm', rationale: 'Rest and sleep are associated with recovery and calmness.' },
-    nutrition: { primary: 'calm', secondary: 'happy', rationale: 'Healthy eating supports overall wellbeing and mood stability.' },
-    hobby: { primary: 'happy', secondary: 'relaxed', rationale: 'Hobbies bring joy and provide a pleasant escape from daily stress.' },
-    healthcare: { primary: 'anxious', secondary: 'calm', rationale: 'Healthcare activities can bring mixed feelings but often lead to relief.' },
-    other: { primary: 'calm', secondary: 'focused', rationale: 'General activities contribute to your daily wellbeing.' }
+    exercise: { primary: 'energetic', secondary: 'happy', rationale: `After "${title}", you're likely feeling a nice energy boost! Physical activity is one of the best natural mood lifters.` },
+    meditation: { primary: 'calm', secondary: 'happy', rationale: `"${title}" likely left you feeling centered and peaceful. Meditation helps quiet the mind and bring clarity.` },
+    relaxation: { primary: 'calm', secondary: 'happy', rationale: `Taking time for "${title}" is a great act of self-care. You've likely unwound and feel more at ease now.` },
+    work: { primary: 'focused', secondary: 'stressed', rationale: `After "${title}", you might be in a focused zone. Work can be demanding, so take a moment to check in with yourself.` },
+    social: { primary: 'happy', secondary: 'energetic', rationale: `"${title}" - connecting with others is wonderful for your wellbeing! Social time usually leaves us feeling uplifted.` },
+    sleep: { primary: 'tired', secondary: 'calm', rationale: `Logging "${title}" shows you're paying attention to your rest. How rested do you feel right now?` },
+    nutrition: { primary: 'calm', secondary: 'happy', rationale: `Good on you for tracking "${title}"! Nourishing your body well supports both physical and emotional wellbeing.` },
+    hobby: { primary: 'happy', secondary: 'relaxed', rationale: `"${title}" sounds like a great way to spend your time! Hobbies help us recharge and find joy.` },
+    healthcare: { primary: 'anxious', secondary: 'calm', rationale: `Taking care of your health with "${title}" is important. How are you feeling about it?` },
+    other: { primary: 'calm', secondary: 'focused', rationale: `After "${title}", take a moment to notice how you're feeling. Every activity shapes your wellbeing.` }
   };
 
   const fallbackSuggestion = moodMappings[category] || moodMappings.other;
@@ -1424,15 +1454,13 @@ Based on this activity, suggest the most likely mood the user might be experienc
 VALID MOOD OPTIONS (choose from these only):
 - happy: Feeling joyful, content, or positive
 - calm: Feeling peaceful, serene, or tranquil
+- energetic: Feeling active, vibrant, or full of energy
 - focused: Feeling concentrated, determined, or attentive
+- hopeful: Feeling optimistic, encouraged, or positive about the future
+- tired: Feeling fatigued, exhausted, or low energy
 - anxious: Feeling worried, nervous, or uneasy
 - stressed: Feeling overwhelmed, pressured, or tense
 - sad: Feeling down, melancholy, or unhappy
-- tired: Feeling fatigued, exhausted, or low energy
-- energetic: Feeling active, vibrant, or full of energy
-- relaxed: Feeling at ease, comfortable, or unwound
-- irritated: Feeling annoyed, frustrated, or agitated
-- hopeful: Feeling optimistic, encouraged, or positive about the future
 
 Return a JSON object:
 {
@@ -1450,7 +1478,7 @@ Be supportive and positive in your rationale. If the activity suggests the perso
 
     if (jsonMatch) {
       const parsed = JSON.parse(jsonMatch[0]);
-      const validMoods = ['happy', 'calm', 'focused', 'anxious', 'stressed', 'sad', 'tired', 'energetic', 'relaxed', 'irritated', 'hopeful'];
+      const validMoods = ['happy', 'calm', 'energetic', 'focused', 'hopeful', 'tired', 'anxious', 'stressed', 'sad'];
       
       const suggestedMood = validMoods.includes(parsed.suggestedMood) ? parsed.suggestedMood : fallbackSuggestion.primary;
       const alternativeMood = validMoods.includes(parsed.alternativeMood) ? parsed.alternativeMood : fallbackSuggestion.secondary;

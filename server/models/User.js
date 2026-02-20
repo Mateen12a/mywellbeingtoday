@@ -33,7 +33,10 @@ const userSchema = new mongoose.Schema({
       country: { type: String, default: 'UK' }
     },
     avatarUrl: { type: String, default: '' },
-    bio: { type: String, default: '' }
+    bio: { type: String, default: '' },
+    occupation: { type: String, default: '' },
+    occupationOther: { type: String, default: '' },
+    organisation: { type: String, default: '' }
   },
   settings: {
     notifications: {

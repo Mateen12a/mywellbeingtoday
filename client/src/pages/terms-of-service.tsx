@@ -44,7 +44,7 @@ export default function TermsOfService() {
         <CardContent className="space-y-4">
           <p className="text-muted-foreground leading-relaxed">
             By creating an account or using mywellbeingtoday, you agree to these terms. If you don't agree 
-            with any part of these terms, please don't use our services. We may update these terms from 
+            with any part of these services, please provide us a feedack on your observation to help meet with the acceptable terms. We may update these terms from 
             time to time, and we'll notify you of significant changes.
           </p>
           <p className="text-muted-foreground leading-relaxed">

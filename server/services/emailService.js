@@ -1,9 +1,31 @@
 import { Resend } from 'resend';
+import path from 'path';
+import fs from 'fs';
 
 const apiKey = process.env.RESEND_API_KEY;
 const resend = apiKey ? new Resend(apiKey) : null;
 
-const SENDER_EMAIL = `MYWELLBEINGTODAY <${process.env.RESEND_SENDER_EMAIL || 'onboarding@resend.dev'}>`;
+const SENDER_EMAIL = `mywellbeingtoday <${process.env.RESEND_SENDER_EMAIL || 'onboarding@resend.dev'}>`;
+
+const LOGO_CID = 'logo@mywellbeingtoday';
+let LOGO_BUFFER = null;
+try {
+  const logoPath = path.resolve('client/public/logo5.png');
+  if (fs.existsSync(logoPath)) {
+    LOGO_BUFFER = fs.readFileSync(logoPath);
+  }
+} catch (e) {
+  console.log('[EMAIL SERVICE] Could not load logo file:', e.message);
+}
+
+function getLogoAttachments() {
+  if (!LOGO_BUFFER) return [];
+  return [{
+    filename: 'logo.png',
+    content: LOGO_BUFFER,
+    content_id: LOGO_CID,
+  }];
+}
 
 const COLORS = {
   primary: '#97b5cb',
@@ -16,6 +38,8 @@ const COLORS = {
 };
 
 const FONT_STACK = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
+
+const LOGO_IMG_SRC = `cid:${LOGO_CID}`;
 
 const createEmailHeader = () => `
 <!--[if mso]>
@@ -35,13 +59,7 @@ const createEmailHeader = () => `
             <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
               <tr>
                 <td align="center" style="padding-bottom:12px;">
-                  <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
-                    <tr>
-                      <td align="center" valign="middle" width="50" height="50" style="width:50px; height:50px; background-color:${COLORS.white}; border-radius:25px; mso-border-alt:none; font-family:${FONT_STACK}; font-size:20px; font-weight:700; color:${COLORS.primary}; text-align:center; line-height:50px;">
-                        mw
-                      </td>
-                    </tr>
-                  </table>
+                  <img src="${LOGO_IMG_SRC}" alt="mywellbeingtoday" width="50" height="50" style="display:block; width:50px; height:50px; border-radius:25px; border:0;" />
                 </td>
               </tr>
               <tr>
@@ -647,7 +665,8 @@ export async function sendVerificationEmail(email, userName, verificationLink) {
       from: SENDER_EMAIL,
       to: email,
       subject: 'Verify Your Email - mywellbeingtoday',
-      html
+      html,
+      attachments: getLogoAttachments()
     });
 
     console.log('[EMAIL SERVICE] Verification email sent to:', email);
@@ -675,7 +694,8 @@ export async function sendPasswordResetEmail(email, userName, otpCode) {
       from: SENDER_EMAIL,
       to: email,
       subject: 'Reset Your Password - mywellbeingtoday',
-      html
+      html,
+      attachments: getLogoAttachments()
     });
 
     console.log('[EMAIL SERVICE] Password reset email sent to:', email);
@@ -702,7 +722,8 @@ export async function sendWelcomeEmail(email, userName) {
       from: SENDER_EMAIL,
       to: email,
       subject: 'Welcome to mywellbeingtoday',
-      html
+      html,
+      attachments: getLogoAttachments()
     });
 
     console.log('[EMAIL SERVICE] Welcome email sent to:', email);
@@ -750,7 +771,8 @@ export async function sendAppointmentConfirmation(
       from: SENDER_EMAIL,
       to: email,
       subject: 'Appointment Confirmed - mywellbeingtoday',
-      html
+      html,
+      attachments: getLogoAttachments()
     });
 
     console.log('[EMAIL SERVICE] Appointment confirmation email sent to:', email);
@@ -788,7 +810,8 @@ export async function sendNotification(
       from: SENDER_EMAIL,
       to: email,
       subject,
-      html
+      html,
+      attachments: getLogoAttachments()
     });
 
     console.log('[EMAIL SERVICE] Notification email sent to:', email, 'Subject:', subject);
@@ -816,7 +839,8 @@ export async function sendOTPEmail(email, userName, otpCode) {
       from: SENDER_EMAIL,
       to: email,
       subject: 'Your Verification Code - mywellbeingtoday',
-      html
+      html,
+      attachments: getLogoAttachments()
     });
 
     console.log('[EMAIL SERVICE] OTP email sent to:', email);

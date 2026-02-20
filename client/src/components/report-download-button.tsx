@@ -96,7 +96,7 @@ function generatePDFReport(report: ReportData): jsPDF {
   doc.setTextColor(...textColor);
   doc.setFontSize(18);
   doc.setFont("helvetica", "bold");
-  doc.text("MyWellbeingToday", margin + 22, 22);
+  doc.text("mywellbeingtoday", margin + 22, 22);
 
   doc.setFontSize(10);
   doc.setFont("helvetica", "normal");
