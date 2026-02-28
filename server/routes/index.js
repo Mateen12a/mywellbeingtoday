@@ -12,6 +12,7 @@ import supportRoutes from './supportRoutes.js';
 import subscriptionRoutes from './subscriptionRoutes.js';
 import notificationRoutes from './notificationRoutes.js';
 import pushRoutes from './pushRoutes.js';
+import uploadRoutes from './uploadRoutes.js';
 
 const router = Router();
 
@@ -37,5 +38,6 @@ router.use('/support', supportRoutes);
 router.use('/subscription', subscriptionRoutes);
 router.use('/notifications', notificationRoutes);
 router.use('/push', pushRoutes);
+router.use('/upload', uploadRoutes);
 
 export default router;

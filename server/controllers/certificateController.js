@@ -7,6 +7,7 @@ import { AppError } from '../middlewares/errorHandler.js';
 import { logAction } from '../middlewares/auditLog.js';
 import { generateCertificateSuggestion } from '../services/aiService.js';
 import crypto from 'crypto';
+import { uploadCertificate, isCloudinaryConfigured } from '../services/cloudinaryService.js';
 
 export const getCertificates = async (req, res, next) => {
   try {
@@ -89,6 +90,16 @@ export const createCertificate = async (req, res, next) => {
       throw new AppError('User ID, type, title, and issue date are required', 400, 'VALIDATION_ERROR');
     }
 
+    let finalDocumentUrl = documentUrl;
+    if (documentUrl && documentUrl.startsWith('data:') && isCloudinaryConfigured()) {
+      try {
+        const cloudResult = await uploadCertificate(documentUrl, userId);
+        finalDocumentUrl = cloudResult.url;
+      } catch (err) {
+        console.error('[CERTIFICATE] Cloudinary upload failed:', err.message);
+      }
+    }
+
     const verificationCode = crypto.randomBytes(8).toString('hex').toUpperCase();
 
     const certificate = await Certificate.create({
@@ -101,7 +112,7 @@ export const createCertificate = async (req, res, next) => {
       expiryDate: expiryDate ? new Date(expiryDate) : undefined,
       validFrom: validFrom ? new Date(validFrom) : undefined,
       validUntil: validUntil ? new Date(validUntil) : undefined,
-      documentUrl,
+      documentUrl: finalDocumentUrl,
       issuedBy,
       notes,
       verificationCode,

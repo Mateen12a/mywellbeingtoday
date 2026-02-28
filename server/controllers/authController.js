@@ -7,6 +7,7 @@ import { logAction } from '../middlewares/auditLog.js';
 import { AppError } from '../middlewares/errorHandler.js';
 import { USER_ROLES } from '../config/constants.js';
 import { sendPushToUser } from '../services/pushService.js';
+import { uploadProfilePicture, isCloudinaryConfigured } from '../services/cloudinaryService.js';
 
 export const register = async (req, res, next) => {
   try {
@@ -129,6 +130,25 @@ export const registerProvider = async (req, res, next) => {
         coordinates: isValidCoords ? existingCoords : [0, 0]
       };
 
+      let verificationDocs = providerData.verification?.documents || [];
+      if (verificationDocs.length > 0 && isCloudinaryConfigured()) {
+        verificationDocs = await Promise.all(
+          verificationDocs.map(async (doc) => {
+            if (doc.url && doc.url.startsWith('data:')) {
+              try {
+                const { uploadDocument } = await import('../services/cloudinaryService.js');
+                const cloudResult = await uploadDocument(doc.url, { folder: 'mywellbeingtoday/provider-docs' });
+                return { ...doc, url: cloudResult.url };
+              } catch (err) {
+                console.error('[PROVIDER REG] Cloudinary upload failed:', err.message);
+                return doc;
+              }
+            }
+            return doc;
+          })
+        );
+      }
+
       provider = await Provider.create({
         userId: user._id,
         professionalInfo: providerData.professionalInfo || {},
@@ -137,7 +157,7 @@ export const registerProvider = async (req, res, next) => {
         verification: {
           isVerified: false,
           status: 'pending',
-          documents: providerData.verification?.documents || []
+          documents: verificationDocs
         }
       });
     }
@@ -475,6 +495,15 @@ export const updateProfile = async (req, res, next) => {
     const user = await User.findById(req.user._id);
 
     if (profile) {
+      if (profile.avatarUrl && profile.avatarUrl.startsWith('data:') && isCloudinaryConfigured()) {
+        try {
+          const cloudResult = await uploadProfilePicture(profile.avatarUrl, req.user._id);
+          profile.avatarUrl = cloudResult.url;
+        } catch (uploadErr) {
+          console.error('[PROFILE] Cloudinary upload failed, keeping base64:', uploadErr.message);
+        }
+      }
+
       user.profile = { ...user.profile.toObject(), ...profile };
       if (profile.firstName || profile.lastName) {
         user.profile.displayName = `${profile.firstName || user.profile.firstName || ''} ${profile.lastName || user.profile.lastName || ''}`.trim();

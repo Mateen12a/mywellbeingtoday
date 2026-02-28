@@ -1015,6 +1015,22 @@ class ApiClient {
     });
   }
 
+  async uploadFile(file: string, type: 'profile-picture' | 'chat-attachment' | 'document' | 'certificate' | 'report', extra?: Record<string, any>) {
+    return this.request<{
+      url: string;
+      publicId: string;
+      format: string;
+      bytes: number;
+    }>(`/upload/${type}`, {
+      method: 'POST',
+      body: JSON.stringify({ file, ...extra }),
+    });
+  }
+
+  async getUploadStatus() {
+    return this.request<{ configured: boolean }>('/upload/status');
+  }
+
   async getNotifications(page = 1, limit = 20, unreadOnly = false): Promise<ApiResponse> {
     const params = new URLSearchParams({ page: page.toString(), limit: limit.toString() });
     if (unreadOnly) params.set('unreadOnly', 'true');

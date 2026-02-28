@@ -2,6 +2,7 @@ import { Message, Conversation } from '../models/Message.js';
 import ChatReport from '../models/ChatReport.js';
 import { AppError } from '../middlewares/errorHandler.js';
 import { logAction } from '../middlewares/auditLog.js';
+import { uploadChatAttachment, isCloudinaryConfigured } from '../services/cloudinaryService.js';
 
 export const getConversations = async (req, res, next) => {
   try {
@@ -161,13 +162,31 @@ export const sendMessage = async (req, res, next) => {
       p => p.toString() !== req.user._id.toString()
     );
 
+    let processedAttachments = attachments;
+    if (attachments && attachments.length > 0 && isCloudinaryConfigured()) {
+      processedAttachments = await Promise.all(
+        attachments.map(async (att) => {
+          if (att.url && att.url.startsWith('data:')) {
+            try {
+              const cloudResult = await uploadChatAttachment(att.url, req.user._id);
+              return { ...att, url: cloudResult.url };
+            } catch (err) {
+              console.error('[MESSAGE] Cloudinary upload failed for attachment:', err.message);
+              return att;
+            }
+          }
+          return att;
+        })
+      );
+    }
+
     const message = await Message.create({
       conversationId: id,
       senderId: req.user._id,
       recipientId,
       content,
       type,
-      attachments
+      attachments: processedAttachments
     });
 
     conversation.lastMessage = {
