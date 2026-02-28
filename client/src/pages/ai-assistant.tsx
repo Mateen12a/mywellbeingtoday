@@ -39,6 +39,8 @@ import {
 } from "@/components/ui/tooltip";
 import { useAuth } from "@/contexts/AuthContext";
 import { ReportDownloadButton } from "@/components/report-download-button";
+import { useSubscription } from "@/hooks/useSubscription";
+import { UpgradePrompt } from "@/components/upgrade-prompt";
 
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList;
@@ -669,6 +671,7 @@ export default function AIKnowledgeAssistant() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user } = useAuth();
+  const { plan, isNearLimit, isAtLimit, getRemaining, getLimit } = useSubscription();
   const [query, setQuery] = useState("");
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -976,12 +979,22 @@ export default function AIKnowledgeAssistant() {
       setMessages(prev => [...prev, aiMsg]);
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
     } catch (error: any) {
+      const isLimitError = error?.message?.toLowerCase()?.includes('limit') ||
+        error?.message?.toLowerCase()?.includes('quota') ||
+        error?.status === 403 ||
+        error?.message?.toLowerCase()?.includes('exceeded') ||
+        error?.message?.toLowerCase()?.includes('upgrade');
       const errorMsg: Message = {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
-        content: "I'm sorry, I encountered an issue processing your request. Please try again."
+        content: isLimitError
+          ? "You've reached your AI interaction limit for this month. Please upgrade your plan to continue using the AI Assistant. Visit the [Subscription page](/subscription) to view available plans."
+          : "I'm sorry, I encountered an issue processing your request. Please try again."
       };
       setMessages(prev => [...prev, errorMsg]);
+      if (isLimitError) {
+        queryClient.invalidateQueries({ queryKey: ["subscription-usage"] });
+      }
     } finally {
       setIsTyping(false);
     }
@@ -1105,6 +1118,25 @@ export default function AIKnowledgeAssistant() {
               </ScrollArea>
 
               <div className="p-4 bg-secondary/10 border-t">
+                {isAtLimit("aiInteractions") && (
+                  <UpgradePrompt
+                    feature="aiInteractions"
+                    currentPlan={plan}
+                    limit={getLimit("aiInteractions")}
+                    className="mb-3"
+                  />
+                )}
+                {!isAtLimit("aiInteractions") && isNearLimit("aiInteractions") && (
+                  <p className="text-xs text-amber-600 font-medium mb-2 flex items-center gap-1">
+                    <AlertCircle className="w-3 h-3" />
+                    {getRemaining("aiInteractions")} of {getLimit("aiInteractions")} AI interactions remaining this month
+                  </p>
+                )}
+                {!isAtLimit("aiInteractions") && !isNearLimit("aiInteractions") && getRemaining("aiInteractions") !== Infinity && (
+                  <p className="text-xs text-muted-foreground mb-2">
+                    {getRemaining("aiInteractions")} of {getLimit("aiInteractions")} AI interactions remaining
+                  </p>
+                )}
                 {attachment && (
                   <div className="mb-3 p-3 bg-white rounded-lg border border-primary/20 flex items-center gap-3">
                     {attachment.type === 'image' && attachment.preview ? (
@@ -1196,7 +1228,7 @@ export default function AIKnowledgeAssistant() {
                       </Tooltip>
                     </TooltipProvider>
                   )}
-                  <Button type="submit" size="icon" disabled={(!query.trim() && !attachment) || isTyping} className="rounded-xl shrink-0 h-12 w-12 md:h-14 md:w-14">
+                  <Button type="submit" size="icon" disabled={(!query.trim() && !attachment) || isTyping || isAtLimit("aiInteractions")} className="rounded-xl shrink-0 h-12 w-12 md:h-14 md:w-14">
                     <Send className="w-5 h-5 md:w-6 md:h-6" />
                   </Button>
                 </form>

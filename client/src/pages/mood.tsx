@@ -60,6 +60,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { SkeletonCard, FadeInContent } from "@/components/ui/skeleton-card";
 import { useToast } from "@/hooks/use-toast";
 import { api } from "@/lib/api";
+import { useSubscription } from "@/hooks/useSubscription";
+import { UpgradePrompt } from "@/components/upgrade-prompt";
 
 const MOOD_TYPES = [
   {
@@ -160,6 +162,7 @@ export default function MoodTracker() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, setLocation] = useLocation();
+  const { plan, isNearLimit, isAtLimit, getRemaining, getLimit } = useSubscription();
   const searchString = useSearch();
 
   const [moodScore, setMoodScore] = useState([7]);
@@ -732,25 +735,46 @@ export default function MoodTracker() {
         </div>
       </div>
 
-      <div className="flex flex-col sm:flex-row justify-end pt-6 sm:pt-8 gap-3 sm:gap-4">
-        <Link href="/history" className="sm:hidden w-full">
-          <Button variant="outline">View History</Button>
-        </Link>
-        <Button
-          className="rounded-xl"
-          disabled={!selectedMood || createMutation.isPending}
-          onClick={handleSubmit}
-          data-testid="button-save-mood"
-        >
-          {createMutation.isPending ? (
-            <>
-              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-              Saving...
-            </>
-          ) : (
-            "Save Check-in"
-          )}
-        </Button>
+      {isAtLimit("moodLogs") && (
+        <UpgradePrompt
+          feature="moodLogs"
+          currentPlan={plan}
+          limit={getLimit("moodLogs")}
+        />
+      )}
+
+      <div className="flex flex-col sm:flex-row items-center justify-between pt-6 sm:pt-8 gap-3 sm:gap-4">
+        {!isAtLimit("moodLogs") && (
+          <p className={cn(
+            "text-xs",
+            isNearLimit("moodLogs") ? "text-amber-600 font-medium" : "text-muted-foreground"
+          )}>
+            {isNearLimit("moodLogs") && <AlertCircle className="inline w-3 h-3 mr-1" />}
+            {getRemaining("moodLogs") === Infinity
+              ? "Unlimited mood logs"
+              : `${getRemaining("moodLogs")} of ${getLimit("moodLogs")} mood logs remaining`}
+          </p>
+        )}
+        <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 w-full sm:w-auto">
+          <Link href="/history" className="sm:hidden w-full">
+            <Button variant="outline">View History</Button>
+          </Link>
+          <Button
+            className="rounded-xl"
+            disabled={!selectedMood || createMutation.isPending || isAtLimit("moodLogs")}
+            onClick={handleSubmit}
+            data-testid="button-save-mood"
+          >
+            {createMutation.isPending ? (
+              <>
+                <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                Saving...
+              </>
+            ) : (
+              "Save Check-in"
+            )}
+          </Button>
+        </div>
       </div>
 
       <Dialog open={showFeedbackDialog} onOpenChange={setShowFeedbackDialog}>

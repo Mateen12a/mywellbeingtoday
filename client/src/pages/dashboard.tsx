@@ -47,6 +47,8 @@ import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
 import { ReportDownloadButton } from "@/components/report-download-button";
+import { Progress } from "@/components/ui/progress";
+import { useSubscription } from "@/hooks/useSubscription";
 
 function isValidDate(date: any): boolean {
   if (!date) return false;
@@ -279,6 +281,19 @@ function getMostCommonActivity(activities: any[]): string | null {
 
 export default function Dashboard() {
   const { user, isLoading: authLoading } = useAuth();
+  const {
+    planName,
+    isOnTrial,
+    trialDaysRemaining,
+    isFreePlan,
+    isPaidPlan,
+    isLoading: subLoading,
+    usagePercentage,
+    getUsed,
+    getLimit,
+    featuresNearLimit,
+    featureLabels,
+  } = useSubscription();
   
   const firstName = user?.profile?.firstName || "there";
   const userInitials = (user?.profile?.firstName?.[0]?.toUpperCase() || "") + (user?.profile?.lastName?.[0]?.toUpperCase() || "");
@@ -637,6 +652,112 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {!subLoading && user?.role === "user" && (
+        <>
+          {isOnTrial && (
+            <Alert className="bg-blue-50 border-blue-200 text-blue-900 shadow-sm p-3 sm:p-4">
+              <AlertCircle className="h-4 w-4 mt-0.5 text-blue-600" />
+              <AlertTitle className="font-bold ml-2 text-sm sm:text-base">
+                You're on a free trial — {trialDaysRemaining} day{trialDaysRemaining !== 1 ? "s" : ""} remaining
+              </AlertTitle>
+              <AlertDescription className="ml-6 mt-1 text-xs sm:text-sm">
+                {featuresNearLimit.length > 0 && (
+                  <span className="block mb-2">
+                    {featuresNearLimit.map((f) => (
+                      <span key={f} className="block text-amber-700 font-medium">
+                        You've used {getUsed(f)} of {getLimit(f)} {featureLabels[f]} this month
+                      </span>
+                    ))}
+                  </span>
+                )}
+                Explore all features before your trial ends.
+                <div className="mt-2">
+                  <Link href="/subscription">
+                    <Button size="sm" variant="outline" className="bg-white border-blue-200 text-blue-700 text-xs sm:text-sm">
+                      View Plans
+                    </Button>
+                  </Link>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {!isOnTrial && isFreePlan && (
+            <Alert className="bg-amber-50 border-amber-200 text-amber-900 shadow-sm p-3 sm:p-4">
+              <AlertCircle className="h-4 w-4 mt-0.5 text-amber-600" />
+              <AlertTitle className="font-bold ml-2 text-sm sm:text-base">
+                You're on the Free plan
+              </AlertTitle>
+              <AlertDescription className="ml-6 mt-1 text-xs sm:text-sm">
+                {featuresNearLimit.length > 0 && (
+                  <span className="block mb-2">
+                    {featuresNearLimit.map((f) => (
+                      <span key={f} className="block text-amber-700 font-medium">
+                        You've used {getUsed(f)} of {getLimit(f)} {featureLabels[f]} this month
+                      </span>
+                    ))}
+                  </span>
+                )}
+                Upgrade to unlock more features and higher limits.
+                <div className="mt-2">
+                  <Link href="/subscription">
+                    <Button size="sm" variant="outline" className="bg-white border-amber-200 text-amber-700 text-xs sm:text-sm">
+                      Upgrade Plan
+                    </Button>
+                  </Link>
+                </div>
+              </AlertDescription>
+            </Alert>
+          )}
+
+          {isPaidPlan && (
+            <div className="flex items-center gap-2">
+              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-green-50 border border-green-200 text-green-700 text-xs sm:text-sm font-semibold">
+                <span className="h-2 w-2 rounded-full bg-green-500" />
+                {planName} Plan
+              </span>
+            </div>
+          )}
+
+          <Card className="border-gray-200 shadow-sm">
+            <CardHeader className="pb-2 pt-4 px-4 sm:px-6">
+              <div className="flex items-center justify-between">
+                <CardTitle className="text-sm sm:text-base font-bold text-black">Monthly Usage</CardTitle>
+                <Link href="/subscription">
+                  <Button variant="ghost" size="sm" className="text-xs text-primary font-semibold h-7">
+                    Details <ChevronRight className="w-3 h-3 ml-0.5" />
+                  </Button>
+                </Link>
+              </div>
+            </CardHeader>
+            <CardContent className="px-4 sm:px-6 pb-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+                {(["activityLogs", "moodLogs", "reportDownloads", "directoryAccess", "aiInteractions"] as const).map((feature) => {
+                  const used = getUsed(feature);
+                  const limit = getLimit(feature);
+                  const pct = usagePercentage(feature);
+                  const unlimited = limit === -1;
+                  return (
+                    <div key={feature} className="space-y-1.5">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-medium text-gray-600 truncate">{featureLabels[feature]}</span>
+                        <span className={`font-semibold tabular-nums ${pct >= 100 ? "text-red-600" : pct >= 75 ? "text-amber-600" : "text-gray-900"}`}>
+                          {unlimited ? `${used} / ∞` : `${used} / ${limit}`}
+                        </span>
+                      </div>
+                      <Progress
+                        value={unlimited ? 0 : pct}
+                        className={`h-1.5 ${pct >= 100 ? "[&>div]:bg-red-500 bg-red-100" : pct >= 75 ? "[&>div]:bg-amber-500 bg-amber-100" : "[&>div]:bg-primary bg-primary/20"}`}
+                      />
+                    </div>
+                  );
+                })}
+              </div>
+            </CardContent>
+          </Card>
+        </>
+      )}
 
       {userStatus === "suspended" && (
         <Alert variant="destructive" className="bg-red-50 border-red-200 text-red-900 shadow-sm p-3 sm:p-4">

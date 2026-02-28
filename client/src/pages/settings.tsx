@@ -1,12 +1,12 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Bell, Lock, LockOpen, CreditCard, Globe, Check, Shield, Heart, Upload, Loader2, Key, Clock, Headphones, MessageSquare, CircleCheck, AlertCircle, Send } from "lucide-react";
+import { User, Bell, Lock, LockOpen, CreditCard, Globe, Shield, Upload, Loader2, Key, Clock, Headphones, MessageSquare, CircleCheck, AlertCircle, Send, ArrowUpRight } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
@@ -18,6 +18,7 @@ import api from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PhoneInput } from "@/components/ui/phone-input";
+import { useSubscription } from "@/hooks/useSubscription";
 
 const UNLOCK_DURATION_MS = 5 * 60 * 1000;
 
@@ -195,61 +196,140 @@ const ContactSupportSection = () => {
   );
 };
 
-const SubscriptionPlan = ({  
-  title, 
-  price, 
-  currency, 
-  features, 
-  popular = false, 
-  current = false 
-}: { 
-  title: string, 
-  price: number, 
-  currency: string, 
-  features: string[], 
-  popular?: boolean, 
-  current?: boolean 
-}) => {
-  const formatPrice = (p: number, c: string) => {
-    switch(c) {
-      case "EUR": return `€${p}`;
-      case "GBP": return `£${p}`;
-      case "JPY": return `¥${p * 100}`;
-      default: return `$${p}`;
-    }
-  };
+const PLAN_BADGE_COLORS: Record<string, string> = {
+  free: "bg-gray-100 text-gray-800 border-gray-200",
+  starter: "bg-blue-100 text-blue-800 border-blue-200",
+  pro: "bg-purple-100 text-purple-800 border-purple-200",
+  premium: "bg-amber-100 text-amber-800 border-amber-200",
+  team: "bg-teal-100 text-teal-800 border-teal-200",
+  franchise: "bg-rose-100 text-rose-800 border-rose-200",
+};
+
+const STATUS_BADGE_COLORS: Record<string, string> = {
+  active: "bg-green-100 text-green-800",
+  trial: "bg-blue-100 text-blue-800",
+  cancelled: "bg-red-100 text-red-800",
+  expired: "bg-gray-100 text-gray-600",
+};
+
+const SubscriptionBillingSection = () => {
+  const {
+    plan,
+    planName,
+    status,
+    isOnTrial,
+    trialDaysRemaining,
+    isFreePlan,
+    isLoading,
+    usagePercentage,
+    getUsed,
+    getLimit,
+    featureLabels,
+  } = useSubscription();
+
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center py-12">
+        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+      </div>
+    );
+  }
+
+  const featureKeys = Object.keys(featureLabels);
 
   return (
-    <Card className={`relative flex flex-col transition-transform ${popular ? 'border-primary shadow-lg sm:scale-105 sm:z-10' : 'border-border'}`}>
-      {popular && (
-        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground text-xs font-bold px-2 sm:px-3 py-1 rounded-full whitespace-nowrap">
-          Most Popular
-        </div>
-      )}
-      <CardHeader className="pb-3 sm:pb-4">
-        <CardTitle className="text-lg sm:text-xl">{title}</CardTitle>
-        <div className="mt-2">
-          <span className="text-2xl sm:text-3xl font-bold">{formatPrice(price, currency)}</span>
-          <span className="text-muted-foreground text-sm">/month</span>
-        </div>
-        {current && <Badge variant="secondary" className="w-fit mt-2">Current Plan</Badge>}
-      </CardHeader>
-      <CardContent className="flex-1 space-y-3 sm:space-y-4 px-4 sm:px-6 py-0">
-        <ul className="space-y-2">
-          {features.map((feature, i) => (
-            <li key={i} className="flex items-start gap-2 text-xs sm:text-sm">
-              <Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 mt-0.5 shrink-0" />
-              <span>{feature}</span>
-            </li>
-          ))}
-        </ul>
-      </CardContent>
-      <CardFooter className="pt-3 sm:pt-4 px-4 sm:px-6">
-        <Button className="w-full" size="sm" variant={current ? "outline" : popular ? "default" : "secondary"}>
-          {current ? "Manage Plan" : "Upgrade"}
-        </Button>
-      </CardFooter>
-    </Card>
+    <div className="space-y-6">
+      <Card>
+        <CardHeader>
+          <CardTitle className="flex items-center gap-2">
+            <CreditCard className="h-5 w-5" />
+            Subscription & Billing
+          </CardTitle>
+          <CardDescription>View your current plan, usage, and manage your subscription.</CardDescription>
+        </CardHeader>
+        <CardContent className="space-y-6">
+          <div className="flex flex-col sm:flex-row sm:items-center gap-4 sm:gap-6">
+            <div className="space-y-2">
+              <Label className="text-sm text-muted-foreground">Current Plan</Label>
+              <div className="flex items-center gap-2">
+                <Badge className={`text-sm px-3 py-1 ${PLAN_BADGE_COLORS[plan] || PLAN_BADGE_COLORS.free}`}>
+                  {planName}
+                </Badge>
+              </div>
+            </div>
+            <div className="space-y-2">
+              <Label className="text-sm text-muted-foreground">Status</Label>
+              <div className="flex items-center gap-2">
+                <Badge variant="secondary" className={STATUS_BADGE_COLORS[status] || STATUS_BADGE_COLORS.active}>
+                  {status.charAt(0).toUpperCase() + status.slice(1)}
+                </Badge>
+              </div>
+            </div>
+            {isOnTrial && (
+              <div className="space-y-2">
+                <Label className="text-sm text-muted-foreground">Trial Remaining</Label>
+                <div className="flex items-center gap-2">
+                  <Badge variant="secondary" className="bg-blue-50 text-blue-700">
+                    <Clock className="h-3 w-3 mr-1" />
+                    {trialDaysRemaining} day{trialDaysRemaining !== 1 ? 's' : ''} left
+                  </Badge>
+                </div>
+              </div>
+            )}
+          </div>
+
+          <div className="border-t pt-6">
+            <h4 className="font-medium mb-4">Monthly Usage</h4>
+            <div className="space-y-4">
+              {featureKeys.map((feature) => {
+                const used = getUsed(feature);
+                const limit = getLimit(feature);
+                const percentage = usagePercentage(feature);
+                const isUnlimited = limit === -1;
+
+                return (
+                  <div key={feature} className="space-y-1.5">
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted-foreground">{featureLabels[feature]}</span>
+                      <span className="font-medium">
+                        {isUnlimited ? `${used} used` : `${used} / ${limit}`}
+                      </span>
+                    </div>
+                    {!isUnlimited && (
+                      <Progress
+                        value={percentage}
+                        className={`h-2 ${percentage >= 100 ? '[&>div]:bg-red-500' : percentage >= 75 ? '[&>div]:bg-amber-500' : ''}`}
+                      />
+                    )}
+                    {isUnlimited && (
+                      <div className="text-xs text-green-600 font-medium">Unlimited</div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="border-t pt-6 flex flex-col sm:flex-row gap-3">
+            <Link href="/subscription">
+              <Button variant="outline" className="w-full sm:w-auto gap-2">
+                <CreditCard className="h-4 w-4" />
+                Manage Subscription
+                <ArrowUpRight className="h-3 w-3" />
+              </Button>
+            </Link>
+            {(isFreePlan || plan === "starter") && (
+              <Link href="/subscription">
+                <Button className="w-full sm:w-auto gap-2">
+                  <ArrowUpRight className="h-4 w-4" />
+                  Upgrade Plan
+                </Button>
+              </Link>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 
@@ -257,7 +337,6 @@ export default function Settings() {
   const { user, refreshUser } = useAuth();
   const { toast } = useToast();
   const queryClient = useQueryClient();
-  const [currency, setCurrency] = useState("GBP");
   
   const [location] = useLocation();
   const getTabFromUrl = () => {
@@ -1149,74 +1228,7 @@ export default function Settings() {
         </TabsContent>
 
         <TabsContent value="billing" className="space-y-4 sm:space-y-6">
-           <div className="flex flex-col sm:flex-row sm:justify-end sm:items-center gap-2 sm:gap-3">
-              <Label className="text-muted-foreground text-sm">Currency:</Label>
-              <Select value={currency} onValueChange={setCurrency}>
-                <SelectTrigger className="w-full sm:w-[120px]">
-                   <Globe className="h-3 w-3 mr-2" />
-                   <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="USD">USD ($)</SelectItem>
-                  <SelectItem value="EUR">EUR (€)</SelectItem>
-                  <SelectItem value="GBP">GBP (£)</SelectItem>
-                  <SelectItem value="JPY">JPY (¥)</SelectItem>
-                </SelectContent>
-              </Select>
-           </div>
-
-           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 items-end">
-              <SubscriptionPlan 
-                title="Free"
-                price={0}
-                currency={currency}
-                features={[
-                  "Daily Mood Tracking",
-                  "Basic Activity Logging",
-                  "Access to Directory",
-                  "7-Day History"
-                ]}
-                current={profileData?.subscription?.plan === 'free' || !profileData?.subscription?.plan}
-              />
-              <SubscriptionPlan 
-                title="Premium"
-                price={9.99}
-                currency={currency}
-                features={[
-                  "Unlimited History",
-                  "Advanced Analytics",
-                  "Practitioner Chat",
-                  "Custom Reports",
-                  "Priority Support"
-                ]}
-                popular={true}
-                current={profileData?.subscription?.plan === 'premium'}
-              />
-               <SubscriptionPlan 
-                title="Family"
-                price={19.99}
-                currency={currency}
-                features={[
-                  "Up to 5 Accounts",
-                  "Family Dashboard",
-                  "All Premium Features",
-                  "Parental Controls"
-                ]}
-                current={profileData?.subscription?.plan === 'family'}
-              />
-           </div>
-
-           <Card className="mt-6 sm:mt-8 bg-muted/30 border-dashed">
-              <CardContent className="p-3 sm:p-6">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3 sm:gap-4">
-                   <div className="space-y-1">
-                      <h4 className="font-medium text-sm sm:text-base">Need Enterprise Access?</h4>
-                      <p className="text-xs sm:text-sm text-muted-foreground">For organizations, schools, and healthcare providers.</p>
-                   </div>
-                   <Button variant="outline" size="sm" className="w-full sm:w-auto">Contact Sales</Button>
-                </div>
-              </CardContent>
-           </Card>
+          <SubscriptionBillingSection />
         </TabsContent>
 
         <TabsContent value="support" className="space-y-6">

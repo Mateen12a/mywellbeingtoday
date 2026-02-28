@@ -27,6 +27,8 @@ import { useLocation } from "wouter";
 import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import { SkeletonCard, FadeInContent } from "@/components/ui/skeleton-card";
+import { useSubscription } from "@/hooks/useSubscription";
+import { UpgradePrompt } from "@/components/upgrade-prompt";
 
 const ACTIVITY_CATEGORIES = [
   { value: 'exercise', label: 'Exercise', icon: Dumbbell, color: 'orange' },
@@ -123,6 +125,7 @@ export default function ActivityLog() {
   const [, setLocation] = useLocation();
   const queryClient = useQueryClient();
   const { toast } = useToast();
+  const { plan, isNearLimit, isAtLimit, getRemaining, getLimit } = useSubscription();
 
   const [date, setDate] = useState<Date | undefined>(new Date());
   const [time, setTime] = useState(getCurrentTime());
@@ -632,10 +635,29 @@ export default function ActivityLog() {
             />
           </div>
 
-          <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row justify-end gap-2">
+          {isAtLimit("activityLogs") && (
+            <UpgradePrompt
+              feature="activityLogs"
+              currentPlan={plan}
+              limit={getLimit("activityLogs")}
+            />
+          )}
+
+          <div className="pt-2 sm:pt-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+            {!isAtLimit("activityLogs") && (
+              <p className={cn(
+                "text-xs",
+                isNearLimit("activityLogs") ? "text-amber-600 font-medium" : "text-muted-foreground"
+              )}>
+                {isNearLimit("activityLogs") && <AlertCircle className="inline w-3 h-3 mr-1" />}
+                {getRemaining("activityLogs") === Infinity
+                  ? "Unlimited activity logs"
+                  : `${getRemaining("activityLogs")} of ${getLimit("activityLogs")} activity logs remaining`}
+              </p>
+            )}
             <Button 
               onClick={handleSave} 
-              disabled={!title || !date || !category || createMutation.isPending} 
+              disabled={!title || !date || !category || createMutation.isPending || isAtLimit("activityLogs")} 
               className="w-full sm:w-auto"
               data-testid="button-save-activity"
             >
