@@ -702,27 +702,61 @@ Return a JSON object with: suggestions (array of 3 activity strings), reasoning 
 export async function generateMoodFeedback(moodEntry, recentMoods) {
   const fallback = { 
     feedback: 'Thank you for logging your mood. Tracking helps you understand patterns.', 
-    tips: ['Keep tracking daily', 'Notice what affects your mood'], 
-    encouragement: 'Every check-in counts!',
-    source: 'fallback' 
+    insight: 'Regular mood tracking reveals patterns over time that can guide your wellbeing journey.',
+    copingTip: 'Try a 5-minute breathing exercise: breathe in for 4 counts, hold for 4, out for 6.',
+    encouragement: 'Every check-in is a step towards understanding yourself better. Keep going!',
+    generatedBy: 'rules' 
   };
   
   if (!model) return fallback;
   
   try {
+    const moodTrend = recentMoods?.length > 1 
+      ? recentMoods.slice(0, 5).map(m => `${m.mood} (${m.moodScore}/10)`).join(' → ')
+      : 'First entry';
+    
+    const factors = moodEntry.factors?.length > 0 ? moodEntry.factors.join(', ') : 'not specified';
+    const energy = moodEntry.energyLevel ? `${moodEntry.energyLevel}/10` : 'not recorded';
+    const anxiety = moodEntry.anxietyLevel ? `${moodEntry.anxietyLevel}/10` : 'not recorded';
+    const notes = moodEntry.notes || 'none';
+    const timeOfDay = moodEntry.timeOfDay || 'not specified';
+
     const prompt = `${AI_PERSONA}
 
-The user just logged: ${moodEntry.mood} (Score: ${moodEntry.moodScore}/10, Stress: ${moodEntry.stressLevel}/10)
-Recent moods: ${recentMoods?.slice(0, 5).map(m => m.mood).join(', ') || 'First entry'}
+The user just logged their mood. Provide warm, personalized, and genuinely helpful feedback.
 
-Provide supportive feedback as a JSON object with: feedback (empathetic response), tips (array of 2 tips), encouragement (motivating closing)`;
+CURRENT MOOD ENTRY:
+- Mood: ${moodEntry.mood} (Score: ${moodEntry.moodScore}/10)
+- Stress: ${moodEntry.stressLevel}/10
+- Energy: ${energy}
+- Anxiety: ${anxiety}
+- Factors: ${factors}
+- Time of day: ${timeOfDay}
+- Notes: ${notes}
+
+RECENT MOOD HISTORY (newest first):
+${moodTrend}
+
+INSTRUCTIONS:
+- feedback: An empathetic, warm response acknowledging how they feel. Reference their specific mood, factors, and any patterns you notice. Be genuine, not generic.
+- insight: A meaningful observation about their wellbeing pattern or what their data reveals. If this is their first entry, comment on the value of starting to track.
+- copingTip: A specific, practical, actionable coping strategy tailored to their current mood and stress level. Not generic — relate it to their situation.
+- encouragement: A genuinely motivating closing message that feels personal. Avoid cliches like "keep it up" — be creative and warm.
+
+Respond with a JSON object:
+{
+  "feedback": "...",
+  "insight": "...",
+  "copingTip": "...",
+  "encouragement": "..."
+}`;
 
     const result = await model.generateContent(prompt);
     const text = result.response.text();
     const jsonMatch = text.match(/\{[\s\S]*\}/);
     
     if (jsonMatch) {
-      return { ...JSON.parse(jsonMatch[0]), source: 'ai' };
+      return { ...JSON.parse(jsonMatch[0]), generatedBy: 'ai' };
     }
     return fallback;
   } catch {

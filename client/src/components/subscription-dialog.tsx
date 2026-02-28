@@ -158,6 +158,8 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
       return response.data;
     },
     enabled: isAuthenticated && open,
+    staleTime: 0,
+    refetchOnMount: "always",
   });
 
   const startTrialMutation = useMutation({

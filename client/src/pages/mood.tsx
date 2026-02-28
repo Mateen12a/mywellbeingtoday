@@ -796,16 +796,9 @@ export default function MoodTracker() {
           {aiFeedback && (
             <div className="space-y-3 my-2">
               <div className="flex justify-center">
-                <Badge
-                  variant={
-                    aiFeedback.generatedBy === "ai" ? "default" : "secondary"
-                  }
-                  className="gap-1"
-                >
+                <Badge variant="default" className="gap-1">
                   <Bot className="w-3 h-3" />
-                  {aiFeedback.generatedBy === "ai"
-                    ? "AI Generated"
-                    : "Rule-based"}
+                  AI Personalized
                 </Badge>
               </div>
 
@@ -817,7 +810,7 @@ export default function MoodTracker() {
                     </div>
                     <div>
                       <h4 className="font-bold text-green-900 text-sm">
-                        Feedback
+                        How You're Doing
                       </h4>
                       <p className="text-xs text-green-800 mt-1">
                         {aiFeedback.feedback}
@@ -835,7 +828,7 @@ export default function MoodTracker() {
                     </div>
                     <div>
                       <h4 className="font-bold text-blue-900 text-sm">
-                        Insight
+                        Pattern Insight
                       </h4>
                       <p className="text-xs text-blue-800 mt-1">
                         {aiFeedback.insight}
@@ -853,7 +846,7 @@ export default function MoodTracker() {
                     </div>
                     <div>
                       <h4 className="font-bold text-purple-900 text-sm">
-                        Coping Tip
+                        Try This
                       </h4>
                       <p className="text-xs text-purple-800 mt-1">
                         {aiFeedback.copingTip}
@@ -871,7 +864,7 @@ export default function MoodTracker() {
                     </div>
                     <div>
                       <h4 className="font-bold text-amber-900 text-sm">
-                        Encouragement
+                        Keep Going
                       </h4>
                       <p className="text-xs text-amber-800 mt-1">
                         {aiFeedback.encouragement}

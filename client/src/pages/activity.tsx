@@ -797,68 +797,82 @@ export default function ActivityLog() {
               )}
               
               {aiMoodSuggestion && !isFetchingMoodSuggestion && (
-                <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-100 rounded-lg p-3 animate-in fade-in slide-in-from-top-2 duration-300">
-                  <div className="flex items-start gap-2">
-                    <div className="bg-purple-100 p-1.5 rounded-full shrink-0">
-                      <Bot className="w-4 h-4 text-purple-600" />
+                <div className="bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg p-4 animate-in fade-in slide-in-from-top-2 duration-300">
+                  <div className="flex items-start gap-3">
+                    <div className="bg-purple-100 p-2 rounded-full shrink-0">
+                      <Bot className="w-5 h-5 text-purple-600" />
                     </div>
-                    <div className="flex-1 space-y-1.5">
+                    <div className="flex-1 space-y-2">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <span className="text-sm font-semibold text-purple-900">Suggested Mood:</span>
-                        <Badge 
-                          variant="default" 
-                          className="gap-1 text-xs"
-                          data-testid="badge-mood-suggestion-type"
+                        <span className="text-sm font-semibold text-purple-900">Based on your activity, you seem:</span>
+                      </div>
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-2xl">{MOOD_OPTIONS.find(m => m.value === aiMoodSuggestion.suggestedMood)?.emoji || '🙂'}</span>
+                        <span className="text-lg font-bold text-purple-800 capitalize">{aiMoodSuggestion.suggestedMood}</span>
+                        <Badge variant="default" className="gap-1 text-[10px]">
+                          <Sparkles className="w-2.5 h-2.5" />
+                          AI
+                        </Badge>
+                      </div>
+                      <p className="text-xs text-purple-700">{aiMoodSuggestion.rationale}</p>
+                      <Button
+                        onClick={() => {
+                          const mood = MOOD_OPTIONS.find(m => m.value === aiMoodSuggestion.suggestedMood);
+                          if (mood) handleMoodSelect(mood);
+                        }}
+                        className="w-full mt-2 bg-purple-600 hover:bg-purple-700 text-white gap-2"
+                        size="sm"
+                      >
+                        <CheckCircle className="w-4 h-4" />
+                        Confirm & Continue to Mood Tracking
+                      </Button>
+                      {aiMoodSuggestion.alternativeMood && (
+                        <button
+                          onClick={() => {
+                            const mood = MOOD_OPTIONS.find(m => m.value === aiMoodSuggestion.alternativeMood);
+                            if (mood) handleMoodSelect(mood);
+                          }}
+                          className="w-full text-xs text-purple-600 hover:text-purple-800 underline underline-offset-2"
                         >
-                          <Sparkles className="w-3 h-3" />
-                          AI Generated
-                        </Badge>
-                      </div>
-                      <div className="flex gap-2 flex-wrap">
-                        <Badge className="bg-purple-100 text-purple-700 border-purple-200 hover:bg-purple-200">
-                          {aiMoodSuggestion.suggestedMood}
-                        </Badge>
-                        {aiMoodSuggestion.alternativeMood && (
-                          <Badge variant="outline" className="text-purple-600 border-purple-200">
-                            or {aiMoodSuggestion.alternativeMood}
-                          </Badge>
-                        )}
-                      </div>
-                      <p className="text-xs text-purple-800 mt-1">{aiMoodSuggestion.rationale}</p>
-                      <p className="text-[10px] text-purple-500 mt-1.5 font-medium italic">Tap the highlighted mood below to confirm</p>
+                          I'm feeling more {aiMoodSuggestion.alternativeMood} instead
+                        </button>
+                      )}
                     </div>
                   </div>
                 </div>
               )}
 
-              <div className="grid grid-cols-3 gap-1 sm:gap-2">
-                {MOOD_OPTIONS.map((mood) => {
-                  const isSuggested = aiMoodSuggestion?.suggestedMood === mood.value;
-                  const isAlternative = aiMoodSuggestion?.alternativeMood === mood.value;
-                  const isSelected = selectedMood === mood.value;
-                  return (
-                    <button
-                      key={mood.value}
-                      onClick={() => handleMoodSelect(mood)}
-                      data-testid={`button-mood-quick-${mood.value}`}
-                      className={cn(
-                        "flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl border-2 transition-all duration-200 min-h-[80px] sm:min-h-[90px] touch-manipulation active:scale-95 relative",
-                        mood.color,
-                        isSelected && "ring-2 ring-purple-500 ring-offset-2 scale-105 shadow-lg border-purple-400",
-                        !isSelected && isSuggested && "ring-2 ring-purple-400 ring-offset-1",
-                        !isSelected && isAlternative && "ring-1 ring-purple-300"
-                      )}
-                    >
-                      {isSuggested && (
-                        <div className="absolute -top-2 -right-2 bg-purple-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5">
-                          <Sparkles className="w-2.5 h-2.5" /> AI
-                        </div>
-                      )}
-                      <span className="text-xl sm:text-2xl">{mood.emoji}</span>
-                      <span className="text-xs font-medium text-center leading-tight">{mood.label}</span>
-                    </button>
-                  );
-                })}
+              <div className="space-y-2">
+                <p className="text-[11px] text-muted-foreground text-center">Or choose a different mood:</p>
+                <div className="grid grid-cols-3 gap-1 sm:gap-2">
+                  {MOOD_OPTIONS.map((mood) => {
+                    const isSuggested = aiMoodSuggestion?.suggestedMood === mood.value;
+                    const isAlternative = aiMoodSuggestion?.alternativeMood === mood.value;
+                    const isSelected = selectedMood === mood.value;
+                    return (
+                      <button
+                        key={mood.value}
+                        onClick={() => handleMoodSelect(mood)}
+                        data-testid={`button-mood-quick-${mood.value}`}
+                        className={cn(
+                          "flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl border-2 transition-all duration-200 min-h-[80px] sm:min-h-[90px] touch-manipulation active:scale-95 relative",
+                          mood.color,
+                          isSelected && "ring-2 ring-purple-500 ring-offset-2 scale-105 shadow-lg border-purple-400",
+                          !isSelected && isSuggested && "ring-2 ring-purple-400 ring-offset-1",
+                          !isSelected && isAlternative && "ring-1 ring-purple-300"
+                        )}
+                      >
+                        {isSuggested && (
+                          <div className="absolute -top-2 -right-2 bg-purple-500 text-white text-[10px] px-1.5 py-0.5 rounded-full font-bold flex items-center gap-0.5">
+                            <Sparkles className="w-2.5 h-2.5" /> AI
+                          </div>
+                        )}
+                        <span className="text-xl sm:text-2xl">{mood.emoji}</span>
+                        <span className="text-xs font-medium text-center leading-tight">{mood.label}</span>
+                      </button>
+                    );
+                  })}
+                </div>
               </div>
             </div>
           )}

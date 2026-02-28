@@ -179,7 +179,6 @@ function NotificationBell() {
 export default function Layout({ children }: { children: React.ReactNode }) {
   const [location, setLocation] = useLocation();
   const [isOpen, setIsOpen] = useState(false);
-  const [showMobileTitle, setShowMobileTitle] = useState(false);
   const { isAuthenticated, logout, user } = useAuth();
 
   const [showPushBanner, setShowPushBanner] = useState(false);
@@ -239,36 +238,6 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     localStorage.setItem('push_banner_dismissed_at', Date.now().toString());
   }, []);
 
-  // Typing effect logic for mobile/tablet dashboard
-  useEffect(() => {
-    // Only run on dashboard/authenticated views and on smaller screens (handled by CSS/conditional rendering)
-    if (!isAuthenticated) return;
-
-    let intervalId: NodeJS.Timeout;
-
-    // Start with title visible
-    setShowMobileTitle(true);
-
-    const blinkOff = () => {
-      setShowMobileTitle(false);
-      // Show it back after 2s
-      setTimeout(() => setShowMobileTitle(true), 2000);
-    };
-
-    // First blink off happens after 10s
-    const initialTimeout = setTimeout(() => {
-      blinkOff();
-
-      // Then repeat every 12s (10s on + 2s off)
-      intervalId = setInterval(blinkOff, 12000);
-    }, 10000);
-
-    return () => {
-      clearTimeout(initialTimeout);
-      if (intervalId) clearInterval(intervalId);
-    };
-  }, [isAuthenticated]);
-
   if (isAdmin || isProvider || isAdminLogin) {
     return (
       <div className="min-h-screen bg-background font-sans">
@@ -318,27 +287,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                 className="h-10 w-10 aspect-square object-cover rounded-2xl"
               />
 
-              {/* Desktop Title */}
-              <span className="font-serif font-bold text-lg text-primary tracking-tight hidden xl:block">
+              <span className="font-serif font-bold text-sm sm:text-base xl:text-lg text-primary tracking-tight whitespace-nowrap">
                 mywellbeingtoday
               </span>
-
-              {/* Mobile/Tablet Title with Typing Effect */}
-              <div className="xl:hidden h-6 flex items-center max-w-[140px] sm:max-w-[180px] overflow-hidden">
-                <AnimatePresence>
-                  {(showMobileTitle || !isAuthenticated) && (
-                    <motion.span
-                      initial={{ opacity: 0, width: 0 }}
-                      animate={{ opacity: 1, width: "auto" }}
-                      exit={{ opacity: 0, width: 0 }}
-                      transition={{ duration: 0.8, ease: "easeOut" }}
-                      className="font-serif font-bold text-sm sm:text-base text-primary tracking-tight overflow-hidden whitespace-nowrap"
-                    >
-                      mywellbeingtoday
-                    </motion.span>
-                  )}
-                </AnimatePresence>
-              </div>
             </div>
           </Link>
 
@@ -457,6 +408,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                             className="w-full justify-start"
                           >
                             Home
+                          </Button>
+                        </Link>
+                        <Link href="/about" onClick={() => setIsOpen(false)}>
+                          <Button
+                            variant="ghost"
+                            className="w-full justify-start"
+                          >
+                            About
                           </Button>
                         </Link>
                         <Link
