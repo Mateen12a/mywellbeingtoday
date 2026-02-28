@@ -17,8 +17,9 @@ import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import {
   Check, Clock, Crown, AlertCircle, Loader2, LogIn,
-  Activity, Brain, FileText, Search, Bot, Users, Building2, Star, Zap, Mail, X,
+  Activity, Brain, FileText, Search, Bot, Users, Building2, Star, Zap, Mail,
 } from "lucide-react";
+import { CLIENT_PLAN_LIMITS } from "@/hooks/useSubscription";
 
 const PLAN_DETAILS = {
   free: {
@@ -356,7 +357,7 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {Object.entries(USAGE_LABELS).map(([key, { label, icon: Icon }]) => {
                       const used = usageData.usage?.[key] ?? 0;
-                      const limit = usageData.limits?.[key] ?? planLimits?.[currentPlan]?.[key] ?? -1;
+                      const limit = usageData.limits?.[key] ?? planLimits?.[currentPlan]?.[key] ?? CLIENT_PLAN_LIMITS[currentPlan]?.[key] ?? CLIENT_PLAN_LIMITS.free[key];
                       const isUnlimited = limit === -1;
                       const percentage = isUnlimited ? 0 : limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
 

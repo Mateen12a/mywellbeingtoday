@@ -19,6 +19,51 @@ const PLAN_NAMES: Record<string, string> = {
   franchise: "Franchise",
 };
 
+export const CLIENT_PLAN_LIMITS: Record<string, Record<string, number>> = {
+  free: {
+    activityLogs: 2,
+    moodLogs: 2,
+    reportDownloads: 1,
+    directoryAccess: 2,
+    aiInteractions: 2,
+  },
+  starter: {
+    activityLogs: 10,
+    moodLogs: 10,
+    reportDownloads: 3,
+    directoryAccess: 10,
+    aiInteractions: 10,
+  },
+  pro: {
+    activityLogs: -1,
+    moodLogs: -1,
+    reportDownloads: -1,
+    directoryAccess: -1,
+    aiInteractions: -1,
+  },
+  premium: {
+    activityLogs: -1,
+    moodLogs: -1,
+    reportDownloads: -1,
+    directoryAccess: -1,
+    aiInteractions: -1,
+  },
+  team: {
+    activityLogs: -1,
+    moodLogs: -1,
+    reportDownloads: -1,
+    directoryAccess: -1,
+    aiInteractions: -1,
+  },
+  franchise: {
+    activityLogs: -1,
+    moodLogs: -1,
+    reportDownloads: -1,
+    directoryAccess: -1,
+    aiInteractions: -1,
+  },
+};
+
 export function useSubscription() {
   const { isAuthenticated, user } = useAuth();
 
@@ -59,11 +104,12 @@ export function useSubscription() {
   };
 
   const limits = usageData?.data?.limits ||
-    planLimits?.[plan] || null;
+    planLimits?.[plan] ||
+    CLIENT_PLAN_LIMITS[plan] ||
+    CLIENT_PLAN_LIMITS.free;
 
   function getLimit(feature: string): number {
-    if (!limits) return -1;
-    return (limits as Record<string, number>)[feature] ?? -1;
+    return (limits as Record<string, number>)[feature] ?? CLIENT_PLAN_LIMITS.free[feature] ?? 2;
   }
 
   function getUsed(feature: string): number {
