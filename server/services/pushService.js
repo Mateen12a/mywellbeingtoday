@@ -6,16 +6,23 @@ const vapidPublicKey = process.env.VAPID_PUBLIC_KEY;
 const vapidPrivateKey = process.env.VAPID_PRIVATE_KEY;
 const vapidSubject = process.env.VAPID_SUBJECT || 'mailto:support@mywellbeingtoday.com';
 
+let pushEnabled = false;
 if (vapidPublicKey && vapidPrivateKey) {
-  webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
-  console.log('[PUSH] Web push configured with VAPID keys');
+  try {
+    webpush.setVapidDetails(vapidSubject, vapidPublicKey, vapidPrivateKey);
+    pushEnabled = true;
+    console.log('[PUSH] Web push configured with VAPID keys');
+  } catch (error) {
+    console.error('[PUSH] Failed to configure VAPID keys:', error.message);
+    console.error('[PUSH] Push notifications disabled. Please check your VAPID_PUBLIC_KEY and VAPID_PRIVATE_KEY values.');
+  }
 } else {
   console.log('[PUSH] VAPID keys not configured - push notifications disabled');
 }
 
 export async function sendPushNotification(userId, { title, body, icon = '/icon-192.png', badge = '/icon-192.png', url = '/', tag = '' }) {
-  if (!vapidPublicKey || !vapidPrivateKey) {
-    console.log('[PUSH] Push notification skipped (VAPID keys not configured):', { userId: userId.toString(), title });
+  if (!pushEnabled) {
+    console.log('[PUSH] Push notification skipped (push not configured):', { userId: userId.toString(), title });
     return;
   }
 

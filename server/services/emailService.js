@@ -9,10 +9,12 @@ const SENDER_EMAIL = `mywellbeingtoday <${process.env.RESEND_SENDER_EMAIL || 'on
 
 const LOGO_CID = 'logo@mywellbeingtoday';
 let LOGO_BUFFER = null;
+let LOGO_BASE64_URI = null;
 try {
   const logoPath = path.resolve('client/public/logo5.png');
   if (fs.existsSync(logoPath)) {
     LOGO_BUFFER = fs.readFileSync(logoPath);
+    LOGO_BASE64_URI = `data:image/png;base64,${LOGO_BUFFER.toString('base64')}`;
   }
 } catch (e) {
   console.log('[EMAIL SERVICE] Could not load logo file:', e.message);
@@ -28,12 +30,15 @@ function getLogoAttachments() {
 }
 
 function getBaseUrl() {
-  if (process.env.REPLIT_DOMAINS) {
-    const domain = process.env.REPLIT_DOMAINS.split(',')[0].trim();
-    return `https://${domain}`;
+  if (process.env.RENDER_EXTERNAL_URL) {
+    return process.env.RENDER_EXTERNAL_URL.replace(/\/$/, '');
   }
   if (process.env.APP_URL) {
     return process.env.APP_URL.replace(/\/$/, '');
+  }
+  if (process.env.REPLIT_DOMAINS) {
+    const domain = process.env.REPLIT_DOMAINS.split(',')[0].trim();
+    return `https://${domain}`;
   }
   return `http://localhost:${process.env.PORT || 5000}`;
 }
@@ -50,7 +55,7 @@ const COLORS = {
 
 const FONT_STACK = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
 
-const LOGO_IMG_SRC = `${getBaseUrl()}/api/logo`;
+const LOGO_IMG_SRC = LOGO_BASE64_URI || `${getBaseUrl()}/api/logo`;
 
 const createEmailHeader = () => `
 <!--[if mso]>

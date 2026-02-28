@@ -1,0 +1,120 @@
+GET https://mywellbeingtoday.onrender.com/api/notifications/unread-count 404 (Not Found)
+request @ index-BrjSav3H.js:9
+getUnreadNotificationCount @ index-BrjSav3H.js:9
+queryFn @ index-BrjSav3H.js:61
+s @ index-BrjSav3H.js:9
+N @ index-BrjSav3H.js:9
+start @ index-BrjSav3H.js:9
+fetch @ index-BrjSav3H.js:9
+#d @ index-BrjSav3H.js:9
+onSubscribe @ index-BrjSav3H.js:9
+subscribe @ index-BrjSav3H.js:9
+(anonymous) @ index-BrjSav3H.js:9
+ky @ index-BrjSav3H.js:8
+Ry @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+OL @ index-BrjSav3H.js:8
+M1 @ index-BrjSav3H.js:8
+FL @ index-BrjSav3H.js:8
+Uy @ index-BrjSav3H.js:8
+TL @ index-BrjSav3H.js:8
+AL @ index-BrjSav3H.js:8
+vL @ index-BrjSav3H.js:8
+yL @ index-BrjSav3H.js:8
+IL @ index-BrjSav3H.js:8
+B @ index-BrjSav3H.js:1Understand this error
+index-BrjSav3H.js:9  GET https://mywellbeingtoday.onrender.com/api/push/vapid-key 404 (Not Found)
+request @ index-BrjSav3H.js:9
+getVapidPublicKey @ index-BrjSav3H.js:9
+w_ @ index-BrjSav3H.js:61
+await in w_
+(anonymous) @ index-BrjSav3H.js:61
+setTimeout
+(anonymous) @ index-BrjSav3H.js:61
+Promise.then
+(anonymous) @ index-BrjSav3H.js:61
+Ry @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+OL @ index-BrjSav3H.js:8
+M1 @ index-BrjSav3H.js:8
+FL @ index-BrjSav3H.js:8
+Uy @ index-BrjSav3H.js:8
+TL @ index-BrjSav3H.js:8
+AL @ index-BrjSav3H.js:8
+vL @ index-BrjSav3H.js:8
+yL @ index-BrjSav3H.js:8
+IL @ index-BrjSav3H.js:8
+B @ index-BrjSav3H.js:1Understand this error
+index-BrjSav3H.js:61 [Push] Subscription failed: SyntaxError: Unexpected token '<', "<!DOCTYPE "... is not valid JSON
+w_ @ index-BrjSav3H.js:61
+await in w_
+(anonymous) @ index-BrjSav3H.js:61
+setTimeout
+(anonymous) @ index-BrjSav3H.js:61
+Promise.then
+(anonymous) @ index-BrjSav3H.js:61
+Ry @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+Mu @ index-BrjSav3H.js:8
+uL @ index-BrjSav3H.js:8
+OL @ index-BrjSav3H.js:8
+M1 @ index-BrjSav3H.js:8
+FL @ index-BrjSav3H.js:8
+Uy @ index-BrjSav3H.js:8
+TL @ index-BrjSav3H.js:8
+AL @ index-BrjSav3H.js:8
+vL @ index-BrjSav3H.js:8
+yL @ index-BrjSav3H.js:8
+IL @ index-BrjSav3H.js:8
+B @ index-BrjSav3H.js:1Understand this error
+index-BrjSav3H.js:9  GET https://mywellbeingtoday.onrender.com/api/notifications/unread-count 404 (Not Found)
