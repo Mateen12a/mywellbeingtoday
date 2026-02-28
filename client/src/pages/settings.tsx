@@ -19,6 +19,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { PhoneInput } from "@/components/ui/phone-input";
 import { useSubscription } from "@/hooks/useSubscription";
+import { useSubscriptionDialog } from "@/contexts/SubscriptionDialogContext";
 
 const UNLOCK_DURATION_MS = 5 * 60 * 1000;
 
@@ -226,6 +227,7 @@ const SubscriptionBillingSection = () => {
     getLimit,
     featureLabels,
   } = useSubscription();
+  const { openSubscriptionDialog } = useSubscriptionDialog();
 
   if (isLoading) {
     return (
@@ -311,20 +313,16 @@ const SubscriptionBillingSection = () => {
           </div>
 
           <div className="border-t pt-6 flex flex-col sm:flex-row gap-3">
-            <Link href="/subscription">
-              <Button variant="outline" className="w-full sm:w-auto gap-2">
-                <CreditCard className="h-4 w-4" />
-                Manage Subscription
-                <ArrowUpRight className="h-3 w-3" />
-              </Button>
-            </Link>
+            <Button variant="outline" className="w-full sm:w-auto gap-2" onClick={openSubscriptionDialog}>
+              <CreditCard className="h-4 w-4" />
+              Manage Subscription
+              <ArrowUpRight className="h-3 w-3" />
+            </Button>
             {(isFreePlan || plan === "starter") && (
-              <Link href="/subscription">
-                <Button className="w-full sm:w-auto gap-2">
-                  <ArrowUpRight className="h-4 w-4" />
-                  Upgrade Plan
-                </Button>
-              </Link>
+              <Button className="w-full sm:w-auto gap-2" onClick={openSubscriptionDialog}>
+                <ArrowUpRight className="h-4 w-4" />
+                Upgrade Plan
+              </Button>
             )}
           </div>
         </CardContent>

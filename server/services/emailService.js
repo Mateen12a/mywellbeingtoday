@@ -1,33 +1,10 @@
 import { Resend } from 'resend';
-import path from 'path';
-import fs from 'fs';
 
 const apiKey = process.env.RESEND_API_KEY;
 const resend = apiKey ? new Resend(apiKey) : null;
 
 const SENDER_EMAIL = `mywellbeingtoday <${process.env.RESEND_SENDER_EMAIL || 'onboarding@resend.dev'}>`;
 
-const LOGO_CID = 'logo@mywellbeingtoday';
-let LOGO_BUFFER = null;
-let LOGO_BASE64_URI = null;
-try {
-  const logoPath = path.resolve('client/public/logo5.png');
-  if (fs.existsSync(logoPath)) {
-    LOGO_BUFFER = fs.readFileSync(logoPath);
-    LOGO_BASE64_URI = `data:image/png;base64,${LOGO_BUFFER.toString('base64')}`;
-  }
-} catch (e) {
-  console.log('[EMAIL SERVICE] Could not load logo file:', e.message);
-}
-
-function getLogoAttachments() {
-  if (!LOGO_BUFFER) return [];
-  return [{
-    filename: 'logo.png',
-    content: LOGO_BUFFER,
-    contentId: LOGO_CID,
-  }];
-}
 
 function getBaseUrl() {
   if (process.env.RENDER_EXTERNAL_URL) {
@@ -55,7 +32,7 @@ const COLORS = {
 
 const FONT_STACK = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
 
-const LOGO_IMG_SRC = LOGO_BASE64_URI || `${getBaseUrl()}/api/logo`;
+const LOGO_IMG_SRC = `${getBaseUrl()}/api/logo`;
 
 const createEmailHeader = () => `
 <!--[if mso]>
@@ -682,7 +659,7 @@ export async function sendVerificationEmail(email, userName, verificationLink) {
       to: email,
       subject: 'Verify Your Email - mywellbeingtoday',
       html,
-      attachments: getLogoAttachments()
+
     });
 
     console.log('[EMAIL SERVICE] Verification email sent to:', email);
@@ -711,7 +688,7 @@ export async function sendPasswordResetEmail(email, userName, otpCode) {
       to: email,
       subject: 'Reset Your Password - mywellbeingtoday',
       html,
-      attachments: getLogoAttachments()
+
     });
 
     console.log('[EMAIL SERVICE] Password reset email sent to:', email);
@@ -739,7 +716,7 @@ export async function sendWelcomeEmail(email, userName) {
       to: email,
       subject: 'Welcome to mywellbeingtoday',
       html,
-      attachments: getLogoAttachments()
+
     });
 
     console.log('[EMAIL SERVICE] Welcome email sent to:', email);
@@ -788,7 +765,7 @@ export async function sendAppointmentConfirmation(
       to: email,
       subject: 'Appointment Confirmed - mywellbeingtoday',
       html,
-      attachments: getLogoAttachments()
+
     });
 
     console.log('[EMAIL SERVICE] Appointment confirmation email sent to:', email);
@@ -827,7 +804,7 @@ export async function sendNotification(
       to: email,
       subject,
       html,
-      attachments: getLogoAttachments()
+
     });
 
     console.log('[EMAIL SERVICE] Notification email sent to:', email, 'Subject:', subject);
@@ -856,7 +833,7 @@ export async function sendOTPEmail(email, userName, otpCode) {
       to: email,
       subject: 'Your Verification Code - mywellbeingtoday',
       html,
-      attachments: getLogoAttachments()
+
     });
 
     console.log('[EMAIL SERVICE] OTP email sent to:', email);

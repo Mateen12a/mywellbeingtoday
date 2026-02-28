@@ -1,7 +1,7 @@
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Button } from "@/components/ui/button";
 import { AlertCircle, ArrowRight } from "lucide-react";
-import { Link } from "wouter";
+import { useSubscriptionDialog } from "@/contexts/SubscriptionDialogContext";
 
 const NEXT_PLAN: Record<string, { name: string; limits: Record<string, number> }> = {
   free: {
@@ -34,6 +34,7 @@ interface UpgradePromptProps {
 }
 
 export function UpgradePrompt({ feature, currentPlan, limit, className }: UpgradePromptProps) {
+  const { openSubscriptionDialog } = useSubscriptionDialog();
   const featureLabel = FEATURE_LABELS[feature] || feature;
   const next = NEXT_PLAN[currentPlan];
   const nextLimit = next?.limits[feature];
@@ -53,11 +54,9 @@ export function UpgradePrompt({ feature, currentPlan, limit, className }: Upgrad
             Upgrade to <strong>{next.name}</strong> for {nextLimitLabel} {featureLabel} per month.
           </p>
         )}
-        <Link href="/subscription">
-          <Button size="sm" className="gap-1 mt-1">
-            Upgrade Plan <ArrowRight className="h-3 w-3" />
-          </Button>
-        </Link>
+        <Button size="sm" className="gap-1 mt-1" onClick={openSubscriptionDialog}>
+          Upgrade Plan <ArrowRight className="h-3 w-3" />
+        </Button>
       </AlertDescription>
     </Alert>
   );

@@ -4,6 +4,7 @@ import { useEffect } from "react";
 import { queryClient } from "./lib/queryClient";
 import { Toaster } from "@/components/ui/toaster";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { SubscriptionDialogProvider } from "@/contexts/SubscriptionDialogContext";
 import { startHealthCheck, stopHealthCheck } from "@/lib/healthCheck";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Layout from "@/components/layout";
@@ -282,8 +283,10 @@ function App() {
   return (
     <AuthProvider>
       <QueryClientProvider client={queryClient}>
-        <Toaster />
-        <Router />
+        <SubscriptionDialogProvider>
+          <Toaster />
+          <Router />
+        </SubscriptionDialogProvider>
       </QueryClientProvider>
     </AuthProvider>
   );
