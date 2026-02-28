@@ -222,6 +222,7 @@ export default function ActivityLog() {
     },
     onSuccess: async (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['activities'] });
+      queryClient.invalidateQueries({ queryKey: ["subscription-usage"] });
       const savedCat = category;
       const savedTitle = title;
       const savedDesc = description;

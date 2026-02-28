@@ -1,8 +1,9 @@
 import { WellbeingReport, ActivityLog, MoodLog, ChatMessage, ChatConversation } from '../models/index.js';
+import Subscription from '../models/Subscription.js';
 import { analyzeWellbeing, generateRecommendations, classifyWellbeingLevel, generateDashboardInsights, chatWithAssistant, generateChatTitle } from '../services/aiService.js';
 import { AppError } from '../middlewares/errorHandler.js';
 import { logAction } from '../middlewares/auditLog.js';
-import { incrementUsage, checkUsageLimit } from '../routes/subscriptionRoutes.js';
+import { incrementUsage, checkUsageLimit, PLAN_LIMITS } from '../routes/subscriptionRoutes.js';
 
 export const generateReport = async (req, res, next) => {
   try {
@@ -388,12 +389,18 @@ export const sendMessage = async (req, res, next) => {
     
     const reversedHistory = history.reverse();
     
-    // Fetch user wellbeing data for context
-    const [activityLogs, moodLogs, latestReport] = await Promise.all([
+    // Fetch user wellbeing data and subscription for context
+    const [activityLogs, moodLogs, latestReport, subscription] = await Promise.all([
       ActivityLog.find({ userId: req.user._id }).sort({ date: -1 }).limit(10),
       MoodLog.find({ userId: req.user._id }).sort({ date: -1 }).limit(10),
-      WellbeingReport.findOne({ userId: req.user._id }).sort({ createdAt: -1 })
+      WellbeingReport.findOne({ userId: req.user._id }).sort({ createdAt: -1 }),
+      Subscription.findOne({ userId: req.user._id })
     ]);
+
+    const userPlan = subscription?.plan || 'free';
+    const userLimits = PLAN_LIMITS[userPlan] || PLAN_LIMITS.free;
+    const userUsage = subscription?.usage || {};
+    const aiRemaining = userLimits.aiInteractions === -1 ? 'unlimited' : Math.max(0, userLimits.aiInteractions - (userUsage.aiInteractions || 0));
 
     const context = {
       userName: req.user.profile?.firstName || 'there',
@@ -406,7 +413,13 @@ export const sendMessage = async (req, res, next) => {
         wellbeingLevel: latestReport.wellbeingLevel,
         createdAt: latestReport.createdAt,
         summary: latestReport.analysis?.summary
-      } : null
+      } : null,
+      subscription: {
+        plan: userPlan,
+        aiInteractionsRemaining: aiRemaining,
+        limits: userLimits,
+        usage: userUsage
+      }
     };
 
     // Get AI response

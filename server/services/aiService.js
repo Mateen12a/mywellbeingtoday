@@ -265,11 +265,23 @@ export async function chatWithAssistant(query, context) {
       ? `Latest Report: Score ${context.latestReport.overallScore}/100 (${context.latestReport.wellbeingLevel}), Generated: ${new Date(context.latestReport.createdAt).toLocaleDateString()}`
       : 'No wellbeing report generated yet.';
 
+    const subscriptionInfo = context.subscription
+      ? `\nSUBSCRIPTION:
+- Plan: ${context.subscription.plan}
+- AI interactions remaining this month: ${context.subscription.aiInteractionsRemaining}
+- Activity logs used: ${context.subscription.usage?.activityLogs || 0}/${context.subscription.limits?.activityLogs === -1 ? 'unlimited' : context.subscription.limits?.activityLogs}
+- Mood logs used: ${context.subscription.usage?.moodLogs || 0}/${context.subscription.limits?.moodLogs === -1 ? 'unlimited' : context.subscription.limits?.moodLogs}
+- Report downloads used: ${context.subscription.usage?.reportDownloads || 0}/${context.subscription.limits?.reportDownloads === -1 ? 'unlimited' : context.subscription.limits?.reportDownloads}
+- Directory access used: ${context.subscription.usage?.directoryAccess || 0}/${context.subscription.limits?.directoryAccess === -1 ? 'unlimited' : context.subscription.limits?.directoryAccess}
+NOTE: If the user is nearing their usage limits, gently let them know they can upgrade their plan for more access. If they ask about their plan or usage, provide accurate details from the data above.`
+      : '';
+
     const prompt = `${AI_PERSONA}
 
 USER PROFILE:
 - Name: ${userName}
 - Role: ${context.userRole || 'user'}
+${subscriptionInfo}
 
 USER'S WELLBEING DATA:
 ${latestReportSummary}

@@ -303,6 +303,7 @@ export default function MoodTracker() {
     },
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["moodLogs"] });
+      queryClient.invalidateQueries({ queryKey: ["subscription-usage"] });
       const aiData = data?.aiFeedback || data?.moodLog?.aiFeedback;
       if (aiData) {
         setAiFeedback(aiData);

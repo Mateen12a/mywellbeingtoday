@@ -346,7 +346,7 @@ router.post('/upgrade', authenticate, async (req, res) => {
 
     try {
       const stripe = (await import('stripe')).default(process.env.STRIPE_SECRET_KEY);
-      const appUrl = process.env.APP_URL || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'http://localhost:5000');
+      const appUrl = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0]}` : 'http://localhost:5000');
 
       const session = await stripe.checkout.sessions.create({
         mode: 'subscription',

@@ -27,6 +27,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth } from "@/contexts/AuthContext";
+import { useSubscription } from "@/hooks/useSubscription";
+import { UpgradePrompt } from "@/components/upgrade-prompt";
 import api from "@/lib/api";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
@@ -1705,6 +1707,8 @@ export default function Directory() {
     return urlParams.get('tab') || "providers";
   });
   const { user } = useAuth();
+  const queryClient = useQueryClient();
+  const { isAtLimit, isNearLimit, getRemaining, getLimit } = useSubscription();
   
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -1853,6 +1857,24 @@ export default function Directory() {
           Connect with certified health professionals, emergency services, and support networks.
         </p>
       </div>
+
+      {isAtLimit("directoryAccess") && (
+        <UpgradePrompt
+          feature="directoryAccess"
+          featureLabel="directory searches"
+          limit={getLimit("directoryAccess")}
+        />
+      )}
+      {!isAtLimit("directoryAccess") && isNearLimit("directoryAccess") && (
+        <p className="text-amber-600 text-xs sm:text-sm text-center font-medium">
+          {getRemaining("directoryAccess")} of {getLimit("directoryAccess")} directory searches remaining this month
+        </p>
+      )}
+      {!isAtLimit("directoryAccess") && !isNearLimit("directoryAccess") && getRemaining("directoryAccess") !== Infinity && user && (
+        <p className="text-muted-foreground text-xs text-center">
+          {getRemaining("directoryAccess")} of {getLimit("directoryAccess")} directory searches remaining
+        </p>
+      )}
 
       {user && !aiDismissed && (
         <div className="flex items-center justify-center gap-2 sm:gap-4 px-2 overflow-x-auto">

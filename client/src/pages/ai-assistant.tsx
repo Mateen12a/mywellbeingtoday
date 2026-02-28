@@ -978,6 +978,7 @@ export default function AIKnowledgeAssistant() {
       };
       setMessages(prev => [...prev, aiMsg]);
       queryClient.invalidateQueries({ queryKey: ['conversations'] });
+      queryClient.invalidateQueries({ queryKey: ["subscription-usage"] });
     } catch (error: any) {
       const isLimitError = error?.message?.toLowerCase()?.includes('limit') ||
         error?.message?.toLowerCase()?.includes('quota') ||
