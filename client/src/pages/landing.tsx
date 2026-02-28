@@ -271,26 +271,41 @@ export default function Landing() {
               transition={{ duration: 0.5, delay: 0.3 }}
               className="flex flex-col sm:flex-row gap-4 pt-4 sm:pt-5 justify-center lg:justify-start"
             >
-              <Link href="/auth/register">
-                <Button
-                  size="lg"
-                  className="w-full sm:w-auto shadow-lg shadow-primary/25 text-base sm:text-lg font-semibold"
-                  data-testid="button-get-started-hero"
-                >
-                  Get Started Free
-                  <ArrowRight className="ml-2 w-5 h-5" />
-                </Button>
-              </Link>
-              <Link href="/auth/login">
-                <Button
-                  size="lg"
-                  variant="outline"
-                  className="w-full sm:w-auto text-base sm:text-lg font-semibold bg-white/80 border-2 border-slate-200"
-                  data-testid="button-signin-hero"
-                >
-                  Sign In
-                </Button>
-              </Link>
+              {isAuthenticated ? (
+                <Link href="/dashboard">
+                  <Button
+                    size="lg"
+                    className="w-full sm:w-auto shadow-lg shadow-primary/25 text-base sm:text-lg font-semibold"
+                    data-testid="button-dashboard-hero"
+                  >
+                    Go to Dashboard
+                    <ArrowRight className="ml-2 w-5 h-5" />
+                  </Button>
+                </Link>
+              ) : (
+                <>
+                  <Link href="/auth/register">
+                    <Button
+                      size="lg"
+                      className="w-full sm:w-auto shadow-lg shadow-primary/25 text-base sm:text-lg font-semibold"
+                      data-testid="button-get-started-hero"
+                    >
+                      Get Started Free
+                      <ArrowRight className="ml-2 w-5 h-5" />
+                    </Button>
+                  </Link>
+                  <Link href="/auth/login">
+                    <Button
+                      size="lg"
+                      variant="outline"
+                      className="w-full sm:w-auto text-base sm:text-lg font-semibold bg-white/80 border-2 border-slate-200"
+                      data-testid="button-signin-hero"
+                    >
+                      Sign In
+                    </Button>
+                  </Link>
+                </>
+              )}
             </motion.div>
 
             {/* Trust Indicators - Desktop only */}
@@ -597,17 +612,6 @@ export default function Landing() {
           ))}
         </div>
       </section>
-
-      <footer className="border-t border-slate-200 pt-8 pb-4 mt-8">
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-sm text-slate-500">
-          <Link href="/about" className="hover:text-primary transition-colors">About</Link>
-          <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
-          <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
-        </div>
-        <p className="text-center text-xs text-slate-400 mt-4">
-          &copy; {new Date().getFullYear()} mywellbeingtoday. All rights reserved.
-        </p>
-      </footer>
 
     </div>
   );

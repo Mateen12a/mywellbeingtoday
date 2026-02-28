@@ -346,6 +346,9 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           <nav className="hidden xl:flex items-center gap-4 ml-auto">
             {!isAuthenticated ? (
               <>
+                <Link href="/about">
+                  <Button variant="ghost">About</Button>
+                </Link>
                 <Link href="/auth/login">
                   <Button variant="ghost">Login</Button>
                 </Link>
@@ -590,6 +593,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
           {isAuthenticated ? (
             <div className="flex flex-col items-center gap-3 sm:gap-4 text-xs text-muted-foreground text-center">
               <div className="flex flex-wrap items-center justify-center gap-3 sm:gap-4">
+                <Link href="/about" className="hover:text-foreground hover:underline">About</Link>
                 <Link href="/privacy" className="hover:text-foreground hover:underline">Privacy Policy</Link>
                 <Link href="/terms" className="hover:text-foreground hover:underline">Terms of Service</Link>
               </div>
@@ -633,6 +637,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   <span>Not a substitute for professional medical advice.</span>
                 </div>
                 <div className="flex items-center gap-4">
+                  <Link href="/about" className="hover:text-foreground hover:underline">About</Link>
                   <Link href="/privacy" className="hover:text-foreground hover:underline">Privacy Policy</Link>
                   <Link href="/terms" className="hover:text-foreground hover:underline">Terms of Service</Link>
                 </div>

@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Link } from "wouter";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   ArrowLeft,
   ArrowRight,
@@ -11,7 +12,6 @@ import {
   Shield,
   Accessibility,
   BookOpen,
-  Sparkles,
   Target,
   Eye,
 } from "lucide-react";
@@ -24,6 +24,7 @@ const fadeInUp = {
 };
 
 export default function About() {
+  const { isAuthenticated } = useAuth();
   return (
     <div className="flex flex-col gap-16 md:gap-24 pb-20">
       <section className="relative overflow-hidden">
@@ -220,7 +221,6 @@ export default function About() {
         <motion.div {...fadeInUp} transition={{ duration: 0.5 }}>
           <Card className="bg-gradient-to-br from-primary/10 to-blue-50 border-0 shadow-xl">
             <CardContent className="p-8 md:p-12 text-center space-y-6">
-              <Sparkles className="w-10 h-10 text-primary mx-auto" />
               <h2 className="text-2xl md:text-3xl font-serif font-bold text-slate-900">
                 Start your wellbeing journey today
               </h2>
@@ -229,17 +229,28 @@ export default function About() {
                 wellbeing with mywellbeingtoday. It only takes a minute to get started.
               </p>
               <div className="flex flex-col sm:flex-row gap-4 justify-center pt-2">
-                <Link href="/auth/register">
-                  <Button size="lg" className="shadow-lg shadow-primary/25 text-base font-semibold">
-                    Get Started Free
-                    <ArrowRight className="ml-2 w-5 h-5" />
-                  </Button>
-                </Link>
-                <Link href="/auth/login">
-                  <Button size="lg" variant="outline" className="text-base font-semibold bg-white/80 border-2 border-slate-200">
-                    Sign In
-                  </Button>
-                </Link>
+                {isAuthenticated ? (
+                  <Link href="/dashboard">
+                    <Button size="lg" className="shadow-lg shadow-primary/25 text-base font-semibold">
+                      Go to Dashboard
+                      <ArrowRight className="ml-2 w-5 h-5" />
+                    </Button>
+                  </Link>
+                ) : (
+                  <>
+                    <Link href="/auth/register">
+                      <Button size="lg" className="shadow-lg shadow-primary/25 text-base font-semibold">
+                        Get Started Free
+                        <ArrowRight className="ml-2 w-5 h-5" />
+                      </Button>
+                    </Link>
+                    <Link href="/auth/login">
+                      <Button size="lg" variant="outline" className="text-base font-semibold bg-white/80 border-2 border-slate-200">
+                        Sign In
+                      </Button>
+                    </Link>
+                  </>
+                )}
               </div>
             </CardContent>
           </Card>

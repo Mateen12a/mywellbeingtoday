@@ -1,0 +1,25 @@
+User-agent: *
+Allow: /
+Allow: /about
+Allow: /pricing
+Allow: /auth/login
+Allow: /auth/register
+Allow: /auth/register-provider
+Allow: /directory
+Allow: /privacy
+Allow: /terms
+
+Disallow: /admin/*
+Disallow: /api/*
+Disallow: /settings
+Disallow: /messages
+Disallow: /auth/verify
+Disallow: /auth/reverify
+Disallow: /auth/recovery
+Disallow: /auth/admin-login
+Disallow: /auth/register-admin
+Disallow: /auth/admin-register-secret
+Disallow: /admin-login
+Disallow: /auth/login-admin
+
+Sitemap: https://mywellbeingtoday.com/sitemap.xml
