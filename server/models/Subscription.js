@@ -9,7 +9,7 @@ const subscriptionSchema = new mongoose.Schema({
   },
   plan: {
     type: String,
-    enum: ['free', 'monthly', 'yearly'],
+    enum: ['free', 'starter', 'pro', 'premium', 'team', 'franchise'],
     default: 'free'
   },
   status: {
@@ -36,6 +36,17 @@ const subscriptionSchema = new mongoose.Schema({
   cancelledAt: {
     type: Date,
     default: null
+  },
+  usage: {
+    activityLogs: { type: Number, default: 0 },
+    moodLogs: { type: Number, default: 0 },
+    reportDownloads: { type: Number, default: 0 },
+    directoryAccess: { type: Number, default: 0 },
+    aiInteractions: { type: Number, default: 0 }
+  },
+  usagePeriodStart: {
+    type: Date,
+    default: Date.now
   },
   createdAt: {
     type: Date,
@@ -71,6 +82,24 @@ subscriptionSchema.methods.getTrialDaysRemaining = function() {
   const now = new Date();
   const diff = this.trialEndsAt.getTime() - now.getTime();
   return Math.max(0, Math.ceil(diff / (1000 * 60 * 60 * 24)));
+};
+
+subscriptionSchema.methods.resetUsage = function() {
+  this.usage = {
+    activityLogs: 0,
+    moodLogs: 0,
+    reportDownloads: 0,
+    directoryAccess: 0,
+    aiInteractions: 0
+  };
+  this.usagePeriodStart = new Date();
+};
+
+subscriptionSchema.methods.shouldResetUsage = function() {
+  if (!this.usagePeriodStart) return true;
+  const now = new Date();
+  const periodStart = new Date(this.usagePeriodStart);
+  return now.getMonth() !== periodStart.getMonth() || now.getFullYear() !== periodStart.getFullYear();
 };
 
 subscriptionSchema.methods.toJSON = function() {

@@ -27,6 +27,17 @@ function getLogoAttachments() {
   }];
 }
 
+function getBaseUrl() {
+  if (process.env.REPLIT_DOMAINS) {
+    const domain = process.env.REPLIT_DOMAINS.split(',')[0].trim();
+    return `https://${domain}`;
+  }
+  if (process.env.APP_URL) {
+    return process.env.APP_URL.replace(/\/$/, '');
+  }
+  return `http://localhost:${process.env.PORT || 5000}`;
+}
+
 const COLORS = {
   primary: '#97b5cb',
   secondary: '#adccdb',
@@ -39,7 +50,7 @@ const COLORS = {
 
 const FONT_STACK = "'Segoe UI', Tahoma, Geneva, Verdana, sans-serif";
 
-const LOGO_IMG_SRC = `cid:${LOGO_CID}`;
+const LOGO_IMG_SRC = `${getBaseUrl()}/api/logo`;
 
 const createEmailHeader = () => `
 <!--[if mso]>

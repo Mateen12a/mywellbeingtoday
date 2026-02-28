@@ -43,6 +43,7 @@ import SystemSettingsPage from "@/pages/admin/system-settings";
 import AdminContentPage from "@/pages/admin/content";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
+import About from "@/pages/about";
 
 function Router() {
   return (
@@ -50,6 +51,8 @@ function Router() {
       <Switch>
         {/* Public Routes */}
         <Route path="/" component={Landing} />
+        <Route path="/about" component={About} />
+        <Route path="/pricing" component={Subscription} />
         <Route path="/privacy" component={PrivacyPolicy} />
         <Route path="/terms" component={TermsOfService} />
         

@@ -6,17 +6,131 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import { Progress } from '@/components/ui/progress';
 import { useToast } from '@/hooks/use-toast';
-import { Check, Clock, CreditCard, Crown, Sparkles, AlertCircle, Loader2, LogIn } from 'lucide-react';
+import {
+  Check, Clock, Crown, Sparkles, AlertCircle, Loader2, LogIn,
+  Activity, Brain, FileText, Search, Bot, Users, Building2, Star, Zap, Mail
+} from 'lucide-react';
+
+const PLAN_DETAILS = {
+  free: {
+    name: 'Free Trial',
+    price: '$0',
+    period: '7-day trial',
+    icon: Sparkles,
+    color: 'text-gray-600',
+    bgColor: 'bg-gray-50',
+    borderColor: 'border-gray-200',
+    features: [
+      '2 basic activity logs',
+      '2 basic mood track & insight',
+      '1 report download',
+      '2 directory access',
+      '2 AI interactions',
+    ],
+  },
+  starter: {
+    name: 'Starter',
+    price: '$5',
+    period: '/month',
+    icon: Zap,
+    color: 'text-blue-600',
+    bgColor: 'bg-blue-50',
+    borderColor: 'border-blue-200',
+    features: [
+      'Activity logging',
+      'Mood tracking & insight',
+      'Limited reports',
+      'Directory access',
+      'AI interaction',
+    ],
+  },
+  pro: {
+    name: 'Pro',
+    price: '$12',
+    period: '/month',
+    icon: Star,
+    color: 'text-purple-600',
+    bgColor: 'bg-purple-50',
+    borderColor: 'border-purple-200',
+    popular: true,
+    features: [
+      'Full activity logging',
+      'Full mood tracking & analysis',
+      'Unlimited wellbeing reports',
+      'Full directory access',
+      'Full AI interactions',
+      'Self-care virtual class Part 1',
+    ],
+  },
+  premium: {
+    name: 'Premium',
+    price: '$20',
+    period: '/month',
+    icon: Crown,
+    color: 'text-amber-600',
+    bgColor: 'bg-amber-50',
+    borderColor: 'border-amber-200',
+    features: [
+      'Everything in Pro',
+      'Priority support',
+      'Exported wellbeing plan',
+      'Self-care virtual class Part 1',
+    ],
+  },
+  team: {
+    name: 'Team / Enterprise',
+    price: 'On request',
+    period: '',
+    icon: Users,
+    color: 'text-emerald-600',
+    bgColor: 'bg-emerald-50',
+    borderColor: 'border-emerald-200',
+    contact: true,
+    features: [
+      'All Premium features',
+      'Group features',
+      '6-6-4 wellbeing pathways',
+      'Team analytics',
+    ],
+  },
+  franchise: {
+    name: 'Franchise',
+    price: 'On request',
+    period: '',
+    icon: Building2,
+    color: 'text-rose-600',
+    bgColor: 'bg-rose-50',
+    borderColor: 'border-rose-200',
+    contact: true,
+    features: [
+      'Full platform setup',
+      'All certifications',
+      'Custom branding',
+      'Dedicated support',
+    ],
+  },
+};
+
+type PlanKey = keyof typeof PLAN_DETAILS;
+
+const USAGE_LABELS: Record<string, { label: string; icon: typeof Activity }> = {
+  activityLogs: { label: 'Activity Logs', icon: Activity },
+  moodLogs: { label: 'Mood Tracking', icon: Brain },
+  reportDownloads: { label: 'Report Downloads', icon: FileText },
+  directoryAccess: { label: 'Directory Access', icon: Search },
+  aiInteractions: { label: 'AI Interactions', icon: Bot },
+};
 
 export default function SubscriptionPage() {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [, navigate] = useLocation();
-  const [selectedPlan, setSelectedPlan] = useState<'monthly' | 'yearly' | null>(null);
+  const [upgradingPlan, setUpgradingPlan] = useState<string | null>(null);
   const isAuthenticated = api.isAuthenticated();
 
-  const { data, isLoading, error } = useQuery({
+  const { data, isLoading } = useQuery({
     queryKey: ['subscription'],
     queryFn: async () => {
       const response = await api.getSubscription();
@@ -36,6 +150,16 @@ export default function SubscriptionPage() {
     enabled: !isAuthenticated,
   });
 
+  const { data: usageData } = useQuery({
+    queryKey: ['subscription-usage'],
+    queryFn: async () => {
+      const response = await api.getUsage();
+      if (!response.success) throw new Error(response.message);
+      return response.data;
+    },
+    enabled: isAuthenticated,
+  });
+
   const startTrialMutation = useMutation({
     mutationFn: async () => {
       const response = await api.startTrial();
@@ -44,9 +168,10 @@ export default function SubscriptionPage() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      queryClient.invalidateQueries({ queryKey: ['subscription-usage'] });
       toast({
         title: 'Trial Started!',
-        description: 'Your 15-day free trial has begun. Enjoy all premium features!',
+        description: 'Your 7-day free trial has begun. Explore all features!',
       });
     },
     onError: (error: Error) => {
@@ -59,19 +184,28 @@ export default function SubscriptionPage() {
   });
 
   const upgradeMutation = useMutation({
-    mutationFn: async (plan: 'monthly' | 'yearly') => {
-      const response = await api.upgradeSubscription(plan);
+    mutationFn: async (plan: string) => {
+      const response = await api.createCheckoutSession(plan);
       if (!response.success) throw new Error(response.message);
       return response.data;
     },
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['subscription'] });
+    onSuccess: (data: any) => {
+      if (data?.checkoutUrl) {
+        window.location.href = data.checkoutUrl;
+      } else {
+        queryClient.invalidateQueries({ queryKey: ['subscription'] });
+      }
     },
     onError: (error: Error) => {
-      if (error.message.includes('coming soon') || error.message.includes('pending')) {
+      if (error.message.includes('coming soon') || error.message.includes('pending') || error.message.includes('Payment processing')) {
         toast({
           title: 'Payment Coming Soon',
           description: 'Online payments will be available soon. Please check back later!',
+        });
+      } else if (error.message.includes('contact')) {
+        toast({
+          title: 'Contact Us',
+          description: 'Please contact us for Team and Franchise plans.',
         });
       } else {
         toast({
@@ -113,33 +247,63 @@ export default function SubscriptionPage() {
     );
   }
 
-  const defaultPricing = {
-    monthly: { price: 19.99, interval: 'month', displayPrice: '$19.99/mo' },
-    yearly: { price: 191.88, interval: 'year', monthlyEquivalent: 15.99, displayPrice: '$191.88/yr ($15.99/mo)' }
-  };
-
-  const pricing = data?.pricing || pricingData?.pricing || defaultPricing;
-  const stripeConfigured = data?.stripeConfigured ?? pricingData?.stripeConfigured ?? false;
   const subscription = data?.subscription;
+  const stripeConfigured = data?.stripeConfigured ?? pricingData?.stripeConfigured ?? false;
   const isTrialEligible = isAuthenticated && subscription && subscription.plan === 'free' && subscription.status !== 'trial' && !subscription.trialEndsAt;
   const isOnTrial = subscription?.status === 'trial';
-  const isPremium = subscription?.plan !== 'free' && subscription?.isActive;
-  const canCancel = isAuthenticated && (isOnTrial || isPremium) && subscription?.status !== 'cancelled';
+  const isPaid = subscription && subscription.plan !== 'free' && subscription.isActive;
+  const canCancel = isAuthenticated && (isOnTrial || isPaid) && subscription?.status !== 'cancelled';
+  const currentPlan = subscription?.plan || 'free';
 
-  const features = [
-    'Unlimited mood tracking',
-    'Advanced AI wellness insights',
-    'Priority provider matching',
-    'Detailed analytics & reports',
-    'Export your data anytime',
-    'Priority support',
-  ];
+  const planOrder: PlanKey[] = ['free', 'starter', 'pro', 'premium', 'team', 'franchise'];
+
+  function getButtonLabel(planKey: PlanKey) {
+    if (!isAuthenticated) return 'Sign Up';
+    const detail = PLAN_DETAILS[planKey];
+    if ((detail as any).contact) return 'Contact Us';
+    if (currentPlan === planKey && subscription?.isActive) return 'Current Plan';
+    if (!stripeConfigured && planKey !== 'free') return 'Coming Soon';
+    if (planKey === 'free') return isTrialEligible ? 'Start Free Trial' : 'Free Plan';
+    const currentIdx = planOrder.indexOf(currentPlan as PlanKey);
+    const targetIdx = planOrder.indexOf(planKey);
+    return targetIdx > currentIdx ? 'Upgrade' : 'Switch Plan';
+  }
+
+  function handlePlanClick(planKey: PlanKey) {
+    if (!isAuthenticated) {
+      navigate('/auth/register');
+      return;
+    }
+    const detail = PLAN_DETAILS[planKey];
+    if ((detail as any).contact) {
+      toast({ title: 'Contact Us', description: 'Please reach out to discuss Team and Franchise plans.' });
+      return;
+    }
+    if (planKey === 'free') {
+      if (isTrialEligible) startTrialMutation.mutate();
+      return;
+    }
+    if (currentPlan === planKey && subscription?.isActive) return;
+    setUpgradingPlan(planKey);
+    upgradeMutation.mutate(planKey);
+  }
+
+  function isButtonDisabled(planKey: PlanKey) {
+    if (!isAuthenticated) return false;
+    if (currentPlan === planKey && subscription?.isActive) return true;
+    if (planKey === 'free' && !isTrialEligible) return true;
+    if (upgradeMutation.isPending && upgradingPlan === planKey) return true;
+    if (startTrialMutation.isPending && planKey === 'free') return true;
+    return false;
+  }
 
   return (
-    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-5xl">
-      <div className="text-center mb-4 sm:mb-8">
+    <div className="container mx-auto px-3 sm:px-4 py-4 sm:py-8 max-w-7xl">
+      <div className="text-center mb-6 sm:mb-10">
         <h1 className="text-xl sm:text-2xl md:text-3xl font-bold mb-1 sm:mb-2">Subscription & Pricing</h1>
-        <p className="text-xs sm:text-sm text-muted-foreground">Choose the plan that works best for your wellbeing journey</p>
+        <p className="text-xs sm:text-sm text-muted-foreground max-w-2xl mx-auto">
+          Choose the plan that works best for your wellbeing journey. Start free and upgrade as you grow.
+        </p>
       </div>
 
       {!isAuthenticated && (
@@ -147,25 +311,25 @@ export default function SubscriptionPage() {
           <LogIn className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
           <AlertTitle className="text-blue-800 text-sm sm:text-base">Sign in to manage your subscription</AlertTitle>
           <AlertDescription className="text-blue-700 text-xs sm:text-sm">
-            <Button variant="link" className="text-blue-700 underline text-xs sm:text-sm" onClick={() => navigate('/auth/login')}>
+            <Button variant="link" className="text-blue-700 underline text-xs sm:text-sm p-0 h-auto" onClick={() => navigate('/auth/login')}>
               Log in
             </Button>
             {' '}or{' '}
-            <Button variant="link" className="text-blue-700 underline text-xs sm:text-sm" onClick={() => navigate('/auth/register')}>
+            <Button variant="link" className="text-blue-700 underline text-xs sm:text-sm p-0 h-auto" onClick={() => navigate('/auth/register')}>
               create an account
             </Button>
-            {' '}to start your free trial and access premium features.
+            {' '}to start your free trial and access all features.
           </AlertDescription>
         </Alert>
       )}
 
-      {isOnTrial && subscription?.trialDaysRemaining && subscription.trialDaysRemaining > 0 && (
+      {isOnTrial && subscription?.trialDaysRemaining != null && subscription.trialDaysRemaining > 0 && (
         <Alert className="mb-4 sm:mb-6 border-blue-200 bg-blue-50">
           <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
           <AlertTitle className="text-blue-800 text-sm sm:text-base">Trial Active</AlertTitle>
           <AlertDescription className="text-blue-700 text-xs sm:text-sm">
             You have <span className="font-semibold">{subscription.trialDaysRemaining} days</span> remaining in your free trial.
-            Upgrade now to keep all your premium features!
+            Upgrade now to keep all your features!
           </AlertDescription>
         </Alert>
       )}
@@ -185,27 +349,27 @@ export default function SubscriptionPage() {
           <Sparkles className="h-3 w-3 sm:h-4 sm:w-4 text-purple-600" />
           <AlertTitle className="text-purple-800 text-sm sm:text-base">Coming Soon</AlertTitle>
           <AlertDescription className="text-purple-700 text-xs sm:text-sm">
-            Online payments are coming soon! Start your free trial now and enjoy premium features.
+            Online payments are coming soon! Start your free trial now and enjoy the platform.
           </AlertDescription>
         </Alert>
       )}
 
       {isAuthenticated && subscription && (
-        <Card className="mb-4 sm:mb-8">
+        <Card className="mb-6 sm:mb-8">
           <CardHeader>
             <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
               <div className="flex-1">
                 <CardTitle className="flex items-center gap-2 text-lg sm:text-xl flex-wrap">
                   Current Plan
-                  <Badge variant={isPremium || isOnTrial ? 'default' : 'secondary'} className="text-xs sm:text-sm">
-                    {subscription.plan === 'free' ? (isOnTrial ? 'Trial' : 'Free') : subscription.plan.charAt(0).toUpperCase() + subscription.plan.slice(1)}
+                  <Badge variant={isPaid || isOnTrial ? 'default' : 'secondary'} className="text-xs sm:text-sm">
+                    {isOnTrial ? 'Trial' : PLAN_DETAILS[currentPlan as PlanKey]?.name || currentPlan}
                   </Badge>
                 </CardTitle>
                 <CardDescription className="text-xs sm:text-sm">
                   Status: <span className="capitalize">{subscription.status}</span>
                 </CardDescription>
               </div>
-              {(isPremium || isOnTrial) && (
+              {(isPaid || isOnTrial) && (
                 <Crown className="h-6 w-6 sm:h-8 sm:w-8 text-yellow-500 flex-shrink-0" />
               )}
             </div>
@@ -228,129 +392,109 @@ export default function SubscriptionPage() {
         </Card>
       )}
 
-      {isTrialEligible && (
-        <Card className="mb-4 sm:mb-8 border-2 border-primary bg-gradient-to-r from-primary/5 to-primary/10">
-          <CardHeader className="text-center py-4 sm:py-6">
-            <CardTitle className="text-lg sm:text-xl md:text-2xl flex items-center justify-center gap-2">
-              <Sparkles className="h-4 w-4 sm:h-5 sm:w-5 md:h-6 md:w-6 text-primary" />
-              Start Your Free Trial
+      {isAuthenticated && usageData && (
+        <Card className="mb-6 sm:mb-8">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base sm:text-lg flex items-center gap-2">
+              <Activity className="h-4 w-4 sm:h-5 sm:w-5" />
+              Usage This Month
             </CardTitle>
-            <CardDescription className="text-xs sm:text-sm md:text-base">
-              Try all premium features free for 15 days. No credit card required.
-            </CardDescription>
           </CardHeader>
-          <CardContent className="text-center pb-4 sm:pb-6">
-            <Button
-              size="lg"
-              onClick={() => startTrialMutation.mutate()}
-              disabled={startTrialMutation.isPending}
-              className="text-xs sm:text-sm md:text-base"
-            >
-              {startTrialMutation.isPending ? (
-                <Loader2 className="h-5 w-5 animate-spin mr-2" />
-              ) : (
-                <Sparkles className="h-5 w-5 mr-2" />
-              )}
-              Start 15-Day Free Trial
-            </Button>
+          <CardContent>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {Object.entries(USAGE_LABELS).map(([key, { label, icon: Icon }]) => {
+                const used = usageData.usage?.[key] || 0;
+                const limit = usageData.limits?.[key];
+                const isUnlimited = limit === -1;
+                const percentage = isUnlimited ? 0 : limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
+
+                return (
+                  <div key={key} className="space-y-2">
+                    <div className="flex items-center justify-between text-sm">
+                      <div className="flex items-center gap-2">
+                        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
+                        <span className="text-xs sm:text-sm">{label}</span>
+                      </div>
+                      <span className="text-xs text-muted-foreground">
+                        {isUnlimited ? `${used} / ∞` : `${used} / ${limit}`}
+                      </span>
+                    </div>
+                    {!isUnlimited && (
+                      <Progress value={percentage} className="h-2" />
+                    )}
+                    {isUnlimited && (
+                      <div className="h-2 bg-green-100 rounded-full">
+                        <div className="h-full bg-green-500 rounded-full" style={{ width: '100%' }} />
+                      </div>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
           </CardContent>
         </Card>
       )}
 
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6 mb-4 sm:mb-8">
-        <Card className={`relative ${selectedPlan === 'monthly' ? 'border-primary ring-2 ring-primary' : ''}`}>
-          <CardHeader className="pb-3 sm:pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-              <CreditCard className="h-4 w-4 sm:h-5 sm:w-5" />
-              Monthly
-            </CardTitle>
-            <CardDescription className="text-xs sm:text-sm">Flexible month-to-month billing</CardDescription>
-          </CardHeader>
-          <CardContent className="pb-3 sm:pb-4">
-            <div className="mb-4 sm:mb-6">
-              <span className="text-2xl sm:text-3xl md:text-4xl font-bold">${pricing.monthly.price}</span>
-              <span className="text-xs sm:text-sm text-muted-foreground">/month</span>
-            </div>
-            <ul className="space-y-2 sm:space-y-3">
-              {features.map((feature, idx) => (
-                <li key={idx} className="flex items-center gap-2">
-                  <Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm">{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-          <CardFooter className="pt-3 sm:pt-4">
-            <Button
-              className="w-full text-xs sm:text-sm"
-              variant={selectedPlan === 'monthly' ? 'default' : 'outline'}
-              onClick={() => {
-                if (!isAuthenticated) {
-                  navigate('/auth/register');
-                  return;
-                }
-                setSelectedPlan('monthly');
-                upgradeMutation.mutate('monthly');
-              }}
-              disabled={upgradeMutation.isPending || (isPremium && subscription?.plan === 'monthly')}
-            >
-              {upgradeMutation.isPending && selectedPlan === 'monthly' ? (
-                <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin mr-2" />
-              ) : null}
-              {!isAuthenticated ? 'Sign Up' : !stripeConfigured ? 'Coming Soon' : isPremium && subscription?.plan === 'monthly' ? 'Current Plan' : 'Choose Monthly'}
-            </Button>
-          </CardFooter>
-        </Card>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 mb-6 sm:mb-8">
+        {planOrder.map((planKey) => {
+          const detail = PLAN_DETAILS[planKey];
+          const IconComp = detail.icon;
+          const isPopular = (detail as any).popular;
+          const isContact = (detail as any).contact;
+          const isCurrent = isAuthenticated && currentPlan === planKey && subscription?.isActive;
 
-        <Card className={`relative ${selectedPlan === 'yearly' ? 'border-primary ring-2 ring-primary' : ''}`}>
-          <div className="absolute -top-2 sm:-top-3 left-1/2 transform -translate-x-1/2">
-            <Badge className="bg-green-500 hover:bg-green-600 text-xs sm:text-sm">Save 20%</Badge>
-          </div>
-          <CardHeader className="pb-3 sm:pb-4">
-            <CardTitle className="flex items-center gap-2 text-lg sm:text-xl">
-              <Crown className="h-4 w-4 sm:h-5 sm:w-5 text-yellow-500" />
-              Yearly
-            </CardTitle>
-            <CardDescription className="text-xs sm:text-sm">Best value - save 2 months!</CardDescription>
-          </CardHeader>
-          <CardContent className="pb-3 sm:pb-4">
-            <div className="mb-2">
-              <span className="text-2xl sm:text-3xl md:text-4xl font-bold">${pricing.yearly.price}</span>
-              <span className="text-xs sm:text-sm text-muted-foreground">/year</span>
-            </div>
-            <p className="text-xs sm:text-sm text-muted-foreground mb-4 sm:mb-6">
-              That's only ${pricing.yearly.monthlyEquivalent}/month
-            </p>
-            <ul className="space-y-2 sm:space-y-3">
-              {features.map((feature, idx) => (
-                <li key={idx} className="flex items-center gap-2">
-                  <Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 flex-shrink-0" />
-                  <span className="text-xs sm:text-sm">{feature}</span>
-                </li>
-              ))}
-            </ul>
-          </CardContent>
-          <CardFooter className="pt-3 sm:pt-4">
-            <Button
-              className="w-full text-xs sm:text-sm"
-              variant={selectedPlan === 'yearly' ? 'default' : 'outline'}
-              onClick={() => {
-                if (!isAuthenticated) {
-                  navigate('/auth/register');
-                  return;
-                }
-                setSelectedPlan('yearly');
-                upgradeMutation.mutate('yearly');
-              }}
-              disabled={upgradeMutation.isPending || (isPremium && subscription?.plan === 'yearly')}
+          return (
+            <Card
+              key={planKey}
+              className={`relative flex flex-col ${isCurrent ? 'border-primary ring-2 ring-primary' : ''} ${isPopular ? 'border-purple-400 ring-1 ring-purple-200' : ''}`}
             >
-              {upgradeMutation.isPending && selectedPlan === 'yearly' ? (
-                <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin mr-2" />
-              ) : null}
-              {!isAuthenticated ? 'Sign Up' : !stripeConfigured ? 'Coming Soon' : isPremium && subscription?.plan === 'yearly' ? 'Current Plan' : 'Choose Yearly'}
-            </Button>
-          </CardFooter>
-        </Card>
+              {isPopular && (
+                <div className="absolute -top-2 sm:-top-3 left-1/2 transform -translate-x-1/2 z-10">
+                  <Badge className="bg-purple-600 hover:bg-purple-700 text-xs sm:text-sm">Most Popular</Badge>
+                </div>
+              )}
+              {isCurrent && (
+                <div className="absolute -top-2 sm:-top-3 right-3 z-10">
+                  <Badge className="bg-primary text-xs">Current</Badge>
+                </div>
+              )}
+              <CardHeader className="pb-3 sm:pb-4">
+                <CardTitle className="flex items-center gap-2 text-base sm:text-lg">
+                  {planKey !== 'free' && <IconComp className={`h-4 w-4 sm:h-5 sm:w-5 ${detail.color}`} />}
+                  {detail.name}
+                </CardTitle>
+                <div className="mt-2">
+                  <span className="text-2xl sm:text-3xl font-bold">{detail.price}</span>
+                  {detail.period && <span className="text-xs sm:text-sm text-muted-foreground">{detail.period}</span>}
+                </div>
+              </CardHeader>
+              <CardContent className="pb-3 sm:pb-4 flex-1">
+                <ul className="space-y-2">
+                  {detail.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-start gap-2">
+                      <Check className="h-3 w-3 sm:h-4 sm:w-4 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-xs sm:text-sm">{feature}</span>
+                    </li>
+                  ))}
+                </ul>
+              </CardContent>
+              <CardFooter className="pt-3 sm:pt-4">
+                <Button
+                  className="w-full text-xs sm:text-sm"
+                  variant={isPopular ? 'default' : isCurrent ? 'secondary' : 'outline'}
+                  onClick={() => handlePlanClick(planKey)}
+                  disabled={isButtonDisabled(planKey)}
+                >
+                  {((upgradeMutation.isPending && upgradingPlan === planKey) || (startTrialMutation.isPending && planKey === 'free')) && (
+                    <Loader2 className="h-3 w-3 sm:h-4 sm:w-4 animate-spin mr-2" />
+                  )}
+                  {isContact && <Mail className="h-3 w-3 sm:h-4 sm:w-4 mr-1" />}
+                  {getButtonLabel(planKey)}
+                </Button>
+              </CardFooter>
+            </Card>
+          );
+        })}
       </div>
 
       <Card>
@@ -361,7 +505,7 @@ export default function SubscriptionPage() {
           <div>
             <h4 className="font-medium mb-1 text-sm sm:text-base">What's included in the free trial?</h4>
             <p className="text-xs sm:text-sm text-muted-foreground">
-              The 15-day trial gives you full access to all premium features. No credit card required to start.
+              The 7-day trial gives you limited access to core features including 2 activity logs, 2 mood insights, 1 report download, 2 directory accesses, and 2 AI interactions.
             </p>
           </div>
           <div>
@@ -374,6 +518,18 @@ export default function SubscriptionPage() {
             <h4 className="font-medium mb-1 text-sm sm:text-base">What happens when my trial ends?</h4>
             <p className="text-xs sm:text-sm text-muted-foreground">
               You'll be moved to the free plan unless you upgrade. Your data is always safe and accessible.
+            </p>
+          </div>
+          <div>
+            <h4 className="font-medium mb-1 text-sm sm:text-base">How do usage limits work?</h4>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Each plan has monthly usage limits for features like activity logs, mood tracking, and AI interactions. Usage counters reset at the start of each month. Pro and above plans have unlimited access.
+            </p>
+          </div>
+          <div>
+            <h4 className="font-medium mb-1 text-sm sm:text-base">How do I get a Team or Franchise plan?</h4>
+            <p className="text-xs sm:text-sm text-muted-foreground">
+              Team and Franchise plans are customized to your organization's needs. Contact us to discuss pricing, features, and setup.
             </p>
           </div>
         </CardContent>

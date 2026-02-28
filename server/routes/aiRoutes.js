@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import { authenticate } from '../middlewares/auth.js';
 import { generateMoodSuggestion } from '../services/aiService.js';
+import { incrementUsage, checkUsageLimit } from './subscriptionRoutes.js';
 
 const router = Router();
 
@@ -8,6 +9,11 @@ router.use(authenticate);
 
 router.post('/mood-suggestion', async (req, res) => {
   try {
+    const usageCheck = await checkUsageLimit(req.userId, 'aiInteractions');
+    if (!usageCheck.allowed) {
+      return res.status(403).json({ success: false, message: usageCheck.reason });
+    }
+
     const { category, title, description } = req.body;
 
     if (!category || !title) {
@@ -18,6 +24,7 @@ router.post('/mood-suggestion', async (req, res) => {
     }
 
     const suggestion = await generateMoodSuggestion({ category, title, description });
+    incrementUsage(req.userId, 'aiInteractions').catch(err => console.error('[USAGE]', err));
 
     res.json({
       success: true,

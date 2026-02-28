@@ -6,9 +6,15 @@ import { autoGenerateReport } from '../services/reportService.js';
 import { createMoodNotification } from '../services/notificationService.js';
 import { sendNotification } from '../services/emailService.js';
 import { sendPushToUser } from '../services/pushService.js';
+import { incrementUsage, checkUsageLimit } from '../routes/subscriptionRoutes.js';
 
 export const createMoodLog = async (req, res, next) => {
   try {
+    const usageCheck = await checkUsageLimit(req.user._id, 'moodLogs');
+    if (!usageCheck.allowed) {
+      return res.status(403).json({ success: false, message: usageCheck.reason });
+    }
+
     const { mood, moodScore, energyLevel, stressLevel, anxietyLevel, sleepQuality, factors, notes, triggers, copingStrategies, inputMethod, voiceTranscript, timeOfDay, date } = req.body;
 
     const moodLog = await MoodLog.create({
@@ -30,6 +36,7 @@ export const createMoodLog = async (req, res, next) => {
     });
 
     await logAction(req.user._id, 'CREATE_MOOD', 'mood', moodLog._id, { mood, moodScore }, req);
+    incrementUsage(req.user._id, 'moodLogs').catch(err => console.error('[USAGE]', err));
 
     createMoodNotification(req.user._id, mood, moodScore).catch(err => console.error('[NOTIFICATION]', err));
     sendPushToUser(req.user._id, 'mood_logged').catch(err => console.error('[PUSH]', err));

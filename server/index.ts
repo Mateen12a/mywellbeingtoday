@@ -1,5 +1,6 @@
 import express, { type Request, Response, NextFunction } from "express";
 import cors from "cors";
+import path from "path";
 import { registerRoutes } from "./routes";
 import { serveStatic } from "./static";
 import { createServer } from "http";
@@ -33,6 +34,11 @@ app.use(cors({
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
+
+app.get('/api/logo', (_req: Request, res: Response) => {
+  const logoPath = path.resolve('client/public/logo5.png');
+  res.sendFile(logoPath);
+});
 
 app.get('/api/health', (_req: Request, res: Response) => {
   res.status(200).json({

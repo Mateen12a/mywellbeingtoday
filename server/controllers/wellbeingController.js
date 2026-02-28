@@ -2,9 +2,15 @@ import { WellbeingReport, ActivityLog, MoodLog, ChatMessage, ChatConversation } 
 import { analyzeWellbeing, generateRecommendations, classifyWellbeingLevel, generateDashboardInsights, chatWithAssistant, generateChatTitle } from '../services/aiService.js';
 import { AppError } from '../middlewares/errorHandler.js';
 import { logAction } from '../middlewares/auditLog.js';
+import { incrementUsage, checkUsageLimit } from '../routes/subscriptionRoutes.js';
 
 export const generateReport = async (req, res, next) => {
   try {
+    const usageCheck = await checkUsageLimit(req.user._id, 'reportDownloads');
+    if (!usageCheck.allowed) {
+      return res.status(403).json({ success: false, message: usageCheck.reason });
+    }
+
     const { days = 7 } = req.body;
     const endDate = new Date();
     const startDate = new Date();
@@ -79,6 +85,7 @@ export const generateReport = async (req, res, next) => {
     });
 
     await logAction(req.user._id, 'GENERATE_REPORT', 'wellbeingReport', report._id, null, req);
+    incrementUsage(req.user._id, 'reportDownloads').catch(err => console.error('[USAGE]', err));
 
     res.status(201).json({
       success: true,
@@ -349,6 +356,11 @@ export const deleteConversation = async (req, res, next) => {
 
 export const sendMessage = async (req, res, next) => {
   try {
+    const aiUsageCheck = await checkUsageLimit(req.user._id, 'aiInteractions');
+    if (!aiUsageCheck.allowed) {
+      return res.status(403).json({ success: false, message: aiUsageCheck.reason });
+    }
+
     const { conversationId } = req.params;
     const { message } = req.body;
     
@@ -400,7 +412,8 @@ export const sendMessage = async (req, res, next) => {
     // Get AI response
     const aiResponse = await chatWithAssistant(message, context);
 
-    // Save assistant message
+    incrementUsage(req.user._id, 'aiInteractions').catch(err => console.error('[USAGE]', err));
+
     const assistantMessage = await ChatMessage.create({
       userId: req.user._id,
       conversationId: conversation._id,

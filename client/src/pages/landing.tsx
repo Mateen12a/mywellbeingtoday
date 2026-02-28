@@ -246,7 +246,7 @@ export default function Landing() {
               className="flex flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start"
             >
               {[
-                { icon: Activity, text: "Activity Log", detail: "Track your daily activities including exercise, meals, sleep, social interactions, and more. Build healthy habits by monitoring your routines." },
+                { icon: Activity, text: "Activity Log", detail: "Log your daily activities including exercise, meals, sleep, social interactions, and more. Build healthy habits by monitoring your routines." },
                 { icon: Heart, text: "Mood Analysis", detail: "Log and analyse your emotional wellbeing with AI-powered insights. Understand patterns in your mood and get personalised suggestions." },
                 { icon: FileText, text: "Wellbeing Report", detail: "Generate comprehensive wellbeing reports you can download and share with your healthcare providers for better-informed care." },
                 { icon: Users, text: "Provider Directory", detail: "Find certified health and social care providers near you. Book appointments and connect with professionals who can support your wellbeing journey." },
@@ -597,6 +597,17 @@ export default function Landing() {
           ))}
         </div>
       </section>
+
+      <footer className="border-t border-slate-200 pt-8 pb-4 mt-8">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-4 sm:gap-8 text-sm text-slate-500">
+          <Link href="/about" className="hover:text-primary transition-colors">About</Link>
+          <Link href="/privacy" className="hover:text-primary transition-colors">Privacy Policy</Link>
+          <Link href="/terms" className="hover:text-primary transition-colors">Terms of Service</Link>
+        </div>
+        <p className="text-center text-xs text-slate-400 mt-4">
+          &copy; {new Date().getFullYear()} mywellbeingtoday. All rights reserved.
+        </p>
+      </footer>
 
     </div>
   );

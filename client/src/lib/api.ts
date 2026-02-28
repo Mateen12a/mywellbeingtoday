@@ -923,22 +923,28 @@ class ApiClient {
       subscription: {
         _id: string;
         userId: string;
-        plan: 'free' | 'monthly' | 'yearly';
+        plan: 'free' | 'starter' | 'pro' | 'premium' | 'team' | 'franchise';
         status: 'active' | 'cancelled' | 'expired' | 'trial';
         stripeSubscriptionId?: string;
         stripeCustomerId?: string;
         trialEndsAt?: string;
         currentPeriodEnd?: string;
         cancelledAt?: string;
+        usage?: {
+          activityLogs: number;
+          moodLogs: number;
+          reportDownloads: number;
+          directoryAccess: number;
+          aiInteractions: number;
+        };
+        usagePeriodStart?: string;
         createdAt: string;
         updatedAt: string;
         isActive: boolean;
         trialDaysRemaining: number;
       };
-      pricing: {
-        monthly: { price: number; interval: string; displayPrice: string };
-        yearly: { price: number; interval: string; monthlyEquivalent: number; displayPrice: string };
-      };
+      pricing: Record<string, { price: number | null; interval: string | null; displayPrice: string; name: string }>;
+      planLimits: Record<string, Record<string, number>>;
       stripeConfigured: boolean;
     }>('/subscription');
   }
@@ -951,7 +957,7 @@ class ApiClient {
     });
   }
 
-  async upgradeSubscription(plan: 'monthly' | 'yearly') {
+  async upgradeSubscription(plan: string) {
     return this.request<{
       subscription: any;
       pricing: any;
@@ -971,13 +977,42 @@ class ApiClient {
 
   async getSubscriptionPricing() {
     return this.request<{
-      pricing: {
-        monthly: { price: number; interval: string; displayPrice: string };
-        yearly: { price: number; interval: string; monthlyEquivalent: number; displayPrice: string };
-      };
+      pricing: Record<string, { price: number | null; interval: string | null; displayPrice: string; name: string }>;
+      planLimits: Record<string, Record<string, number>>;
       trialDays: number;
       stripeConfigured: boolean;
     }>('/subscription/pricing');
+  }
+
+  async checkUsage(feature: string) {
+    return this.request<{
+      allowed: boolean;
+      reason?: string;
+      currentUsage?: number;
+      limit?: number;
+    }>('/subscription/check-usage', {
+      method: 'POST',
+      body: JSON.stringify({ feature }),
+    });
+  }
+
+  async getUsage() {
+    return this.request<{
+      plan: string;
+      usage: Record<string, number>;
+      limits: Record<string, number>;
+      usagePeriodStart: string;
+    }>('/subscription/usage');
+  }
+
+  async createCheckoutSession(plan: string) {
+    return this.request<{
+      checkoutUrl?: string;
+      sessionId?: string;
+    }>('/subscription/upgrade', {
+      method: 'POST',
+      body: JSON.stringify({ plan }),
+    });
   }
 
   async getNotifications(page = 1, limit = 20, unreadOnly = false): Promise<ApiResponse> {

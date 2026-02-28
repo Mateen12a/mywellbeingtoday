@@ -6,9 +6,15 @@ import { autoGenerateReport } from '../services/reportService.js';
 import { createActivityNotification } from '../services/notificationService.js';
 import { sendNotification } from '../services/emailService.js';
 import { sendPushToUser } from '../services/pushService.js';
+import { incrementUsage, checkUsageLimit } from '../routes/subscriptionRoutes.js';
 
 export const createActivity = async (req, res, next) => {
   try {
+    const usageCheck = await checkUsageLimit(req.user._id, 'activityLogs');
+    if (!usageCheck.allowed) {
+      return res.status(403).json({ success: false, message: usageCheck.reason });
+    }
+
     const { category, title, description, duration, intensity, metrics, notes, inputMethod, voiceTranscript, tags, location, weather, date } = req.body;
 
     const activity = await ActivityLog.create({
@@ -29,6 +35,7 @@ export const createActivity = async (req, res, next) => {
     });
 
     await logAction(req.user._id, 'CREATE_ACTIVITY', 'activity', activity._id, { category, title }, req);
+    incrementUsage(req.user._id, 'activityLogs').catch(err => console.error('[USAGE]', err));
 
     createActivityNotification(req.user._id, category, title).catch(err => console.error('[NOTIFICATION]', err));
     sendPushToUser(req.user._id, 'activity_logged', { title }).catch(err => console.error('[PUSH]', err));

@@ -10,6 +10,7 @@ const providerSchema = new mongoose.Schema({
   professionalInfo: {
     title: { type: String, default: '' },
     qualifications: [{ type: String }],
+    certificationType: { type: String, default: '' },
     registrationNumber: { type: String },
     yearsOfExperience: { type: Number, default: 0 },
     specialties: [{

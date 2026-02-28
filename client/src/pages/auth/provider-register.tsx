@@ -45,6 +45,8 @@ export default function ProviderRegister() {
     postCode: "",
     countryCode: "uk",
     phone: "",
+    certificationType: "",
+    customCertificationType: "",
     licenseNumber: "",
     password: "",
     confirmPassword: "",
@@ -202,6 +204,14 @@ export default function ProviderRegister() {
       }
     }
     if (currentStep === 3) {
+      if (!formData.certificationType) {
+        toast({ title: "Missing field", description: "Please select a certification/license type", variant: "destructive" });
+        return false;
+      }
+      if (formData.certificationType === "other" && !formData.customCertificationType.trim()) {
+        toast({ title: "Missing field", description: "Please specify your certification type", variant: "destructive" });
+        return false;
+      }
       if (!formData.licenseNumber.trim()) {
         toast({ title: "Missing field", description: "Please enter your license number", variant: "destructive" });
         return false;
@@ -256,9 +266,12 @@ export default function ProviderRegister() {
         key => formData.services[key as keyof typeof formData.services]
       );
 
+      const certificationType = formData.certificationType === "other" ? formData.customCertificationType : formData.certificationType;
+
       const providerData = {
         professionalInfo: {
           title: professionalTitle,
+          certificationType: certificationType,
           qualifications: [specialty],
           registrationNumber: formData.licenseNumber,
           specialties: [specialty],
@@ -589,9 +602,45 @@ export default function ProviderRegister() {
                 </div>
 
                 <div className="space-y-2">
+                  <Label className="text-xs sm:text-sm">Certification / License Type <span className="text-red-500">*</span></Label>
+                  <Select value={formData.certificationType} onValueChange={(value) => handleInputChange("certificationType", value)}>
+                    <SelectTrigger className="text-xs sm:text-sm">
+                      <SelectValue placeholder="Select certification body" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="GMC">GMC - General Medical Council (UK)</SelectItem>
+                      <SelectItem value="GDC">GDC - General Dental Council (UK)</SelectItem>
+                      <SelectItem value="NMC">NMC - Nursing & Midwifery Council (UK)</SelectItem>
+                      <SelectItem value="HCPC">HCPC - Health and Care Professions Council (UK)</SelectItem>
+                      <SelectItem value="GPhC">GPhC - General Pharmaceutical Council (UK)</SelectItem>
+                      <SelectItem value="NMA">NMA - Nigerian Medical Association (Nigeria)</SelectItem>
+                      <SelectItem value="MDCN">MDCN - Medical and Dental Council of Nigeria</SelectItem>
+                      <SelectItem value="PCN">PCN - Pharmacists Council of Nigeria</SelectItem>
+                      <SelectItem value="NMCN">NMCN - Nursing and Midwifery Council of Nigeria</SelectItem>
+                      <SelectItem value="AMA">AMA - American Medical Association (USA)</SelectItem>
+                      <SelectItem value="USMLE">USMLE - United States Medical Licensing (USA)</SelectItem>
+                      <SelectItem value="AHPRA">AHPRA - Australian Health Practitioner Regulation Agency</SelectItem>
+                      <SelectItem value="other">Other</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {formData.certificationType === "other" && (
+                  <div className="space-y-2 animate-in slide-in-from-top-2 duration-200">
+                    <Label className="text-xs sm:text-sm">Specify Certification Type <span className="text-red-500">*</span></Label>
+                    <Input 
+                      placeholder="e.g. BMDC, SMC, etc." 
+                      className="text-xs sm:text-sm"
+                      value={formData.customCertificationType}
+                      onChange={(e) => handleInputChange("customCertificationType", e.target.value)}
+                    />
+                  </div>
+                )}
+
+                <div className="space-y-2">
                   <Label className="text-xs sm:text-sm">Professional License Number <span className="text-red-500">*</span></Label>
                   <Input 
-                    placeholder="GMC / GDC / NMC Number" 
+                    placeholder="Enter your license/registration number" 
                     className="text-xs sm:text-sm"
                     value={formData.licenseNumber}
                     onChange={(e) => handleInputChange("licenseNumber", e.target.value)}
