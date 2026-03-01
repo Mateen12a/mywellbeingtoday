@@ -1,4 +1,4 @@
-import { User, Provider, ActivityLog, MoodLog, WellbeingReport, Appointment, AuditLog, Certificate, ChatReport } from '../models/index.js';
+import { User, Provider, ActivityLog, MoodLog, WellbeingReport, Appointment, AuditLog, Certificate, ChatReport, Subscription } from '../models/index.js';
 import { AppError } from '../middlewares/errorHandler.js';
 import { logAction } from '../middlewares/auditLog.js';
 import { USER_ROLES } from '../config/constants.js';
@@ -1119,6 +1119,118 @@ export const resolveReportedChat = async (req, res, next) => {
       success: true,
       message: 'Report resolved successfully',
       data: { report }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getSubscriptionAnalytics = async (req, res, next) => {
+  try {
+    const thirtyDaysAgo = new Date();
+    thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+    const [
+      planDistribution,
+      statusDistribution,
+      totalSubscriptions,
+      trialUsers,
+      paidUsers,
+      recentUpgrades,
+      recentCancellations,
+      monthlyTrend
+    ] = await Promise.all([
+      Subscription.aggregate([
+        { $group: { _id: '$plan', count: { $sum: 1 } } },
+        { $sort: { count: -1 } }
+      ]),
+      Subscription.aggregate([
+        { $group: { _id: '$status', count: { $sum: 1 } } },
+        { $sort: { count: -1 } }
+      ]),
+      Subscription.countDocuments(),
+      Subscription.countDocuments({ status: 'trial' }),
+      Subscription.countDocuments({
+        plan: { $ne: 'free' },
+        status: 'active',
+        stripeSubscriptionId: { $ne: null }
+      }),
+      Subscription.find({
+        plan: { $ne: 'free' },
+        updatedAt: { $gte: thirtyDaysAgo }
+      })
+        .populate('userId', 'email profile.firstName profile.lastName')
+        .sort({ updatedAt: -1 })
+        .limit(20)
+        .lean(),
+      Subscription.find({
+        status: 'cancelled',
+        cancelledAt: { $gte: thirtyDaysAgo }
+      })
+        .populate('userId', 'email profile.firstName profile.lastName')
+        .sort({ cancelledAt: -1 })
+        .limit(10)
+        .lean(),
+      Subscription.aggregate([
+        { $match: { plan: { $ne: 'free' }, updatedAt: { $gte: thirtyDaysAgo } } },
+        { $group: {
+          _id: { $dateToString: { format: '%Y-%m-%d', date: '$updatedAt' } },
+          count: { $sum: 1 }
+        }},
+        { $sort: { _id: 1 } }
+      ])
+    ]);
+
+    const avgUsage = await Subscription.aggregate([
+      { $group: {
+        _id: null,
+        avgActivityLogs: { $avg: '$usage.activityLogs' },
+        avgMoodLogs: { $avg: '$usage.moodLogs' },
+        avgReportDownloads: { $avg: '$usage.reportDownloads' },
+        avgDirectoryAccess: { $avg: '$usage.directoryAccess' },
+        avgAiInteractions: { $avg: '$usage.aiInteractions' }
+      }}
+    ]);
+
+    const topUsers = await Subscription.find({ plan: { $ne: 'free' } })
+      .populate('userId', 'email profile.firstName profile.lastName')
+      .sort({ 'usage.activityLogs': -1 })
+      .limit(10)
+      .lean();
+
+    res.json({
+      success: true,
+      data: {
+        overview: {
+          total: totalSubscriptions,
+          trial: trialUsers,
+          paid: paidUsers,
+          free: totalSubscriptions - trialUsers - paidUsers
+        },
+        planDistribution,
+        statusDistribution,
+        avgUsage: avgUsage[0] || {},
+        recentUpgrades: recentUpgrades.map(s => ({
+          email: s.userId?.email,
+          name: s.userId ? `${s.userId.profile?.firstName || ''} ${s.userId.profile?.lastName || ''}`.trim() : 'Unknown',
+          plan: s.plan,
+          status: s.status,
+          date: s.updatedAt
+        })),
+        recentCancellations: recentCancellations.map(s => ({
+          email: s.userId?.email,
+          name: s.userId ? `${s.userId.profile?.firstName || ''} ${s.userId.profile?.lastName || ''}`.trim() : 'Unknown',
+          plan: s.plan,
+          cancelledAt: s.cancelledAt
+        })),
+        monthlyTrend,
+        topUsers: topUsers.map(s => ({
+          email: s.userId?.email,
+          name: s.userId ? `${s.userId.profile?.firstName || ''} ${s.userId.profile?.lastName || ''}`.trim() : 'Unknown',
+          plan: s.plan,
+          usage: s.usage
+        }))
+      }
     });
   } catch (error) {
     next(error);

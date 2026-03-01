@@ -1,6 +1,7 @@
-import { ReactNode, useState } from "react";
+import { ReactNode } from "react";
 import { useLocation } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Separator as UiSeparator } from "@/components/ui/separator";
@@ -20,8 +21,8 @@ import {
   Activity,
   Flag,
   Headphones,
-  FileText,
   Check,
+  ShieldCheck,
 } from "lucide-react";
 import {
   Popover,
@@ -57,67 +58,91 @@ interface AdminLayoutProps {
   title?: string;
 }
 
-interface AdminNotification {
-  id: string;
-  title: string;
-  message: string;
-  time: string;
-  read: boolean;
-  type: 'info' | 'warning' | 'success';
-}
-
 export default function AdminLayout({ children, title = "Admin Dashboard" }: AdminLayoutProps) {
   const { toast } = useToast();
   const [location, setLocation] = useLocation();
   const { logout } = useAuth();
   const currentUser = api.getUser();
-  
-  const [notifications, setNotifications] = useState<AdminNotification[]>([
-    {
-      id: '1',
-      title: 'New Provider Registration',
-      message: 'Dr. Sarah Johnson has registered and is pending verification.',
-      time: '30 minutes ago',
-      read: false,
-      type: 'info'
+  const queryClient = useQueryClient();
+
+  const { data: notificationsData } = useQuery({
+    queryKey: ['admin-notifications'],
+    queryFn: async () => {
+      const response = await api.getNotifications(1, 20);
+      return response?.data?.notifications || [];
     },
-    {
-      id: '2',
-      title: 'Support Ticket Escalated',
-      message: 'Ticket #1234 requires admin attention.',
-      time: '1 hour ago',
-      read: false,
-      type: 'warning'
+    refetchInterval: 30000,
+    staleTime: 15000,
+  });
+
+  const { data: unreadData } = useQuery({
+    queryKey: ['admin-notifications-unread-count'],
+    queryFn: async () => {
+      const response = await api.getUnreadNotificationCount();
+      return response?.data?.count || 0;
     },
-    {
-      id: '3',
-      title: 'System Update Complete',
-      message: 'Platform has been updated to version 2.4.0.',
-      time: '3 hours ago',
-      read: true,
-      type: 'success'
-    }
-  ]);
-  
-  const unreadCount = notifications.filter(n => !n.read).length;
-  
+    refetchInterval: 15000,
+    staleTime: 10000,
+  });
+
+  const notifications = notificationsData || [];
+  const unreadCount = unreadData || 0;
+
+  const markReadMutation = useMutation({
+    mutationFn: (id: string) => api.markNotificationAsRead(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-notifications-unread-count'] });
+    },
+  });
+
+  const markAllReadMutation = useMutation({
+    mutationFn: () => api.markAllNotificationsAsRead(),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-notifications'] });
+      queryClient.invalidateQueries({ queryKey: ['admin-notifications-unread-count'] });
+    },
+  });
+
   const markAsRead = (id: string) => {
-    setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    markReadMutation.mutate(id);
   };
-  
+
   const markAllAsRead = () => {
-    setNotifications(prev => prev.map(n => ({ ...n, read: true })));
+    markAllReadMutation.mutate();
   };
+
+  const formatTimeAgo = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const diffMs = now.getTime() - date.getTime();
+    const diffMins = Math.floor(diffMs / 60000);
+    if (diffMins < 1) return 'Just now';
+    if (diffMins < 60) return `${diffMins} min ago`;
+    const diffHours = Math.floor(diffMins / 60);
+    if (diffHours < 24) return `${diffHours}h ago`;
+    const diffDays = Math.floor(diffHours / 24);
+    if (diffDays < 7) return `${diffDays}d ago`;
+    return date.toLocaleDateString();
+  };
+
+  const getNotificationType = (type: string): 'info' | 'warning' | 'success' => {
+    if (['appointment_confirmed', 'provider_verified', 'welcome', 'activity', 'mood'].includes(type)) return 'success';
+    if (['appointment_cancelled', 'provider_rejected', 'security'].includes(type)) return 'warning';
+    return 'info';
+  };
+
+  const isSuperAdmin = currentUser?.role === 'admin';
 
   const menuItems = [
     { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
     { id: "users", label: "User Management", icon: Users, path: "/admin/users" },
     { id: "providers", label: "Providers", icon: UserCheck, path: "/admin/providers" },
-    { id: "content", label: "Content", icon: FileText, path: "/admin/content" },
     { id: "activity", label: "System Log", icon: Activity, path: "/admin/activity" },
     { id: "reported-chats", label: "Reported Chats", icon: Flag, path: "/admin/reported-chats" },
     { id: "support", label: "Support Tickets", icon: Headphones, path: "/admin/support" },
     { id: "audit-logs", label: "Audit Logs", icon: Clock, path: "/admin/audit-logs" },
+    ...(isSuperAdmin ? [{ id: "manage-admins", label: "Manage Admins", icon: ShieldCheck, path: "/admin/manage-admins" }] : []),
     { id: "settings", label: "Settings", icon: Settings, path: "/admin/settings" },
   ];
 
@@ -271,32 +296,36 @@ export default function AdminLayout({ children, title = "Admin Dashboard" }: Adm
                         </div>
                       ) : (
                         <div className="divide-y">
-                          {notifications.map((notification) => (
-                            <div 
-                              key={notification.id}
-                              className={cn(
-                                "p-3 hover:bg-muted/50 transition-colors cursor-pointer",
-                                !notification.read && "bg-primary/5"
-                              )}
-                              onClick={() => markAsRead(notification.id)}
-                              data-testid={`admin-notification-item-${notification.id}`}
-                            >
-                              <div className="flex items-start gap-3">
-                                {!notification.read && (
-                                  <span className={cn(
-                                    "h-2 w-2 rounded-full mt-1.5 shrink-0",
-                                    notification.type === 'warning' ? "bg-amber-500" : 
-                                    notification.type === 'success' ? "bg-green-500" : "bg-primary"
-                                  )} />
+                          {notifications.map((notification: any) => {
+                            const nType = getNotificationType(notification.type);
+                            const isRead = notification.read;
+                            return (
+                              <div 
+                                key={notification._id}
+                                className={cn(
+                                  "p-3 hover:bg-muted/50 transition-colors cursor-pointer",
+                                  !isRead && "bg-primary/5"
                                 )}
-                                <div className={cn("flex-1", notification.read && "ml-5")}>
-                                  <p className="font-medium text-sm">{notification.title}</p>
-                                  <p className="text-xs text-muted-foreground mt-0.5">{notification.message}</p>
-                                  <p className="text-xs text-muted-foreground mt-1">{notification.time}</p>
+                                onClick={() => !isRead && markAsRead(notification._id)}
+                                data-testid={`admin-notification-item-${notification._id}`}
+                              >
+                                <div className="flex items-start gap-3">
+                                  {!isRead && (
+                                    <span className={cn(
+                                      "h-2 w-2 rounded-full mt-1.5 shrink-0",
+                                      nType === 'warning' ? "bg-amber-500" : 
+                                      nType === 'success' ? "bg-green-500" : "bg-primary"
+                                    )} />
+                                  )}
+                                  <div className={cn("flex-1", isRead && "ml-5")}>
+                                    <p className="font-medium text-sm">{notification.title}</p>
+                                    <p className="text-xs text-muted-foreground mt-0.5">{notification.message}</p>
+                                    <p className="text-xs text-muted-foreground mt-1">{formatTimeAgo(notification.createdAt)}</p>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          ))}
+                            );
+                          })}
                         </div>
                       )}
                     </ScrollArea>

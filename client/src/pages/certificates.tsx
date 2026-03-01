@@ -336,7 +336,7 @@ function UserDocumentDetailDialog({
             </div>
           )}
           
-          <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div>
               <span className="text-muted-foreground">Document Date</span>
               <p className="font-medium">{formatDate(document.date)}</p>
@@ -428,7 +428,7 @@ function CertificateDetailDialog({
           
           <Separator />
           
-          <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
             <div>
               <span className="text-muted-foreground">Issue Date</span>
               <p className="font-medium">{formatDate(certificate.issueDate)}</p>
@@ -871,7 +871,7 @@ function CreateCertificateDialog({
             />
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label htmlFor="issueDate">Issue Date *</Label>
               <Input
@@ -893,7 +893,7 @@ function CreateCertificateDialog({
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label htmlFor="validFrom">Valid From</Label>
               <Input

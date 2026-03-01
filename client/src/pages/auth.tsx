@@ -366,7 +366,7 @@ export function Register() {
 
       {userType === "user" && (
       <form onSubmit={handleRegister} className="space-y-4">
-        <div className="grid grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="space-y-2">
               <Label htmlFor="firstName">First Name <span className="text-red-500">*</span></Label>
               <div className="relative">

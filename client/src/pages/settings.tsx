@@ -778,14 +778,14 @@ export default function Settings() {
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-secondary/20 gap-2 mb-6">
-          <TabsTrigger value="profile" className="gap-2"><User className="h-4 w-4"/> Personal</TabsTrigger>
-          <TabsTrigger value="notifications" className="gap-2"><Bell className="h-4 w-4"/> Notifications</TabsTrigger>
-          <TabsTrigger value="privacy" className="gap-2"><Lock className="h-4 w-4"/> Privacy</TabsTrigger>
-          <TabsTrigger value="security" className="gap-2"><Key className="h-4 w-4"/> Security</TabsTrigger>
-          <TabsTrigger value="preferences" className="gap-2"><Globe className="h-4 w-4"/> Preferences</TabsTrigger>
-          <TabsTrigger value="billing" className="gap-2"><CreditCard className="h-4 w-4"/> Subscription</TabsTrigger>
-          <TabsTrigger value="support" className="gap-2"><Headphones className="h-4 w-4"/> Support</TabsTrigger>
+        <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-secondary/20 gap-1 sm:gap-2 mb-4 sm:mb-6 no-scrollbar">
+          <TabsTrigger value="profile" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3"><User className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0"/> <span className="hidden sm:inline">Personal</span><span className="sm:hidden">Profile</span></TabsTrigger>
+          <TabsTrigger value="notifications" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3"><Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0"/> <span className="hidden sm:inline">Notifications</span><span className="sm:hidden">Alerts</span></TabsTrigger>
+          <TabsTrigger value="privacy" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3"><Lock className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0"/> Privacy</TabsTrigger>
+          <TabsTrigger value="security" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3"><Key className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0"/> Security</TabsTrigger>
+          <TabsTrigger value="preferences" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3"><Globe className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0"/> <span className="hidden sm:inline">Preferences</span><span className="sm:hidden">Prefs</span></TabsTrigger>
+          <TabsTrigger value="billing" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3"><CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0"/> <span className="hidden sm:inline">Subscription</span><span className="sm:hidden">Plan</span></TabsTrigger>
+          <TabsTrigger value="support" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3"><Headphones className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0"/> Support</TabsTrigger>
         </TabsList>
 
         <TabsContent value="profile">

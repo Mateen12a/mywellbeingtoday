@@ -260,14 +260,14 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       <Link href={href}>
         <div
           className={cn(
-            "flex items-center gap-2 px-4 py-2 rounded-lg transition-colors cursor-pointer text-sm font-medium",
+            "flex items-center gap-1.5 xl:gap-2 px-2.5 xl:px-3 2xl:px-4 py-2 rounded-lg transition-colors cursor-pointer text-xs xl:text-sm font-medium",
             isActive
               ? "bg-primary/10 text-primary font-bold"
               : "text-muted-foreground hover:bg-secondary hover:text-foreground",
           )}
           onClick={() => setIsOpen(false)}
         >
-          {Icon && <Icon className="w-5 h-4" />}
+          {Icon && <Icon className="w-4 h-4" />}
           {children}
         </div>
       </Link>
@@ -278,23 +278,23 @@ export default function Layout({ children }: { children: React.ReactNode }) {
     <div className="min-h-screen bg-background flex flex-col font-sans overflow-x-hidden w-full">
       {/* Header */}
       <header className="sticky top-0 z-50 w-full border-b bg-white/95 backdrop-blur-md">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+        <div className="container mx-auto px-3 sm:px-4 h-14 sm:h-16 flex items-center justify-between gap-2">
           <Link href="/">
-            <div className="flex items-center gap-3 cursor-pointer">
+            <div className="flex items-center gap-2 sm:gap-3 cursor-pointer shrink-0">
               <img
                 src={logo}
                 alt="mywellbeingtoday"
-                className="h-10 w-10 aspect-square object-cover rounded-2xl"
+                className="h-8 w-8 sm:h-10 sm:w-10 aspect-square object-cover rounded-2xl"
               />
 
-              <span className="font-serif font-bold text-sm sm:text-base xl:text-lg text-primary tracking-tight whitespace-nowrap">
+              <span className="font-serif font-bold text-xs sm:text-sm xl:text-base text-primary tracking-tight whitespace-nowrap">
                 mywellbeingtoday
               </span>
             </div>
           </Link>
 
           {/* Desktop Nav */}
-          <nav className="hidden xl:flex items-center gap-4 ml-auto">
+          <nav className="hidden xl:flex items-center gap-1 2xl:gap-2 ml-auto">
             {!isAuthenticated ? (
               <>
                 <Link href="/about">
@@ -328,12 +328,12 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                   AI Assistant
                 </NavLink>
                  <Link href="/directory?tab=emergency">
-                  <div className="flex items-center gap-2 px-4 py-2 rounded-lg transition-colors cursor-pointer text-sm font-bold bg-red-50 text-red-600 hover:bg-red-100 border border-red-200">
-                    <AlertTriangle className="w-5 h-4" />
+                  <div className="flex items-center gap-1.5 px-2.5 xl:px-3 py-2 rounded-lg transition-colors cursor-pointer text-xs xl:text-sm font-bold bg-red-50 text-red-600 hover:bg-red-100 border border-red-200">
+                    <AlertTriangle className="w-4 h-4" />
                     Emergency
                   </div>
                 </Link>
-                <div className="h-6 w-px bg-border mx-2" />
+                <div className="h-6 w-px bg-border mx-1" />
                 <NotificationBell />
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
@@ -542,7 +542,7 @@ export default function Layout({ children }: { children: React.ReactNode }) {
       </AnimatePresence>
 
       {/* Main Content */}
-      <main className="flex-1 container mx-auto px-4 py-1 md:py-8 max-w-7xl animate-in fade-in duration-500">
+      <main className="flex-1 container mx-auto px-3 sm:px-4 py-2 sm:py-4 md:py-8 max-w-7xl animate-in fade-in duration-500">
         {children}
       </main>
 

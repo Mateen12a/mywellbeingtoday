@@ -40,6 +40,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Progress } from "@/components/ui/progress";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { PageLoader } from "@/components/ui/page-loader";
 import { SkeletonCard, FadeInContent } from "@/components/ui/skeleton-card";
@@ -282,6 +283,7 @@ function getMostCommonActivity(activities: any[]): string | null {
 export default function Dashboard() {
   const { user, isLoading: authLoading } = useAuth();
   const {
+    plan,
     planName,
     isOnTrial,
     trialDaysRemaining,
@@ -290,6 +292,7 @@ export default function Dashboard() {
     isLoading: subLoading,
     getUsed,
     getLimit,
+    usagePercentage,
     featuresNearLimit,
     featureLabels,
   } = useSubscription();
@@ -716,6 +719,48 @@ export default function Dashboard() {
             </div>
           )}
 
+          {(isFreePlan || isOnTrial) && (
+            <Card className="border shadow-sm">
+              <CardContent className="p-3 sm:p-4">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="text-xs sm:text-sm font-semibold text-muted-foreground flex items-center gap-1.5">
+                    <BarChart3 className="h-3.5 w-3.5" />
+                    Monthly Usage
+                  </h4>
+                  <Button variant="ghost" size="sm" className="h-6 text-xs text-muted-foreground px-2" onClick={openSubscriptionDialog}>
+                    Details
+                    <ChevronRight className="h-3 w-3 ml-0.5" />
+                  </Button>
+                </div>
+                <div className="grid grid-cols-2 sm:grid-cols-5 gap-2 sm:gap-3">
+                  {Object.keys(featureLabels).map((feature) => {
+                    const used = getUsed(feature);
+                    const limit = getLimit(feature);
+                    const pct = usagePercentage(feature);
+                    const isUnlimited = limit === -1;
+                    return (
+                      <div key={feature} className="space-y-1">
+                        <p className="text-[10px] sm:text-xs text-muted-foreground truncate">{featureLabels[feature]}</p>
+                        {isUnlimited ? (
+                          <p className="text-[10px] sm:text-xs text-green-600 font-medium">Unlimited</p>
+                        ) : (
+                          <>
+                            <Progress
+                              value={pct}
+                              className={`h-1.5 ${pct >= 100 ? '[&>div]:bg-red-500' : pct >= 75 ? '[&>div]:bg-amber-500' : ''}`}
+                            />
+                            <p className={`text-[10px] sm:text-xs font-medium ${pct >= 100 ? 'text-red-600' : pct >= 75 ? 'text-amber-600' : 'text-muted-foreground'}`}>
+                              {used}/{limit} used
+                            </p>
+                          </>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+              </CardContent>
+            </Card>
+          )}
 
         </>
       )}

@@ -495,6 +495,10 @@ class ApiClient {
     return this.request<any>('/admin/superadmin-stats');
   }
 
+  async getSubscriptionAnalytics() {
+    return this.request<any>('/admin/subscription-analytics');
+  }
+
   async getAdminAIInsights() {
     return this.request<{
       insights: {

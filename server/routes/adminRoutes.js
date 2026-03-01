@@ -33,5 +33,6 @@ router.get('/admins', isSuperAdmin, adminController.getAdmins);
 router.get('/settings', isSuperAdmin, adminController.getSystemSettings);
 router.get('/analytics', isSuperAdmin, adminController.getAnonymizedAnalytics);
 router.get('/superadmin-stats', isSuperAdmin, adminController.getSuperAdminStats);
+router.get('/subscription-analytics', isSuperAdmin, adminController.getSubscriptionAnalytics);
 
 export default router;
