@@ -47,11 +47,11 @@ export function UpgradePrompt({ feature, currentPlan, limit, className }: Upgrad
       <AlertDescription className="space-y-3">
         <p>
           You've reached your {currentPlan.charAt(0).toUpperCase() + currentPlan.slice(1)} plan limit of{" "}
-          <strong>{limit}</strong> {featureLabel} this month.
+          <strong>{limit}</strong> {featureLabel} today.
         </p>
         {next && (
           <p className="text-sm">
-            Upgrade to <strong>{next.name}</strong> for {nextLimitLabel} {featureLabel} per month.
+            Upgrade to <strong>{next.name}</strong> for {nextLimitLabel} {featureLabel} per day.
           </p>
         )}
         <Button size="sm" className="gap-1 mt-1" onClick={openSubscriptionDialog}>

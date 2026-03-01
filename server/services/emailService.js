@@ -363,7 +363,7 @@ const createPasswordResetEmailTemplate = (userName, otpCode) => {
           </tr>
           <tr>
             <td align="center" style="font-family:${FONT_STACK}; font-size:14px; color:${COLORS.lightText}; line-height:1.6; padding-bottom:20px;">
-              This code expires in <strong>1 hour</strong>.
+              This code expires in <strong>10 minutes</strong>.
             </td>
           </tr>
           <tr>

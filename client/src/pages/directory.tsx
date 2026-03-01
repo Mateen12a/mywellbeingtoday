@@ -1867,7 +1867,7 @@ export default function Directory() {
       )}
       {!isAtLimit("directoryAccess") && isNearLimit("directoryAccess") && (
         <p className="text-amber-600 text-xs sm:text-sm text-center font-medium">
-          {getRemaining("directoryAccess")} of {getLimit("directoryAccess")} directory searches remaining this month
+          {getRemaining("directoryAccess")} of {getLimit("directoryAccess")} directory searches remaining today
         </p>
       )}
       {!isAtLimit("directoryAccess") && !isNearLimit("directoryAccess") && getRemaining("directoryAccess") !== Infinity && user && (

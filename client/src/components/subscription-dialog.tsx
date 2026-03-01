@@ -354,7 +354,7 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
                 <div className="p-3 rounded-lg bg-muted/30 border">
                   <h3 className="text-sm font-semibold mb-3 flex items-center gap-2">
                     <Activity className="h-4 w-4" />
-                    Usage This Month
+                    Today's Usage
                   </h3>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                     {Object.entries(USAGE_LABELS).map(([key, { label, icon: Icon }]) => {

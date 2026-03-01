@@ -47,7 +47,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Search, MoreHorizontal, AlertCircle, User, Loader2, Trash2, Bot, AlertTriangle, Eye, Ban, Mail, Phone, Calendar, MapPin } from "lucide-react";
+import { Search, MoreHorizontal, AlertCircle, User, Loader2, Trash2, Bot, AlertTriangle, Eye, Ban, Mail, Phone, Calendar, MapPin, CreditCard, Activity, Heart, FileText, Users, Brain, BarChart3 } from "lucide-react";
+import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import AdminLayout from "@/components/admin-layout";
 import api from "@/lib/api";
@@ -116,6 +117,23 @@ function analyzeUserRisk(user: any): RiskIndicator[] {
   return indicators;
 }
 
+const PLAN_BADGE: Record<string, { label: string; className: string }> = {
+  free: { label: "Free", className: "bg-gray-100 text-gray-700 border-gray-200" },
+  starter: { label: "Starter", className: "bg-blue-100 text-blue-700 border-blue-200" },
+  pro: { label: "Pro", className: "bg-purple-100 text-purple-700 border-purple-200" },
+  premium: { label: "Premium", className: "bg-amber-100 text-amber-700 border-amber-200" },
+  team: { label: "Team", className: "bg-teal-100 text-teal-700 border-teal-200" },
+  franchise: { label: "Franchise", className: "bg-rose-100 text-rose-700 border-rose-200" },
+};
+
+const USAGE_FEATURES = [
+  { key: "activityLogs", label: "Activity Logs", icon: Activity },
+  { key: "moodLogs", label: "Mood Tracking", icon: Heart },
+  { key: "reportDownloads", label: "Reports", icon: FileText },
+  { key: "directoryAccess", label: "Directory", icon: Users },
+  { key: "aiInteractions", label: "AI Interactions", icon: Brain },
+];
+
 function getRiskBadgeStyles(level: RiskLevel): string {
   switch (level) {
     case "high":
@@ -160,6 +178,14 @@ export default function AdminUsersPage() {
   }>({
     open: false,
     user: null,
+  });
+
+  const selectedUserId = viewProfileDialog.user?._id;
+  const { data: usageStatsData, isLoading: usageStatsLoading } = useQuery({
+    queryKey: ["admin", "user-usage", selectedUserId],
+    queryFn: () => api.getAdminUserUsage(selectedUserId),
+    enabled: !!selectedUserId && viewProfileDialog.open,
+    staleTime: 30 * 1000,
   });
 
   const isSuperAdmin = currentUser?.role === "admin";
@@ -367,6 +393,7 @@ export default function AdminUsersPage() {
                   <tr>
                     <th className="px-6 py-4 font-semibold">User</th>
                     <th className="px-6 py-4 font-semibold">Role</th>
+                    <th className="px-6 py-4 font-semibold">Plan</th>
                     <th className="px-6 py-4 font-semibold">Joined</th>
                     <th className="px-6 py-4 font-semibold">Status</th>
                     <th className="px-6 py-4 font-semibold">
@@ -381,7 +408,7 @@ export default function AdminUsersPage() {
                 <tbody className="divide-y divide-border/40">
                   {filteredUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={6} className="px-6 py-8 text-center text-muted-foreground">
+                      <td colSpan={7} className="px-6 py-8 text-center text-muted-foreground">
                         No users found
                       </td>
                     </tr>
@@ -415,6 +442,17 @@ export default function AdminUsersPage() {
                             <Badge variant="outline" className="capitalize">
                               {formatLabel(user.role)}
                             </Badge>
+                          </td>
+                          <td className="px-6 py-4">
+                            {(() => {
+                              const plan = user.subscription?.plan || "free";
+                              const badge = PLAN_BADGE[plan] || PLAN_BADGE.free;
+                              return (
+                                <Badge variant="outline" className={`text-xs ${badge.className}`}>
+                                  {badge.label}
+                                </Badge>
+                              );
+                            })()}
                           </td>
                           <td className="px-6 py-4 text-muted-foreground">
                             {formatDate(user.createdAt)}
@@ -685,7 +723,7 @@ export default function AdminUsersPage() {
         open={viewProfileDialog.open}
         onOpenChange={(open) => !open && setViewProfileDialog({ open: false, user: null })}
       >
-        <DialogContent className="sm:max-w-[500px]">
+        <DialogContent className="sm:max-w-[520px] max-h-[85vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2">
               <User className="h-5 w-5" />
@@ -793,6 +831,80 @@ export default function AdminUsersPage() {
                   </div>
                 </>
               )}
+
+              <Separator />
+              <div>
+                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
+                  <CreditCard className="h-4 w-4" />
+                  Subscription & Usage
+                </h4>
+                {usageStatsLoading ? (
+                  <div className="flex items-center justify-center py-4">
+                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                  </div>
+                ) : usageStatsData?.data ? (
+                  <div className="space-y-4">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      {(() => {
+                        const plan = usageStatsData.data.plan;
+                        const badge = PLAN_BADGE[plan] || PLAN_BADGE.free;
+                        return (
+                          <Badge variant="outline" className={badge.className}>
+                            {badge.label} Plan
+                          </Badge>
+                        );
+                      })()}
+                      <Badge variant="outline" className={
+                        usageStatsData.data.status === 'trial' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                        usageStatsData.data.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' :
+                        'bg-gray-50 text-gray-600 border-gray-200'
+                      }>
+                        {usageStatsData.data.status.charAt(0).toUpperCase() + usageStatsData.data.status.slice(1)}
+                      </Badge>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Today's Usage</h5>
+                      <div className="grid grid-cols-1 gap-1.5">
+                        {USAGE_FEATURES.map(({ key, label, icon: Icon }) => {
+                          const val = usageStatsData.data.dailyUsage?.[key] || 0;
+                          return (
+                            <div key={key} className="flex items-center justify-between text-xs py-1">
+                              <span className="flex items-center gap-1.5 text-muted-foreground">
+                                <Icon className="h-3 w-3" />
+                                {label}
+                              </span>
+                              <span className="font-medium tabular-nums">{val}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="space-y-2">
+                      <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                        Monthly Usage ({usageStatsData.data.monthLabel})
+                      </h5>
+                      <div className="grid grid-cols-1 gap-1.5">
+                        {USAGE_FEATURES.map(({ key, label, icon: Icon }) => {
+                          const val = usageStatsData.data.monthlyUsage?.[key] || 0;
+                          return (
+                            <div key={key} className="flex items-center justify-between text-xs py-1">
+                              <span className="flex items-center gap-1.5 text-muted-foreground">
+                                <Icon className="h-3 w-3" />
+                                {label}
+                              </span>
+                              <span className="font-medium tabular-nums">{val}</span>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <p className="text-xs text-muted-foreground">No subscription data available</p>
+                )}
+              </div>
             </div>
           )}
           <DialogFooter>

@@ -35,10 +35,28 @@ export const getUsers = async (req, res, next) => {
       User.countDocuments(query)
     ]);
 
+    const userIds = users.map(u => u._id);
+    const subscriptions = await Subscription.find({ userId: { $in: userIds } }).lean();
+    const subMap = {};
+    subscriptions.forEach(s => { subMap[s.userId.toString()] = s; });
+
+    const usersWithSubs = users.map(u => {
+      const userObj = u.toObject();
+      const sub = subMap[u._id.toString()];
+      userObj.subscription = sub ? {
+        plan: sub.plan,
+        status: sub.status,
+        usage: sub.usage,
+        usagePeriodStart: sub.usagePeriodStart,
+        trialEndsAt: sub.trialEndsAt
+      } : { plan: 'free', status: 'active', usage: {} };
+      return userObj;
+    });
+
     res.json({
       success: true,
       data: {
-        users,
+        users: usersWithSubs,
         pagination: {
           page: parseInt(page),
           limit: parseInt(limit),
@@ -68,6 +86,75 @@ export const getUser = async (req, res, next) => {
     res.json({
       success: true,
       data: { user }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getUserUsageStats = async (req, res, next) => {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId).select('-password');
+    if (!user) {
+      throw new AppError('User not found', 404, 'NOT_FOUND');
+    }
+
+    const subscription = await Subscription.findOne({ userId }).lean();
+    const now = new Date();
+    const startOfMonth = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), 1));
+    const startOfDay = new Date(Date.UTC(now.getUTCFullYear(), now.getUTCMonth(), now.getUTCDate()));
+
+    const [monthlyActivity, monthlyMood, monthlyReports, monthlyAi] = await Promise.all([
+      ActivityLog.countDocuments({ userId, createdAt: { $gte: startOfMonth } }),
+      MoodLog.countDocuments({ userId, createdAt: { $gte: startOfMonth } }),
+      WellbeingReport.countDocuments({ userId, createdAt: { $gte: startOfMonth } }),
+      0
+    ]);
+
+    let monthlyDirectory = 0;
+    const auditDirLogs = await AuditLog.countDocuments({
+      userId,
+      action: { $regex: /directory|DIRECTORY_ACCESS|provider.*search/i },
+      createdAt: { $gte: startOfMonth }
+    });
+    monthlyDirectory = auditDirLogs;
+
+    const monthlyAiLogs = await AuditLog.countDocuments({
+      userId,
+      action: { $regex: /AI_INTERACTION|ai.*chat|AI_CHAT/i },
+      createdAt: { $gte: startOfMonth }
+    });
+
+    const dailyUsage = subscription?.usage || {
+      activityLogs: 0, moodLogs: 0, reportDownloads: 0,
+      directoryAccess: 0, aiInteractions: 0
+    };
+
+    const isToday = subscription?.usagePeriodStart &&
+      new Date(subscription.usagePeriodStart).getUTCDate() === now.getUTCDate() &&
+      new Date(subscription.usagePeriodStart).getUTCMonth() === now.getUTCMonth() &&
+      new Date(subscription.usagePeriodStart).getUTCFullYear() === now.getUTCFullYear();
+
+    res.json({
+      success: true,
+      data: {
+        plan: subscription?.plan || 'free',
+        status: subscription?.status || 'active',
+        trialEndsAt: subscription?.trialEndsAt,
+        dailyUsage: isToday ? dailyUsage : {
+          activityLogs: 0, moodLogs: 0, reportDownloads: 0,
+          directoryAccess: 0, aiInteractions: 0
+        },
+        monthlyUsage: {
+          activityLogs: monthlyActivity,
+          moodLogs: monthlyMood,
+          reportDownloads: monthlyReports,
+          directoryAccess: monthlyDirectory,
+          aiInteractions: monthlyAiLogs
+        },
+        monthLabel: now.toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
+      }
     });
   } catch (error) {
     next(error);

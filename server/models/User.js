@@ -61,7 +61,7 @@ const userSchema = new mongoose.Schema({
     otp: { type: String },
     otpExpires: { type: Date },
     otpAttempts: { type: Number, default: 0 },
-    otpContext: { type: String, enum: ['registration', 'login', 'reverify'], default: 'registration' },
+    otpContext: { type: String, enum: ['registration', 'login', 'reverify', 'password_reset'], default: 'registration' },
     phoneVerified: { type: Boolean, default: false }
   },
   passwordReset: {

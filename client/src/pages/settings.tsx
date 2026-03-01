@@ -281,7 +281,8 @@ const SubscriptionBillingSection = () => {
           </div>
 
           <div className="border-t pt-6">
-            <h4 className="font-medium mb-4">Monthly Usage</h4>
+            <h4 className="font-medium mb-1">Daily Usage</h4>
+            <p className="text-xs text-muted-foreground mb-4">Usage limits reset every day at midnight (UTC)</p>
             <div className="space-y-4">
               {featureKeys.map((feature) => {
                 const used = getUsed(feature);

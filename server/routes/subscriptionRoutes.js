@@ -125,7 +125,7 @@ export async function checkUsageLimit(userId, feature) {
   if (currentUsage >= limit) {
     return {
       allowed: false,
-      reason: `You have reached your ${plan} plan limit of ${limit} ${feature.replace(/([A-Z])/g, ' $1').toLowerCase()} this month. Please upgrade your plan.`,
+      reason: `You have reached your ${plan} plan limit of ${limit} ${feature.replace(/([A-Z])/g, ' $1').toLowerCase()} today. Please upgrade your plan.`,
       currentUsage,
       limit
     };

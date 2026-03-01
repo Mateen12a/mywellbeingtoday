@@ -666,7 +666,7 @@ export default function Dashboard() {
                   <span className="block mb-2">
                     {featuresNearLimit.map((f) => (
                       <span key={f} className="block text-amber-700 font-medium">
-                        You've used {getUsed(f)} of {getLimit(f)} {featureLabels[f]} this month
+                        You've used {getUsed(f)} of {getLimit(f)} {featureLabels[f]} today
                       </span>
                     ))}
                   </span>
@@ -692,7 +692,7 @@ export default function Dashboard() {
                   <span className="block mb-2">
                     {featuresNearLimit.map((f) => (
                       <span key={f} className="block text-amber-700 font-medium">
-                        You've used {getUsed(f)} of {getLimit(f)} {featureLabels[f]} this month
+                        You've used {getUsed(f)} of {getLimit(f)} {featureLabels[f]} today
                       </span>
                     ))}
                   </span>

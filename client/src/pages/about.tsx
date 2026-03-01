@@ -219,6 +219,24 @@ export default function About() {
 
       <section className="max-w-3xl mx-auto px-4">
         <motion.div {...fadeInUp} transition={{ duration: 0.5 }}>
+          <Card className="bg-gradient-to-br from-primary/5 to-blue-50 border border-primary/10 shadow-md">
+            <CardContent className="p-6 md:p-8 text-center space-y-3">
+              <div className="flex items-center justify-center gap-2 text-primary">
+                <Heart className="w-5 h-5" />
+                <h3 className="text-lg font-serif font-bold">
+                  iOS & Android Apps Coming Soon
+                </h3>
+              </div>
+              <p className="text-muted-foreground text-sm max-w-md mx-auto">
+                Your wellbeing companion, soon available on mobile.
+              </p>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </section>
+
+      <section className="max-w-3xl mx-auto px-4">
+        <motion.div {...fadeInUp} transition={{ duration: 0.5 }}>
           <Card className="bg-gradient-to-br from-primary/10 to-blue-50 border-0 shadow-xl">
             <CardContent className="p-8 md:p-12 text-center space-y-6">
               <h2 className="text-2xl md:text-3xl font-serif font-bold text-slate-900">

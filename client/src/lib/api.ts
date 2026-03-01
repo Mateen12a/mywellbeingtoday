@@ -461,6 +461,10 @@ class ApiClient {
     return this.request<{ users: any[]; pagination: any }>(`/admin/users${query ? `?${query}` : ''}`);
   }
 
+  async getAdminUserUsage(id: string) {
+    return this.request<any>(`/admin/users/${id}/usage`);
+  }
+
   async updateAdminUser(id: string, data: any) {
     return this.request<{ user: any }>(`/admin/users/${id}`, {
       method: 'PUT',

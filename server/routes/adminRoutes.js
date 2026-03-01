@@ -8,6 +8,7 @@ router.use(authenticate, isAdmin);
 
 router.get('/users', adminController.getUsers);
 router.get('/users/:id', adminController.getUser);
+router.get('/users/:id/usage', adminController.getUserUsageStats);
 router.put('/users/:id', adminController.updateUser);
 router.delete('/users/:id', adminController.deleteUser);
 router.delete('/users/:id/permanent', isSuperAdmin, adminController.permanentlyDeleteUser);

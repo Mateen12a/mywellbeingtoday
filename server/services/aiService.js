@@ -268,7 +268,7 @@ export async function chatWithAssistant(query, context) {
     const subscriptionInfo = context.subscription
       ? `\nSUBSCRIPTION:
 - Plan: ${context.subscription.plan}
-- AI interactions remaining this month: ${context.subscription.aiInteractionsRemaining}
+- AI interactions remaining today: ${context.subscription.aiInteractionsRemaining}
 - Activity logs used: ${context.subscription.usage?.activityLogs || 0}/${context.subscription.limits?.activityLogs === -1 ? 'unlimited' : context.subscription.limits?.activityLogs}
 - Mood logs used: ${context.subscription.usage?.moodLogs || 0}/${context.subscription.limits?.moodLogs === -1 ? 'unlimited' : context.subscription.limits?.moodLogs}
 - Report downloads used: ${context.subscription.usage?.reportDownloads || 0}/${context.subscription.limits?.reportDownloads === -1 ? 'unlimited' : context.subscription.limits?.reportDownloads}

@@ -989,7 +989,7 @@ export default function AIKnowledgeAssistant() {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: isLimitError
-          ? "You've reached your AI interaction limit for this month. Please upgrade your plan to continue using the AI Assistant. Visit the [Subscription page](/subscription) to view available plans."
+          ? "You've reached your AI interaction limit for today. Please upgrade your plan to continue using the AI Assistant. Visit the [Subscription page](/subscription) to view available plans."
           : "I'm sorry, I encountered an issue processing your request. Please try again."
       };
       setMessages(prev => [...prev, errorMsg]);
@@ -1130,7 +1130,7 @@ export default function AIKnowledgeAssistant() {
                 {!isAtLimit("aiInteractions") && isNearLimit("aiInteractions") && (
                   <p className="text-xs text-amber-600 font-medium mb-2 flex items-center gap-1">
                     <AlertCircle className="w-3 h-3" />
-                    {getRemaining("aiInteractions")} of {getLimit("aiInteractions")} AI interactions remaining this month
+                    {getRemaining("aiInteractions")} of {getLimit("aiInteractions")} AI interactions remaining today
                   </p>
                 )}
                 {!isAtLimit("aiInteractions") && !isNearLimit("aiInteractions") && getRemaining("aiInteractions") !== Infinity && (
