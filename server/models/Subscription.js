@@ -99,7 +99,7 @@ subscriptionSchema.methods.shouldResetUsage = function() {
   if (!this.usagePeriodStart) return true;
   const now = new Date();
   const periodStart = new Date(this.usagePeriodStart);
-  return now.getMonth() !== periodStart.getMonth() || now.getFullYear() !== periodStart.getFullYear();
+  return now.getUTCMonth() !== periodStart.getUTCMonth() || now.getUTCFullYear() !== periodStart.getUTCFullYear();
 };
 
 subscriptionSchema.methods.toJSON = function() {
