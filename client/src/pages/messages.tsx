@@ -336,9 +336,9 @@ export default function Messages() {
                   }}
                 >
                   <div className="relative shrink-0">
-                    <Avatar className="h-9 w-9 sm:h-10 sm:w-10 border border-border">
+                    <Avatar className="h-7 w-7 xs:h-9 xs:w-9 sm:h-10 sm:w-10 border border-border">
                       {getAvatarUrl(other) && <AvatarImage src={getAvatarUrl(other)} />}
-                      <AvatarFallback className="bg-primary/5 text-primary font-medium text-[10px] sm:text-xs">
+                      <AvatarFallback className="bg-primary/5 text-primary font-medium text-[9px] xs:text-[10px] sm:text-xs">
                         {getParticipantInitials(other)}
                       </AvatarFallback>
                     </Avatar>
@@ -377,15 +377,15 @@ export default function Messages() {
   );
 
   return (
-    <div className="space-y-4 sm:space-y-6 animate-in fade-in duration-500 max-w-7xl mx-auto pb-20 px-2 sm:px-4">
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 sm:gap-4 border-b border-border/40 pb-4 sm:pb-6">
+    <div className="space-y-3 xs:space-y-4 sm:space-y-6 animate-in fade-in duration-500 max-w-7xl mx-auto pb-20 px-1 xs:px-2 sm:px-4">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 xs:gap-3 sm:gap-4 border-b border-border/40 pb-3 xs:pb-4 sm:pb-6">
         <div className="min-w-0">
-          <div className="flex items-center gap-3 mb-1">
-            <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">
+          <div className="flex items-center gap-2 xs:gap-3 mb-1">
+            <h1 className="text-lg xs:text-2xl sm:text-3xl font-serif font-bold text-foreground">
               Messages
             </h1>
           </div>
-          <p className="text-xs sm:text-sm text-muted-foreground">
+          <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground">
             Chat with your healthcare providers and support team.
           </p>
         </div>
@@ -457,7 +457,7 @@ export default function Messages() {
         </Dialog>
       </div>
 
-      <div className="h-[calc(100vh-280px)] sm:h-[calc(100vh-250px)] min-h-[400px] sm:min-h-[500px] mt-0">
+      <div className="h-[calc(100vh-240px)] xs:h-[calc(100vh-280px)] sm:h-[calc(100vh-250px)] min-h-[350px] xs:min-h-[400px] sm:min-h-[500px] mt-0">
         <Card className="h-full flex overflow-hidden border bg-card shadow-sm rounded-xl">
           <div className="hidden md:flex w-[320px] border-r bg-muted/10 flex-col shrink-0">
             <ConversationList />
@@ -479,7 +479,7 @@ export default function Messages() {
                         View Chats
                       </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="p-0 w-[260px] sm:w-[300px]">
+                    <SheetContent side="left" className="p-0 w-[calc(100vw-40px)] xs:w-[260px] sm:w-[300px]">
                       <div className="flex flex-col h-full bg-muted/10">
                         <ConversationList />
                       </div>
@@ -489,28 +489,28 @@ export default function Messages() {
               </div>
             ) : (
               <>
-                <div className="p-2 sm:p-4 border-b flex items-center gap-2 sm:gap-3 shadow-sm z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+                <div className="p-1.5 xs:p-2 sm:p-4 border-b flex items-center gap-1.5 xs:gap-2 sm:gap-3 shadow-sm z-10 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
                   <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
                     <SheetTrigger asChild>
-                      <Button variant="ghost" size="icon" className="md:hidden -ml-2 mr-1">
-                        <Menu className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <Button variant="ghost" size="icon" className="md:hidden -ml-1 xs:-ml-2 mr-0.5 xs:mr-1 h-7 w-7 xs:h-9 xs:w-9">
+                        <Menu className="h-3.5 w-3.5 xs:h-4 xs:w-4 sm:h-5 sm:w-5" />
                       </Button>
                     </SheetTrigger>
-                    <SheetContent side="left" className="p-0 w-[260px] sm:w-[300px]">
+                    <SheetContent side="left" className="p-0 w-[calc(100vw-40px)] xs:w-[260px] sm:w-[300px]">
                       <div className="flex flex-col h-full bg-muted/10">
                         <ConversationList />
                       </div>
                     </SheetContent>
                   </Sheet>
 
-                  <Avatar className="h-8 w-8 sm:h-10 sm:w-10 border flex-shrink-0">
+                  <Avatar className="h-6 w-6 xs:h-8 xs:w-8 sm:h-10 sm:w-10 border flex-shrink-0">
                     {getAvatarUrl(selectedOtherParticipant) && <AvatarImage src={getAvatarUrl(selectedOtherParticipant)} />}
-                    <AvatarFallback className="bg-primary/10 text-primary text-xs">
+                    <AvatarFallback className="bg-primary/10 text-primary text-[9px] xs:text-xs">
                       {getParticipantInitials(selectedOtherParticipant)}
                     </AvatarFallback>
                   </Avatar>
                   <div className="flex-1 min-w-0">
-                    <h4 className="font-bold text-xs sm:text-sm truncate">
+                    <h4 className="font-bold text-[11px] xs:text-xs sm:text-sm truncate">
                       {getDisplayName(selectedOtherParticipant)}
                     </h4>
                   </div>
@@ -620,8 +620,8 @@ export default function Messages() {
                   </DialogContent>
                 </Dialog>
                
-                <ScrollArea className="flex-1 p-2 sm:p-4 md:p-6 bg-slate-50/50" ref={scrollRef}>
-                  <div className="space-y-4 sm:space-y-6 max-w-3xl mx-auto">
+                <ScrollArea className="flex-1 p-1.5 xs:p-2 sm:p-4 md:p-6 bg-slate-50/50" ref={scrollRef}>
+                  <div className="space-y-3 xs:space-y-4 sm:space-y-6 max-w-3xl mx-auto">
                     {loadingMessages ? (
                       <div className="flex justify-center py-6 sm:py-8">
                         <Loader2 className="h-5 w-5 sm:h-6 sm:w-6 animate-spin text-muted-foreground" />
@@ -643,9 +643,9 @@ export default function Messages() {
                           
                           return (
                             <div key={msg._id} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'}`}>
-                              <div className={`flex flex-col gap-0.5 max-w-[90%] sm:max-w-[80%] ${isMe ? 'items-end' : 'items-start'}`}>
+                              <div className={`flex flex-col gap-0.5 max-w-[95%] xs:max-w-[90%] sm:max-w-[80%] ${isMe ? 'items-end' : 'items-start'}`}>
                                 <div 
-                                  className={`px-3 sm:px-4 py-2 sm:py-2.5 shadow-sm text-xs sm:text-sm leading-relaxed ${
+                                  className={`px-2 xs:px-3 sm:px-4 py-1.5 xs:py-2 sm:py-2.5 shadow-sm text-[11px] xs:text-xs sm:text-sm leading-relaxed break-words ${
                                     isMe 
                                       ? 'bg-primary text-primary-foreground rounded-2xl rounded-tr-sm' 
                                       : 'bg-white border text-foreground rounded-2xl rounded-tl-sm'
@@ -653,9 +653,9 @@ export default function Messages() {
                                 >
                                   {msg.content}
                                 </div>
-                                <span className="text-[8px] sm:text-[10px] text-muted-foreground px-1 flex items-center gap-0.5">
+                                <span className="text-[7px] xs:text-[8px] sm:text-[10px] text-muted-foreground px-0.5 xs:px-1 flex items-center gap-0.5">
                                   {formatTime(msg.createdAt)}
-                                  {isMe && msg.read && <CheckCheck className="w-2.5 h-2.5 sm:w-3 sm:h-3 text-primary" />}
+                                  {isMe && msg.read && <CheckCheck className="w-2 h-2 xs:w-2.5 xs:h-2.5 sm:w-3 sm:h-3 text-primary" />}
                                 </span>
                               </div>
                             </div>
@@ -666,8 +666,8 @@ export default function Messages() {
                   </div>
                 </ScrollArea>
 
-                <div className="p-2 sm:p-4 border-t bg-background mt-auto">
-                  <div className="max-w-3xl mx-auto flex items-end gap-1.5 sm:gap-2 bg-muted/30 p-1.5 sm:p-2 rounded-2xl border focus-within:ring-1 focus-within:ring-primary/20 focus-within:border-primary/50 transition-all">
+                <div className="p-1.5 xs:p-2 sm:p-4 border-t bg-background mt-auto">
+                  <div className="max-w-3xl mx-auto flex items-end gap-1 xs:gap-1.5 sm:gap-2 bg-muted/30 p-1 xs:p-1.5 sm:p-2 rounded-2xl border focus-within:ring-1 focus-within:ring-primary/20 focus-within:border-primary/50 transition-all">
                     <Button 
                       variant="ghost" 
                       size="icon" 
@@ -678,7 +678,7 @@ export default function Messages() {
                     </Button>
                     <Textarea 
                       placeholder="Type message..." 
-                      className="flex-1 min-h-[36px] sm:min-h-[40px] max-h-[120px] border-0 bg-transparent focus-visible:ring-0 resize-none py-2 sm:py-2.5 px-1.5 sm:px-2 text-xs sm:text-sm" 
+                      className="flex-1 min-h-[32px] xs:min-h-[36px] sm:min-h-[40px] max-h-[120px] border-0 bg-transparent focus-visible:ring-0 resize-none py-1.5 xs:py-2 sm:py-2.5 px-1 xs:px-1.5 sm:px-2 text-[11px] xs:text-xs sm:text-sm" 
                       rows={1}
                       value={inputText}
                       onChange={(e) => setInputText(e.target.value)}
@@ -687,14 +687,14 @@ export default function Messages() {
                     />
                     <Button 
                       size="icon" 
-                      className="rounded-xl shrink-0 self-end mb-0.5 shadow-sm" 
+                      className="rounded-xl shrink-0 self-end mb-0.5 shadow-sm h-7 w-7 xs:h-9 xs:w-9" 
                       onClick={handleSendMessage}
                       disabled={!inputText.trim() || sendMessageMutation.isPending}
                     >
                       {sendMessageMutation.isPending ? (
-                        <Loader2 className="w-3.5 h-3.5 sm:w-4 sm:h-4 animate-spin" />
+                        <Loader2 className="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-4 sm:h-4 animate-spin" />
                       ) : (
-                        <Send className="w-3.5 h-3.5 sm:w-4 sm:h-4 ml-0.5" />
+                        <Send className="w-3 h-3 xs:w-3.5 xs:h-3.5 sm:w-4 sm:h-4 ml-0.5" />
                       )}
                     </Button>
                   </div>

@@ -245,18 +245,18 @@ const AISuggestionsCard = ({
         <CollapsibleTrigger asChild>
           <CardHeader className="pb-3 cursor-pointer hover:bg-violet-100/30 transition-colors">
             <div className="flex items-center justify-between">
-              <div className="flex items-center gap-3">
-                <div className="p-2 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 shadow-md">
-                  <Sparkles className="h-5 w-5 text-white" />
+              <div className="flex items-center gap-2 xs:gap-3 min-w-0">
+                <div className="p-1.5 xs:p-2 rounded-full bg-gradient-to-br from-violet-500 to-purple-600 shadow-md shrink-0">
+                  <Sparkles className="h-4 w-4 xs:h-5 xs:w-5 text-white" />
                 </div>
-                <div>
-                  <CardTitle className="text-lg font-semibold text-violet-900 flex items-center gap-2">
+                <div className="min-w-0">
+                  <CardTitle className="text-sm xs:text-lg font-semibold text-violet-900 flex items-center gap-1 xs:gap-2 flex-wrap">
                     AI Suggestions
-                    <Badge className="bg-violet-100 text-violet-700 border-0 text-xs font-normal">
+                    <Badge className="bg-violet-100 text-violet-700 border-0 text-[10px] xs:text-xs font-normal">
                       Personalized
                     </Badge>
                   </CardTitle>
-                  <CardDescription className="text-violet-700/70">
+                  <CardDescription className="text-violet-700/70 text-[10px] xs:text-sm">
                     Smart insights based on your wellbeing patterns
                   </CardDescription>
                 </div>
@@ -443,31 +443,31 @@ export default function History() {
 
   return (
     <TooltipProvider>
-      <div className="space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in duration-500 max-w-6xl mx-auto px-3 sm:px-4">
-        <div className="flex flex-col gap-4">
+      <div className="space-y-3 xs:space-y-4 sm:space-y-6 md:space-y-8 animate-in fade-in duration-500 max-w-6xl mx-auto px-2 xs:px-3 sm:px-4">
+        <div className="flex flex-col gap-3 xs:gap-4">
           <div className="space-y-1">
-            <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-foreground">Wellbeing History</h1>
-            <p className="text-xs sm:text-sm text-muted-foreground">Track your trends and patterns over time.</p>
+            <h1 className="text-lg xs:text-xl sm:text-2xl md:text-3xl lg:text-4xl font-serif font-bold text-foreground">Wellbeing History</h1>
+            <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground">Track your trends and patterns over time.</p>
           </div>
-          <div className="flex flex-wrap gap-2">
-            <Button variant="outline" size="sm" onClick={() => window.print()} className="text-xs sm:text-sm">
-              <Printer className="mr-2 h-3 w-3 sm:h-4 sm:w-4" /> Print
+          <div className="flex flex-wrap gap-1.5 xs:gap-2">
+            <Button variant="outline" size="sm" onClick={() => window.print()} className="text-[10px] xs:text-xs sm:text-sm h-7 xs:h-9">
+              <Printer className="mr-1 xs:mr-2 h-3 w-3 sm:h-4 sm:w-4" /> Print
             </Button>
             <ReportDownloadButton size="sm" />
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-8">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
-            <TabsList className="bg-secondary/30 p-1">
-              <TabsTrigger value="overview">Overview</TabsTrigger>
-              <TabsTrigger value="mood">Mood Trends</TabsTrigger>
-              <TabsTrigger value="activities">Activities</TabsTrigger>
+        <Tabs defaultValue="overview" className="space-y-4 xs:space-y-6 sm:space-y-8">
+          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 xs:gap-4">
+            <TabsList className="bg-secondary/30 p-0.5 xs:p-1 w-full xs:w-auto overflow-x-auto">
+              <TabsTrigger value="overview" className="text-[10px] xs:text-xs sm:text-sm px-2 xs:px-3">Overview</TabsTrigger>
+              <TabsTrigger value="mood" className="text-[10px] xs:text-xs sm:text-sm px-2 xs:px-3">Mood Trends</TabsTrigger>
+              <TabsTrigger value="activities" className="text-[10px] xs:text-xs sm:text-sm px-2 xs:px-3">Activities</TabsTrigger>
             </TabsList>
             
             <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-full sm:w-[180px]">
-                <CalendarIcon className="mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <SelectTrigger className="w-full sm:w-[180px] text-xs xs:text-sm">
+                <CalendarIcon className="mr-1 xs:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
                 <SelectValue placeholder="Select Range" />
               </SelectTrigger>
               <SelectContent>
@@ -479,7 +479,7 @@ export default function History() {
             </Select>
           </div>
 
-          <TabsContent value="overview" className="space-y-6">
+          <TabsContent value="overview" className="space-y-4 xs:space-y-6">
             {isToday ? (
               <>
                 <AISuggestionsCard
@@ -492,7 +492,7 @@ export default function History() {
                   isLoading={isLoading}
                 />
 
-                <div className="grid md:grid-cols-3 gap-6">
+                <div className="grid md:grid-cols-3 gap-3 xs:gap-4 sm:gap-6">
                   {isLoading ? (
                     <>
                       <Skeleton className="h-40" />
@@ -502,21 +502,21 @@ export default function History() {
                   ) : (
                     <>
                       <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-100">
-                        <CardHeader className="pb-2">
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-lg font-medium text-green-900 flex items-center gap-2">
-                              <Heart className="h-4 w-4" />
+                        <CardHeader className="pb-2 px-3 xs:px-6">
+                          <div className="flex items-center justify-between gap-1">
+                            <CardTitle className="text-sm xs:text-lg font-medium text-green-900 flex items-center gap-1 xs:gap-2">
+                              <Heart className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
                               Today's Mood
                             </CardTitle>
                             {todayMood?.summary?.avgScore && getWellbeingBadge(todayMood.summary.avgScore)}
                           </div>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                        <CardContent className="space-y-2 xs:space-y-3 px-3 xs:px-6">
                           <div className="flex items-baseline gap-2">
-                            <span className="text-4xl font-bold text-green-700">
+                            <span className="text-3xl xs:text-4xl font-bold text-green-700">
                               {todayMood?.summary?.avgScore ? todayMood.summary.avgScore.toFixed(1) : '—'}
                             </span>
-                            <span className="text-sm text-green-600">/10</span>
+                            <span className="text-xs xs:text-sm text-green-600">/10</span>
                             
                           </div>
                           {todayMood?.summary?.avgScore && (
@@ -525,7 +525,7 @@ export default function History() {
                               className="h-2 bg-green-100"
                             />
                           )}
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-[10px] xs:text-xs text-muted-foreground">
                             {todayMood?.summary?.logsCount 
                               ? `${todayMood.summary.logsCount} log${todayMood.summary.logsCount > 1 ? 's' : ''} today`
                               : 'No mood logged yet today'}
@@ -534,10 +534,10 @@ export default function History() {
                       </Card>
                       
                       <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100">
-                        <CardHeader className="pb-2">
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-lg font-medium text-blue-900 flex items-center gap-2">
-                              <Activity className="h-4 w-4" />
+                        <CardHeader className="pb-2 px-3 xs:px-6">
+                          <div className="flex items-center justify-between gap-1">
+                            <CardTitle className="text-sm xs:text-lg font-medium text-blue-900 flex items-center gap-1 xs:gap-2">
+                              <Activity className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
                               Today's Activities
                             </CardTitle>
                             {(todayActivities?.activities?.length || 0) > 0 && (
@@ -547,40 +547,40 @@ export default function History() {
                             )}
                           </div>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                        <CardContent className="space-y-2 xs:space-y-3 px-3 xs:px-6">
                           <div className="flex items-baseline gap-2">
-                            <span className="text-4xl font-bold text-blue-700">
+                            <span className="text-3xl xs:text-4xl font-bold text-blue-700">
                               {todayActivities?.activities?.length || 0}
                             </span>
-                            <span className="text-sm text-blue-600">activities</span>
+                            <span className="text-xs xs:text-sm text-blue-600">activities</span>
                           </div>
-                          <p className="text-xs text-muted-foreground">
+                          <p className="text-[10px] xs:text-xs text-muted-foreground">
                             {todayActivities?.summary?.totalDuration 
                               ? `${todayActivities.summary.totalDuration} mins total`
                               : 'Start logging activities'}
                           </p>
-                          <div className="text-xs text-blue-600 bg-blue-50 p-2 rounded">
+                          <div className="text-[10px] xs:text-xs text-blue-600 bg-blue-50 p-1.5 xs:p-2 rounded">
                             <span className="font-medium">Tip:</span> Regular activity logging helps track your wellness patterns
                           </div>
                         </CardContent>
                       </Card>
 
                       <Card className="bg-gradient-to-br from-orange-50 to-amber-50 border-orange-100">
-                        <CardHeader className="pb-2">
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-lg font-medium text-orange-900 flex items-center gap-2">
-                              <Zap className="h-4 w-4" />
+                        <CardHeader className="pb-2 px-3 xs:px-6">
+                          <div className="flex items-center justify-between gap-1">
+                            <CardTitle className="text-sm xs:text-lg font-medium text-orange-900 flex items-center gap-1 xs:gap-2">
+                              <Zap className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
                               Energy Level
                             </CardTitle>
                             {todayMood?.summary?.avgEnergy && getWellbeingBadge(todayMood.summary.avgEnergy)}
                           </div>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                        <CardContent className="space-y-2 xs:space-y-3 px-3 xs:px-6">
                           <div className="flex items-baseline gap-2">
-                            <span className="text-4xl font-bold text-orange-700">
+                            <span className="text-3xl xs:text-4xl font-bold text-orange-700">
                               {todayMood?.summary?.avgEnergy ? todayMood.summary.avgEnergy.toFixed(1) : '—'}
                             </span>
-                            <span className="text-sm text-orange-600">/10</span>
+                            <span className="text-xs xs:text-sm text-orange-600">/10</span>
                             
                           </div>
                           {todayMood?.summary?.avgEnergy && (
@@ -638,42 +638,42 @@ export default function History() {
                               </div>
                               
                               {logs.length > 0 ? (
-                                <div className="grid gap-3 pl-6">
+                                <div className="grid gap-2 xs:gap-3 pl-3 xs:pl-6">
                                   {logs.map((log: any) => (
                                     <div 
                                       key={log._id} 
-                                      className="flex items-center gap-4 p-3 rounded-lg bg-secondary/30 border hover:bg-secondary/50 transition-colors"
+                                      className="flex items-center gap-2 xs:gap-4 p-2 xs:p-3 rounded-lg bg-secondary/30 border hover:bg-secondary/50 transition-colors"
                                     >
-                                      <div className="flex flex-col items-center min-w-[60px]">
-                                        <span className="text-lg font-semibold">
+                                      <div className="flex flex-col items-center min-w-[40px] xs:min-w-[60px]">
+                                        <span className="text-sm xs:text-lg font-semibold">
                                           {format(new Date(log.date), 'h:mm')}
                                         </span>
-                                        <span className="text-xs text-muted-foreground">
+                                        <span className="text-[10px] xs:text-xs text-muted-foreground">
                                           {format(new Date(log.date), 'a')}
                                         </span>
                                       </div>
-                                      <div className="flex-1">
-                                        <div className="flex items-center gap-2 flex-wrap">
-                                          <span className="font-medium capitalize">{log.mood}</span>
+                                      <div className="flex-1 min-w-0">
+                                        <div className="flex items-center gap-1 xs:gap-2 flex-wrap">
+                                          <span className="font-medium capitalize text-xs xs:text-base">{log.mood}</span>
                                           {getWellbeingBadge(log.moodScore || 5)}
                                         </div>
                                         {log.notes && (
-                                          <p className="text-sm text-muted-foreground mt-1 line-clamp-1">
+                                          <p className="text-xs xs:text-sm text-muted-foreground mt-1 line-clamp-1">
                                             {log.notes}
                                           </p>
                                         )}
                                       </div>
-                                      <div className="text-right text-xs space-y-1">
+                                      <div className="text-right text-[10px] xs:text-xs space-y-1 shrink-0">
                                         {log.energyLevel && (
-                                          <p className="flex items-center justify-end gap-1">
-                                            <Zap className="h-3 w-3 text-orange-500" />
-                                            Energy: {log.energyLevel}/10
+                                          <p className="flex items-center justify-end gap-0.5 xs:gap-1">
+                                            <Zap className="h-2.5 w-2.5 xs:h-3 xs:w-3 text-orange-500" />
+                                            {log.energyLevel}/10
                                           </p>
                                         )}
                                         {log.stressLevel && (
-                                          <p className="flex items-center justify-end gap-1">
-                                            <Brain className="h-3 w-3 text-purple-500" />
-                                            Stress: {log.stressLevel}/10
+                                          <p className="flex items-center justify-end gap-0.5 xs:gap-1">
+                                            <Brain className="h-2.5 w-2.5 xs:h-3 xs:w-3 text-purple-500" />
+                                            {log.stressLevel}/10
                                           </p>
                                         )}
                                       </div>
@@ -709,7 +709,7 @@ export default function History() {
                   isLoading={isLoading}
                 />
 
-                <div className="grid md:grid-cols-3 gap-6">
+                <div className="grid md:grid-cols-3 gap-3 xs:gap-4 sm:gap-6">
                   {isLoading ? (
                     <>
                       <Skeleton className="h-48" />
@@ -719,23 +719,23 @@ export default function History() {
                   ) : (
                     <>
                       <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-100">
-                        <CardHeader className="pb-2">
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-lg font-medium text-green-900 flex items-center gap-2">
-                              <Heart className="h-4 w-4" />
+                        <CardHeader className="pb-2 px-3 xs:px-6">
+                          <div className="flex items-center justify-between gap-1">
+                            <CardTitle className="text-sm xs:text-lg font-medium text-green-900 flex items-center gap-1 xs:gap-2">
+                              <Heart className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
                               Average Mood
                             </CardTitle>
                             {avgMood > 0 && getWellbeingBadge(avgMood)}
                           </div>
                         </CardHeader>
-                        <CardContent className="space-y-3">
-                          <div className="flex items-baseline gap-2">
-                            <span className="text-4xl font-bold text-green-700">
+                        <CardContent className="space-y-2 xs:space-y-3 px-3 xs:px-6">
+                          <div className="flex items-baseline gap-1 xs:gap-2 flex-wrap">
+                            <span className="text-3xl xs:text-4xl font-bold text-green-700">
                               {avgMood > 0 ? avgMood.toFixed(1) : '—'}
                             </span>
-                            <span className="text-sm text-green-600">/10</span>
+                            <span className="text-xs xs:text-sm text-green-600">/10</span>
                             {avgMood > 0 && (
-                              <span className={`text-xs font-medium flex items-center ml-2 px-2 py-0.5 rounded-full ${moodTrendDisplay.color} bg-white/50`}>
+                              <span className={`text-[10px] xs:text-xs font-medium flex items-center ml-1 xs:ml-2 px-1.5 xs:px-2 py-0.5 rounded-full ${moodTrendDisplay.color} bg-white/50`}>
                                 {moodTrendDisplay.text}
                               </span>
                             )}
@@ -759,10 +759,10 @@ export default function History() {
                       </Card>
                       
                       <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100">
-                        <CardHeader className="pb-2">
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-lg font-medium text-blue-900 flex items-center gap-2">
-                              <Activity className="h-4 w-4" />
+                        <CardHeader className="pb-2 px-3 xs:px-6">
+                          <div className="flex items-center justify-between gap-1">
+                            <CardTitle className="text-sm xs:text-lg font-medium text-blue-900 flex items-center gap-1 xs:gap-2">
+                              <Activity className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
                               Activities Logged
                             </CardTitle>
                             {totalActivities > 10 && (
@@ -772,10 +772,10 @@ export default function History() {
                             )}
                           </div>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                        <CardContent className="space-y-2 xs:space-y-3 px-3 xs:px-6">
                           <div className="flex items-baseline gap-2">
-                            <span className="text-4xl font-bold text-blue-700">{totalActivities}</span>
-                            <span className="text-sm text-blue-600">sessions</span>
+                            <span className="text-3xl xs:text-4xl font-bold text-blue-700">{totalActivities}</span>
+                            <span className="text-xs xs:text-sm text-blue-600">sessions</span>
                             
                           </div>
                           <p className="text-xs text-muted-foreground">
@@ -793,21 +793,21 @@ export default function History() {
                       </Card>
 
                       <Card className="bg-gradient-to-br from-purple-50 to-violet-50 border-purple-100">
-                        <CardHeader className="pb-2">
-                          <div className="flex items-center justify-between">
-                            <CardTitle className="text-lg font-medium text-purple-900 flex items-center gap-2">
-                              <Activity className="h-4 w-4" />
+                        <CardHeader className="pb-2 px-3 xs:px-6">
+                          <div className="flex items-center justify-between gap-1">
+                            <CardTitle className="text-sm xs:text-lg font-medium text-purple-900 flex items-center gap-1 xs:gap-2">
+                              <Activity className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
                               Wellbeing Score
                             </CardTitle>
                             {latestReportScore && getWellbeingBadge(latestReportScore, 100)}
                           </div>
                         </CardHeader>
-                        <CardContent className="space-y-3">
+                        <CardContent className="space-y-2 xs:space-y-3 px-3 xs:px-6">
                           <div className="flex items-baseline gap-2">
-                            <span className="text-4xl font-bold text-purple-700">
+                            <span className="text-3xl xs:text-4xl font-bold text-purple-700">
                               {latestReportScore || '—'}
                             </span>
-                            {latestReportScore && <span className="text-sm text-purple-600">/100</span>}
+                            {latestReportScore && <span className="text-xs xs:text-sm text-purple-600">/100</span>}
                             
                           </div>
                           {latestReportScore && (
@@ -912,80 +912,80 @@ export default function History() {
                       <CardDescription>Comprehensive breakdown of your wellbeing metrics with explanations</CardDescription>
                     </CardHeader>
                     <CardContent>
-                      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
-                        <div className="p-4 rounded-lg bg-green-50 border border-green-100">
-                          <div className="flex items-center gap-2 mb-2">
+                      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 xs:gap-3 sm:gap-4 mb-3 xs:mb-4 sm:mb-6">
+                        <div className="p-2 xs:p-4 rounded-lg bg-green-50 border border-green-100">
+                          <div className="flex items-center gap-1 xs:gap-2 mb-1 xs:mb-2">
                             <span className={`${moodTrendDisplay.color}`}>{moodTrendDisplay.icon}</span>
-                            <span className="text-sm font-medium text-green-900">Mood</span>
+                            <span className="text-xs xs:text-sm font-medium text-green-900">Mood</span>
                             
                           </div>
-                          <div className="text-2xl font-bold text-green-700">
+                          <div className="text-xl xs:text-2xl font-bold text-green-700">
                             {avgMood > 0 ? avgMood.toFixed(1) : '—'}
-                            <span className="text-sm font-normal text-green-600">/10</span>
+                            <span className="text-xs xs:text-sm font-normal text-green-600">/10</span>
                           </div>
-                          <Progress value={avgMood > 0 ? (avgMood / 10) * 100 : 0} className="h-1.5 mt-2 bg-green-100" />
-                          <p className="text-xs text-green-700 mt-2 capitalize">{moodTrendDisplay.text}</p>
+                          <Progress value={avgMood > 0 ? (avgMood / 10) * 100 : 0} className="h-1.5 mt-1.5 xs:mt-2 bg-green-100" />
+                          <p className="text-[10px] xs:text-xs text-green-700 mt-1.5 xs:mt-2 capitalize">{moodTrendDisplay.text}</p>
                         </div>
 
-                        <div className="p-4 rounded-lg bg-orange-50 border border-orange-100">
-                          <div className="flex items-center gap-2 mb-2">
+                        <div className="p-2 xs:p-4 rounded-lg bg-orange-50 border border-orange-100">
+                          <div className="flex items-center gap-1 xs:gap-2 mb-1 xs:mb-2">
                             <span className={`${stressTrendDisplay.color}`}>{stressTrendDisplay.icon}</span>
-                            <span className="text-sm font-medium text-orange-900">Stress</span>
+                            <span className="text-xs xs:text-sm font-medium text-orange-900">Stress</span>
                             
                           </div>
-                          <div className="text-2xl font-bold text-orange-700">
+                          <div className="text-xl xs:text-2xl font-bold text-orange-700">
                             {avgStress ? avgStress.toFixed(1) : '—'}
-                            <span className="text-sm font-normal text-orange-600">/10</span>
+                            <span className="text-xs xs:text-sm font-normal text-orange-600">/10</span>
                           </div>
-                          <Progress value={avgStress ? (avgStress / 10) * 100 : 0} className="h-1.5 mt-2 bg-orange-100" />
-                          <p className="text-xs text-orange-700 mt-2 capitalize">{stressTrendDisplay.text}</p>
+                          <Progress value={avgStress ? (avgStress / 10) * 100 : 0} className="h-1.5 mt-1.5 xs:mt-2 bg-orange-100" />
+                          <p className="text-[10px] xs:text-xs text-orange-700 mt-1.5 xs:mt-2 capitalize">{stressTrendDisplay.text}</p>
                         </div>
 
-                        <div className="p-4 rounded-lg bg-cyan-50 border border-cyan-100">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Zap className="h-4 w-4 text-cyan-600" />
-                            <span className="text-sm font-medium text-cyan-900">Energy</span>
+                        <div className="p-2 xs:p-4 rounded-lg bg-cyan-50 border border-cyan-100">
+                          <div className="flex items-center gap-1 xs:gap-2 mb-1 xs:mb-2">
+                            <Zap className="h-3.5 w-3.5 xs:h-4 xs:w-4 text-cyan-600" />
+                            <span className="text-xs xs:text-sm font-medium text-cyan-900">Energy</span>
                             
                           </div>
-                          <div className="text-2xl font-bold text-cyan-700">
+                          <div className="text-xl xs:text-2xl font-bold text-cyan-700">
                             {avgEnergy ? avgEnergy.toFixed(1) : '—'}
-                            <span className="text-sm font-normal text-cyan-600">/10</span>
+                            <span className="text-xs xs:text-sm font-normal text-cyan-600">/10</span>
                           </div>
-                          <Progress value={avgEnergy ? (avgEnergy / 10) * 100 : 0} className="h-1.5 mt-2 bg-cyan-100" />
-                          <p className="text-xs text-cyan-700 mt-2">Average level</p>
+                          <Progress value={avgEnergy ? (avgEnergy / 10) * 100 : 0} className="h-1.5 mt-1.5 xs:mt-2 bg-cyan-100" />
+                          <p className="text-[10px] xs:text-xs text-cyan-700 mt-1.5 xs:mt-2">Average level</p>
                         </div>
 
-                        <div className="p-4 rounded-lg bg-indigo-50 border border-indigo-100">
-                          <div className="flex items-center gap-2 mb-2">
+                        <div className="p-2 xs:p-4 rounded-lg bg-indigo-50 border border-indigo-100">
+                          <div className="flex items-center gap-1 xs:gap-2 mb-1 xs:mb-2">
                             <span className={`${activityTrendDisplay.color}`}>{activityTrendDisplay.icon}</span>
-                            <span className="text-sm font-medium text-indigo-900">Activity</span>
+                            <span className="text-xs xs:text-sm font-medium text-indigo-900">Activity</span>
                             
                           </div>
-                          <div className="text-2xl font-bold text-indigo-700">
+                          <div className="text-xl xs:text-2xl font-bold text-indigo-700">
                             {totalActivityMinutes}
-                            <span className="text-sm font-normal text-indigo-600"> min</span>
+                            <span className="text-xs xs:text-sm font-normal text-indigo-600"> min</span>
                           </div>
-                          <p className="text-xs text-indigo-700 mt-2">{totalActivities} sessions logged</p>
+                          <p className="text-[10px] xs:text-xs text-indigo-700 mt-1.5 xs:mt-2">{totalActivities} sessions logged</p>
                         </div>
                       </div>
 
                       {latestReport.analysis?.summary && (
-                        <div className="p-4 rounded-lg bg-gray-50 border mb-4">
-                          <h4 className="font-medium text-sm mb-2 flex items-center gap-2">
+                        <div className="p-2.5 xs:p-4 rounded-lg bg-gray-50 border mb-3 xs:mb-4">
+                          <h4 className="font-medium text-xs xs:text-sm mb-1.5 xs:mb-2 flex items-center gap-2">
                             Summary
                           </h4>
-                          <p className="text-sm text-muted-foreground">{latestReport.analysis.summary}</p>
+                          <p className="text-xs xs:text-sm text-muted-foreground">{latestReport.analysis.summary}</p>
                         </div>
                       )}
 
                       {latestReport.recommendations && latestReport.recommendations.length > 0 && (
-                        <div className="p-4 rounded-lg bg-amber-50 border border-amber-100">
-                          <h4 className="font-medium text-sm mb-3 text-amber-900 flex items-center gap-2">
+                        <div className="p-2.5 xs:p-4 rounded-lg bg-amber-50 border border-amber-100">
+                          <h4 className="font-medium text-xs xs:text-sm mb-2 xs:mb-3 text-amber-900 flex items-center gap-2">
                             Personalized Recommendations
                           </h4>
-                          <ul className="space-y-2">
+                          <ul className="space-y-1.5 xs:space-y-2">
                             {latestReport.recommendations.slice(0, 4).map((rec: any, i: number) => (
-                              <li key={i} className="flex items-start gap-2 text-sm">
+                              <li key={i} className="flex items-start gap-1.5 xs:gap-2 text-xs xs:text-sm">
                                 <span className="text-amber-600 mt-0.5">✓</span>
                                 <div>
                                   <span className="font-medium text-amber-900">

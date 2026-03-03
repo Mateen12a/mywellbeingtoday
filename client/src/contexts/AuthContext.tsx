@@ -132,8 +132,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       const response = await api.getProfile();
       if (response.success && response.data?.user) {
-        setUser(response.data.user);
-        api.setUser(response.data.user);
+        const updatedUser = response.data.user;
+        setUser(updatedUser);
+        api.setUser(updatedUser);
+        // Dispatch custom event to notify other components that user data changed
+        window.dispatchEvent(new CustomEvent('user-profile-updated', { detail: updatedUser }));
       }
     } catch {
       // Silent fail

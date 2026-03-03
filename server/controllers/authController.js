@@ -471,12 +471,23 @@ export const resetPassword = async (req, res, next) => {
 
 export const getProfile = async (req, res, next) => {
   try {
+    const Subscription = (await import('../models/Subscription.js')).default;
+    
     const user = await User.findById(req.user._id).select('-password');
     let provider = null;
 
-    // If user is a provider, get their provider profile
     if (user.role === USER_ROLES.PROVIDER) {
       provider = await Provider.findOne({ userId: req.user._id });
+    }
+
+    const subDoc = await Subscription.findOne({ userId: req.user._id });
+    if (subDoc && (user.subscription?.plan !== subDoc.plan || user.subscription?.status !== subDoc.status)) {
+      user.subscription = {
+        plan: subDoc.plan,
+        status: subDoc.status,
+        expiresAt: subDoc.currentPeriodEnd
+      };
+      await user.save();
     }
 
     res.json({

@@ -14,13 +14,13 @@ import { validatePassword, validateEmail, validateName } from "@/lib/validation"
 import api from "@/lib/api";
 
 const AuthLayout = ({ children, title, subtitle }: { children: React.ReactNode, title: string, subtitle: string }) => (
-  <div className="flex items-center justify-center min-h-[80vh]">
+  <div className="flex items-center justify-center min-h-[80vh] px-1 sm:px-4">
     <Card className="w-full max-w-md shadow-2xl border-secondary/50 animate-in fade-in zoom-in-95 duration-300">
-      <CardHeader className="space-y-1 text-center">
-        <CardTitle className="text-2xl font-serif font-bold text-primary">{title}</CardTitle>
-        <CardDescription>{subtitle}</CardDescription>
+      <CardHeader className="space-y-1 text-center px-3 sm:px-6">
+        <CardTitle className="text-xl sm:text-2xl font-serif font-bold text-primary">{title}</CardTitle>
+        <CardDescription className="text-xs sm:text-sm">{subtitle}</CardDescription>
       </CardHeader>
-      <CardContent>
+      <CardContent className="px-3 sm:px-6 auth-card">
         {children}
       </CardContent>
     </Card>
@@ -650,12 +650,12 @@ export function Verify() {
     <AuthLayout title={isLoginVerification ? "Verify Your Identity" : "Verify Email"} subtitle={`Enter the code sent to ${maskEmail(email)}`}>
       <form onSubmit={handleVerify} className="space-y-6">
         <div className="space-y-4 text-center">
-          <div className="flex justify-center gap-2" onPaste={handlePaste}>
+          <div className="flex justify-center gap-1.5 sm:gap-2" onPaste={handlePaste}>
             {otp.map((digit, index) => (
               <Input
                 key={index}
                 ref={(el) => { inputRefs.current[index] = el; }}
-                className="w-11 h-14 text-center text-xl font-bold rounded-lg"
+                className="w-9 h-12 sm:w-11 sm:h-14 text-center text-lg sm:text-xl font-bold rounded-lg auth-otp-input"
                 maxLength={1}
                 value={digit}
                 onChange={(e) => handleChange(index, e.target.value)}
@@ -793,12 +793,12 @@ export function Reverify() {
             <Shield className="h-6 w-6" />
           </div>
           <p className="text-sm text-muted-foreground">Your session needs re-verification for security purposes.</p>
-          <div className="flex justify-center gap-2" onPaste={handlePaste}>
+          <div className="flex justify-center gap-1.5 sm:gap-2" onPaste={handlePaste}>
             {otp.map((digit, index) => (
               <Input
                 key={index}
                 ref={(el) => { inputRefs.current[index] = el; }}
-                className="w-11 h-14 text-center text-xl font-bold rounded-lg"
+                className="w-9 h-12 sm:w-11 sm:h-14 text-center text-lg sm:text-xl font-bold rounded-lg auth-otp-input"
                 maxLength={1}
                 value={digit}
                 onChange={(e) => handleChange(index, e.target.value)}
@@ -1017,12 +1017,12 @@ export function Recovery() {
       {step === 'otp' && (
         <form onSubmit={handleOtpSubmit} className="space-y-6">
           <div className="space-y-4 text-center">
-            <div className="flex justify-center gap-2" onPaste={handleOtpPaste}>
+            <div className="flex justify-center gap-1.5 sm:gap-2" onPaste={handleOtpPaste}>
               {otp.map((digit, index) => (
                 <Input
                   key={index}
                   ref={(el) => { inputRefs.current[index] = el; }}
-                  className="w-11 h-14 text-center text-xl font-bold rounded-lg"
+                  className="w-9 h-12 sm:w-11 sm:h-14 text-center text-lg sm:text-xl font-bold rounded-lg auth-otp-input"
                   maxLength={1}
                   value={digit}
                   onChange={(e) => handleOtpChange(index, e.target.value)}

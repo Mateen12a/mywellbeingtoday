@@ -94,7 +94,7 @@ const HeroCarousel = () => {
   const Icon = slide.icon;
 
   return (
-    <div className="relative h-[320px] w-full max-w-md mx-auto">
+    <div className="relative h-[280px] max-[300px]:h-[260px] w-full max-w-md mx-auto">
       <AnimatePresence mode="wait">
         <motion.div
           key={index}
@@ -104,29 +104,29 @@ const HeroCarousel = () => {
           transition={{ duration: 0.5, ease: "easeInOut" }}
           className="absolute inset-0"
         >
-          <Card className="border-0 shadow-2xl bg-white/60 backdrop-blur-md p-6 h-full flex flex-col justify-between">
-            <CardContent className="p-0 space-y-6">
-              <div className="flex items-center justify-between border-b pb-4">
-                <div className="space-y-1">
-                  <div className="text-sm text-muted-foreground font-medium uppercase tracking-wide">
+          <Card className="border-0 shadow-2xl bg-white/60 backdrop-blur-md p-3 max-[300px]:p-2 sm:p-6 h-full flex flex-col justify-between">
+            <CardContent className="p-0 space-y-4 max-[300px]:space-y-3 sm:space-y-6">
+              <div className="flex items-center justify-between border-b pb-3 max-[300px]:pb-2 sm:pb-4">
+                <div className="space-y-1 min-w-0 flex-1">
+                  <div className="text-xs max-[300px]:text-[10px] sm:text-sm text-muted-foreground font-medium uppercase tracking-wide">
                     {slide.title}
                   </div>
                   <div
-                    className={`text-2xl font-serif font-bold ${slide.color}`}
+                    className={`text-lg max-[300px]:text-base sm:text-2xl font-serif font-bold ${slide.color} truncate`}
                   >
                     {slide.value}
                   </div>
                 </div>
                 {slide.avatar ? (
-                  <Avatar className="h-14 w-14 border-2 border-white shadow-md">
+                  <Avatar className="h-10 w-10 max-[300px]:h-8 max-[300px]:w-8 sm:h-14 sm:w-14 border-2 border-white shadow-md shrink-0 ml-2">
                     <AvatarImage src={slide.avatar} className="object-cover" />
                     <AvatarFallback>{slide.value[0]}</AvatarFallback>
                   </Avatar>
                 ) : (
                   <div
-                    className={`h-12 w-12 rounded-full ${slide.bg}/10 flex items-center justify-center ${slide.color}`}
+                    className={`h-10 w-10 max-[300px]:h-8 max-[300px]:w-8 sm:h-12 sm:w-12 rounded-full ${slide.bg}/10 flex items-center justify-center ${slide.color} shrink-0 ml-2`}
                   >
-                    <Icon className="w-6 h-6 fill-current" />
+                    <Icon className="w-5 h-5 max-[300px]:w-4 max-[300px]:h-4 sm:w-6 sm:h-6 fill-current" />
                   </div>
                 )}
               </div>
@@ -194,7 +194,7 @@ export default function Landing() {
   }
 
   return (
-    <div className="flex flex-col gap-8 md:gap-24">
+    <div className="flex flex-col gap-6 max-[300px]:gap-4 sm:gap-8 md:gap-24 overflow-x-hidden">
       {/* Hero Section - Improved Design */}
       <section className="relative overflow-hidden">
         {/* Dynamic Background */}
@@ -204,7 +204,7 @@ export default function Landing() {
           <div className="absolute bottom-0 left-0 w-[400px] h-[400px] bg-gradient-to-tr from-green-100 to-primary/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
         </div>
 
-        <div className="flex flex-col lg:flex-row items-center gap-8 sm:gap-10 lg:gap-16 py-8 sm:py-10 md:py-12 animate-in slide-in-from-bottom-4 duration-700 px-2 sm:px-4">
+        <div className="flex flex-col lg:flex-row items-center gap-6 max-[300px]:gap-4 sm:gap-10 lg:gap-16 py-6 max-[300px]:py-4 sm:py-10 md:py-12 animate-in slide-in-from-bottom-4 duration-700 px-1 max-[300px]:px-1 sm:px-4">
           {/* Left Content */}
           <div className="flex-1 z-10 space-y-5 sm:space-y-6 md:space-y-8 text-center lg:text-left">
             {/* Main Headline */}
@@ -214,7 +214,7 @@ export default function Landing() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="space-y-4 sm:space-y-5"
             >
-              <h1 className="text-3xl sm:text-4xl md:text-[2.8rem] lg:text-5xl font-serif font-bold text-slate-900 leading-tight">
+              <h1 className="text-xl max-[300px]:text-lg sm:text-4xl md:text-[2.8rem] lg:text-5xl font-serif font-bold text-slate-900 leading-tight">
                 Your personal{" "}
                 <span className="text-primary relative">
                   wellbeing companion
@@ -232,7 +232,7 @@ export default function Landing() {
                   </svg>
                 </span>
               </h1>
-              <p className="text-lg sm:text-xl md:text-2xl text-slate-600 max-w-lg leading-relaxed mx-auto lg:mx-0">
+              <p className="text-sm max-[300px]:text-xs sm:text-xl md:text-2xl text-slate-600 max-w-lg leading-relaxed mx-auto lg:mx-0">
                 Log your activities, track your mood, access your report, and
                 connect with health and social care providers near you.
               </p>
@@ -243,7 +243,7 @@ export default function Landing() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.2 }}
-              className="flex flex-wrap gap-3 sm:gap-4 justify-center lg:justify-start"
+              className="flex flex-col max-[300px]:flex-col xs:flex-row flex-wrap gap-2 max-[300px]:gap-1.5 sm:gap-4 justify-center lg:justify-start"
             >
               {[
                 { icon: Activity, text: "Activity Log", detail: "Log your daily activities including exercise, meals, sleep, social interactions, and more. Build healthy habits by monitoring your routines." },
@@ -254,10 +254,10 @@ export default function Landing() {
                 <button
                   key={i}
                   onClick={() => setSelectedFeature({ text: item.text, detail: item.detail })}
-                  className="flex items-center gap-2 sm:gap-2.5 bg-white/80 backdrop-blur-sm px-4 sm:px-5 py-2.5 sm:py-3 rounded-xl shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow duration-200"
+                  className="flex items-center gap-1.5 max-[300px]:gap-1 sm:gap-2.5 bg-white/80 backdrop-blur-sm px-2.5 max-[300px]:px-2 sm:px-5 py-2 max-[300px]:py-1.5 sm:py-3 rounded-xl shadow-sm border border-slate-100 cursor-pointer hover:shadow-md transition-shadow duration-200 w-full max-[300px]:w-full xs:w-auto"
                 >
-                  <item.icon className="w-5 h-5 sm:w-5 sm:h-5 text-primary" />
-                  <span className="text-sm sm:text-base font-medium text-slate-700">
+                  <item.icon className="w-4 h-4 max-[300px]:w-3.5 max-[300px]:h-3.5 sm:w-5 sm:h-5 text-primary shrink-0" />
+                  <span className="text-xs max-[300px]:text-[11px] sm:text-base font-medium text-slate-700">
                     {item.text}
                   </span>
                 </button>
@@ -269,13 +269,13 @@ export default function Landing() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.5, delay: 0.3 }}
-              className="flex flex-col sm:flex-row gap-4 pt-4 sm:pt-5 justify-center lg:justify-start"
+              className="flex flex-col sm:flex-row gap-3 max-[300px]:gap-2 pt-3 max-[300px]:pt-2 sm:pt-5 justify-center lg:justify-start"
             >
               {isAuthenticated ? (
                 <Link href="/dashboard">
                   <Button
                     size="lg"
-                    className="w-full sm:w-auto shadow-lg shadow-primary/25 text-base sm:text-lg font-semibold"
+                    className="w-full shadow-lg shadow-primary/25 text-sm max-[300px]:text-xs sm:text-lg font-semibold"
                     data-testid="button-dashboard-hero"
                   >
                     Go to Dashboard
@@ -287,18 +287,18 @@ export default function Landing() {
                   <Link href="/auth/register">
                     <Button
                       size="lg"
-                      className="w-full sm:w-auto shadow-lg shadow-primary/25 text-base sm:text-lg font-semibold"
+                      className="w-full shadow-lg shadow-primary/25 text-sm max-[300px]:text-xs sm:text-lg font-semibold"
                       data-testid="button-get-started-hero"
                     >
                       Get Started Free
-                      <ArrowRight className="ml-2 w-5 h-5" />
+                      <ArrowRight className="ml-2 w-4 h-4 sm:w-5 sm:h-5" />
                     </Button>
                   </Link>
                   <Link href="/auth/login">
                     <Button
                       size="lg"
                       variant="outline"
-                      className="w-full sm:w-auto text-base sm:text-lg font-semibold bg-white/80 border-2 border-slate-200"
+                      className="w-full text-sm max-[300px]:text-xs sm:text-lg font-semibold bg-white/80 border-2 border-slate-200"
                       data-testid="button-signin-hero"
                     >
                       Sign In
@@ -575,7 +575,7 @@ export default function Landing() {
 
       {/* Core Benefits */}
       <section className="space-y-12">
-        <div className="grid md:grid-cols-3 gap-8">
+        <div className="grid grid-cols-1 max-[300px]:grid-cols-1 md:grid-cols-3 gap-4 max-[300px]:gap-3 sm:gap-8">
           {[
             {
               icon: Activity,
@@ -597,11 +597,11 @@ export default function Landing() {
               key={i}
               className="group hover:shadow-lg transition-all duration-300 border-secondary/50 bg-card/50"
             >
-              <CardContent className="p-8 space-y-4">
-                <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
-                  <feature.icon className="w-6 h-6" />
+              <CardContent className="p-4 max-[300px]:p-3 sm:p-8 space-y-3 max-[300px]:space-y-2 sm:space-y-4">
+                <div className="h-10 w-10 max-[300px]:h-8 max-[300px]:w-8 sm:h-12 sm:w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center group-hover:scale-110 transition-transform duration-300">
+                  <feature.icon className="w-5 h-5 max-[300px]:w-4 max-[300px]:h-4 sm:w-6 sm:h-6" />
                 </div>
-                <h3 className="text-xl font-bold font-serif text-black">
+                <h3 className="text-base max-[300px]:text-sm sm:text-xl font-bold font-serif text-black">
                   {feature.title}
                 </h3>
                 <p className="text-gray-800 font-medium leading-relaxed">
@@ -613,12 +613,12 @@ export default function Landing() {
         </div>
       </section>
 
-      <section className="max-w-3xl mx-auto px-4">
+      <section className="max-w-3xl mx-auto px-2 max-[300px]:px-1 sm:px-4">
         <Card className="bg-gradient-to-br from-primary/5 to-blue-50 border border-primary/10 shadow-md">
-          <CardContent className="p-6 md:p-8 text-center space-y-3">
+          <CardContent className="p-4 max-[300px]:p-3 sm:p-6 md:p-8 text-center space-y-2 max-[300px]:space-y-1.5 sm:space-y-3">
             <div className="flex items-center justify-center gap-2 text-primary">
-              <Monitor className="w-5 h-5" />
-              <h3 className="text-lg font-serif font-bold">
+              <Monitor className="w-4 h-4 sm:w-5 sm:h-5" />
+              <h3 className="text-base max-[300px]:text-sm sm:text-lg font-serif font-bold">
                 iOS & Android Apps Coming Soon
               </h3>
             </div>

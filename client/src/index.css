@@ -7,6 +7,8 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
+  --breakpoint-xs: 20rem;
+
   --radius-sm: calc(var(--radius) - 4px);
   --radius-md: calc(var(--radius) - 2px);
   --radius-lg: var(--radius);
@@ -191,4 +193,140 @@
 .no-scrollbar {
   -ms-overflow-style: none;
   scrollbar-width: none;
+}
+
+@media (max-width: 300px) {
+  html {
+    font-size: 13px;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
+
+  .container {
+    padding-left: 4px !important;
+    padding-right: 4px !important;
+  }
+
+
+  .dashboard-greeting-text {
+    font-size: 1rem !important;
+  }
+
+  .dashboard-quick-actions {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-suggestions-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .dashboard-chart-container {
+    height: 200px !important;
+  }
+
+  .sub-dialog-plans-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sub-dialog-usage-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .sub-dialog-billing-text {
+    word-break: break-word;
+    white-space: normal !important;
+  }
+
+  .directory-tabs-list {
+    flex-wrap: wrap !important;
+    gap: 2px !important;
+  }
+
+  .directory-tabs-list > * {
+    font-size: 0.65rem !important;
+    padding: 4px 6px !important;
+  }
+
+  .directory-search-card {
+    padding: 6px !important;
+  }
+
+  .directory-emergency-number {
+    font-size: 1.25rem !important;
+  }
+
+  .directory-emergency-dial {
+    padding: 8px !important;
+  }
+
+  .directory-emergency-dial-icon {
+    width: 36px !important;
+    height: 36px !important;
+    min-width: 36px !important;
+  }
+
+  .directory-emergency-phone-btn {
+    width: 32px !important;
+    height: 32px !important;
+    min-width: 32px !important;
+  }
+
+  .appointment-stats-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .appointment-card-avatar {
+    width: 36px !important;
+    height: 36px !important;
+  }
+
+  .certificate-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .certificate-filter-controls {
+    flex-direction: column !important;
+  }
+
+  .certificate-filter-controls > * {
+    width: 100% !important;
+    min-width: 0 !important;
+  }
+
+  .settings-tabs-list {
+    gap: 1px !important;
+  }
+
+  .settings-tabs-list > * {
+    font-size: 0.6rem !important;
+    padding: 4px 4px !important;
+    gap: 2px !important;
+  }
+
+  .settings-avatar {
+    width: 64px !important;
+    height: 64px !important;
+  }
+
+  .settings-avatar-section {
+    flex-direction: column !important;
+    align-items: center !important;
+    gap: 12px !important;
+  }
+
+  .auth-otp-input {
+    width: 36px !important;
+    height: 44px !important;
+    font-size: 1rem !important;
+  }
+
+  .auth-card {
+    padding: 8px !important;
+  }
 }

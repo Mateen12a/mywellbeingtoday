@@ -29,8 +29,17 @@ const subscriptionSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
+  currentPeriodStart: {
+    type: Date,
+    default: null
+  },
   currentPeriodEnd: {
     type: Date,
+    default: null
+  },
+  previousPlan: {
+    type: String,
+    enum: ['free', 'starter', 'pro', 'premium', 'team', 'franchise', null],
     default: null
   },
   cancelledAt: {
@@ -43,6 +52,17 @@ const subscriptionSchema = new mongoose.Schema({
     reportDownloads: { type: Number, default: 0 },
     directoryAccess: { type: Number, default: 0 },
     aiInteractions: { type: Number, default: 0 }
+  },
+  monthlyUsage: {
+    activityLogs: { type: Number, default: 0 },
+    moodLogs: { type: Number, default: 0 },
+    reportDownloads: { type: Number, default: 0 },
+    directoryAccess: { type: Number, default: 0 },
+    aiInteractions: { type: Number, default: 0 }
+  },
+  monthlyUsagePeriodStart: {
+    type: Date,
+    default: Date.now
   },
   usagePeriodStart: {
     type: Date,
@@ -102,6 +122,25 @@ subscriptionSchema.methods.shouldResetUsage = function() {
   return now.getUTCDate() !== periodStart.getUTCDate() ||
     now.getUTCMonth() !== periodStart.getUTCMonth() ||
     now.getUTCFullYear() !== periodStart.getUTCFullYear();
+};
+
+subscriptionSchema.methods.shouldResetMonthlyUsage = function() {
+  if (!this.monthlyUsagePeriodStart) return true;
+  const now = new Date();
+  const periodStart = new Date(this.monthlyUsagePeriodStart);
+  return now.getUTCMonth() !== periodStart.getUTCMonth() ||
+    now.getUTCFullYear() !== periodStart.getUTCFullYear();
+};
+
+subscriptionSchema.methods.resetMonthlyUsage = function() {
+  this.monthlyUsage = {
+    activityLogs: 0,
+    moodLogs: 0,
+    reportDownloads: 0,
+    directoryAccess: 0,
+    aiInteractions: 0
+  };
+  this.monthlyUsagePeriodStart = new Date();
 };
 
 subscriptionSchema.methods.toJSON = function() {

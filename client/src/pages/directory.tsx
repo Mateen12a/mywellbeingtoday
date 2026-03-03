@@ -1319,20 +1319,20 @@ const EmergencyTabContent = ({ emergencyProviders, isLoadingProviders }: Emergen
               <a
                 key={index}
                 href={`tel:${emergency.number.replace(/\s/g, '')}`}
-                className="flex items-center gap-4 p-4 bg-white dark:bg-red-950/50 rounded-xl border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/50 transition-all group shadow-sm hover:shadow-md"
+                className="flex items-center gap-2 sm:gap-4 p-2 sm:p-4 bg-white dark:bg-red-950/50 rounded-xl border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/50 transition-all group shadow-sm hover:shadow-md directory-emergency-dial"
                 data-testid={`dial-emergency-${index}`}
               >
-                <div className="h-14 w-14 rounded-full bg-red-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-md">
-                  <Phone className="w-6 h-6 text-white" />
+                <div className="h-10 w-10 sm:h-14 sm:w-14 rounded-full bg-red-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-md directory-emergency-dial-icon">
+                  <Phone className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-2xl sm:text-3xl font-bold text-red-700 dark:text-red-300 tracking-wide">{emergency.number}</p>
+                  <p className="text-xl sm:text-2xl md:text-3xl font-bold text-red-700 dark:text-red-300 tracking-wide directory-emergency-number">{emergency.number}</p>
                   <p className="font-bold text-sm text-red-800 dark:text-red-200 truncate">{emergency.label}</p>
                   <p className="text-xs text-red-600/80 dark:text-red-400/80 truncate">{emergency.description}</p>
                 </div>
                 <div className="shrink-0">
-                  <div className="h-10 w-10 rounded-full bg-red-100 dark:bg-red-800 flex items-center justify-center group-hover:bg-red-500 transition-colors">
-                    <Phone className="w-5 h-5 text-red-600 dark:text-red-300 group-hover:text-white transition-colors" />
+                  <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-red-100 dark:bg-red-800 flex items-center justify-center group-hover:bg-red-500 transition-colors directory-emergency-phone-btn">
+                    <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 dark:text-red-300 group-hover:text-white transition-colors" />
                   </div>
                 </div>
               </a>
@@ -2041,13 +2041,13 @@ export default function Directory() {
             <CardHeader className="pb-2 sm:pb-3 px-3 sm:px-6 pt-3 sm:pt-6">
               <CardTitle className="text-base sm:text-lg font-bold text-black">Search</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-3 sm:space-y-4 px-3 sm:px-6 pb-3 sm:pb-6">
+            <CardContent className="space-y-3 sm:space-y-4 px-2 sm:px-6 pb-2 sm:pb-6 directory-search-card">
               <div className="space-y-2">
                 <div className="relative">
                   <Search className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
                   <Input 
                     placeholder="Name, specialty..." 
-                    className="pl-9 font-medium text-sm"
+                    className="pl-9 font-medium text-sm w-full"
                     value={search}
                     onChange={(e) => setSearch(e.target.value)}
                   />
@@ -2125,7 +2125,7 @@ export default function Directory() {
               }
             }}
             data-testid="directory-tabs">
-            <TabsList className="w-full justify-start overflow-x-auto h-auto p-0.5 sm:p-1 bg-transparent gap-1 sm:gap-2 mb-4 no-scrollbar flex-wrap sm:flex-nowrap">
+            <TabsList className="w-full justify-start overflow-x-auto h-auto p-0.5 sm:p-1 bg-transparent gap-1 sm:gap-2 mb-4 no-scrollbar flex-wrap sm:flex-nowrap directory-tabs-list">
               <TabsTrigger 
                 value="emergency"
                 className={cn(

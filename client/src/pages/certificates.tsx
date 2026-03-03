@@ -195,15 +195,15 @@ function UserDocumentCard({
           </>
         )}
       </CardContent>
-      <CardFooter className="pt-2 gap-2 flex-wrap">
-        <Button variant="outline" size="sm" className="flex-1 gap-1" onClick={onView}>
-          <Eye className="h-4 w-4" /> View
+      <CardFooter className="pt-2 gap-1 sm:gap-2 flex-wrap">
+        <Button variant="outline" size="sm" className="flex-1 gap-1 text-xs sm:text-sm" onClick={onView}>
+          <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> View
         </Button>
-        <Button variant="outline" size="sm" className="flex-1 gap-1" onClick={handleDownload}>
-          <Download className="h-4 w-4" /> Download
+        <Button variant="outline" size="sm" className="flex-1 gap-1 text-xs sm:text-sm" onClick={handleDownload}>
+          <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Download</span><span className="sm:hidden">DL</span>
         </Button>
         <Button variant="outline" size="sm" className="gap-1 text-destructive hover:text-destructive" onClick={onDelete}>
-          <Trash2 className="h-4 w-4" />
+          <Trash2 className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
         </Button>
       </CardFooter>
     </Card>
@@ -274,17 +274,17 @@ function ProviderCertificateCard({
           </>
         )}
       </CardContent>
-      <CardFooter className="pt-2 gap-2 flex-wrap">
-        <Button variant="outline" size="sm" className="flex-1 gap-1" onClick={onView}>
-          <Eye className="h-4 w-4" /> View Details
+      <CardFooter className="pt-2 gap-1 sm:gap-2 flex-wrap">
+        <Button variant="outline" size="sm" className="flex-1 gap-1 text-xs sm:text-sm" onClick={onView}>
+          <Eye className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">View Details</span><span className="sm:hidden">View</span>
         </Button>
         {certificate.documentUrl ? (
-          <Button variant="outline" size="sm" className="flex-1 gap-1" onClick={handleDownload}>
-            <Download className="h-4 w-4" /> Download
+          <Button variant="outline" size="sm" className="flex-1 gap-1 text-xs sm:text-sm" onClick={handleDownload}>
+            <Download className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> <span className="hidden sm:inline">Download</span><span className="sm:hidden">DL</span>
           </Button>
         ) : (
-          <Button variant="outline" size="sm" className="flex-1 gap-1" onClick={() => window.print()}>
-            <Printer className="h-4 w-4" /> Print
+          <Button variant="outline" size="sm" className="flex-1 gap-1 text-xs sm:text-sm" onClick={() => window.print()}>
+            <Printer className="h-3.5 w-3.5 sm:h-4 sm:w-4" /> Print
           </Button>
         )}
       </CardFooter>
@@ -314,9 +314,9 @@ function UserDocumentDetailDialog({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg w-[95vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             {document.fileType.startsWith('image/') ? (
               <Image className="h-5 w-5 text-primary" />
             ) : (
@@ -399,9 +399,9 @@ function CertificateDetailDialog({
   
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-lg w-[95vw] max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Shield className="h-5 w-5 text-primary" />
             {certificate.title}
           </DialogTitle>
@@ -600,9 +600,9 @@ function UploadDocumentDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-lg">
+      <DialogContent className="max-w-lg w-[95vw]">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
             <Upload className="h-5 w-5 text-primary" />
             Upload Document
           </DialogTitle>
@@ -1060,7 +1060,7 @@ export default function Certificates() {
     <div className="space-y-6 animate-in fade-in duration-500 max-w-5xl mx-auto pb-20">
       <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-serif font-bold text-foreground">Documents & Certificates</h1>
+          <h1 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-foreground">Documents & Certificates</h1>
           <p className="text-muted-foreground mt-1">
             Manage your health documents and view provider-issued certificates.
           </p>
@@ -1092,8 +1092,8 @@ export default function Certificates() {
           )}
         </div>
 
-        <div className="flex flex-wrap items-center gap-2 mt-4">
-          <div className="relative flex-1 min-w-[200px] max-w-sm">
+        <div className="flex flex-wrap items-center gap-2 mt-4 certificate-filter-controls">
+          <div className="relative flex-1 min-w-[150px] max-w-sm">
             <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input 
               placeholder={activeTab === "documents" ? "Search documents..." : "Search certificates..."} 
@@ -1135,7 +1135,7 @@ export default function Certificates() {
 
         <TabsContent value="documents" className="mt-6">
           {filteredDocuments.length > 0 ? (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 certificate-grid">
               {filteredDocuments.map((doc) => (
                 <UserDocumentCard
                   key={doc.id}
@@ -1176,7 +1176,7 @@ export default function Certificates() {
           )}
 
           {isLoading && (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 certificate-grid">
               {[1, 2, 3].map((i) => (
                 <CardSkeleton key={i} />
               ))}
@@ -1184,7 +1184,7 @@ export default function Certificates() {
           )}
 
           {!isLoading && !isError && filteredCertificates.length > 0 && (
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
+            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 certificate-grid">
               {filteredCertificates.map((cert: Certificate) => (
                 <ProviderCertificateCard
                   key={cert._id}

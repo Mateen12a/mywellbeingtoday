@@ -239,7 +239,11 @@ class ApiClient {
   }
 
   async getProfile() {
-    return this.request<{ user: any }>('/auth/profile');
+    const response = await this.request<{ user: any }>('/auth/profile');
+    if (response.success && response.data?.user) {
+      this.setUser(response.data.user);
+    }
+    return response;
   }
 
   async updateProfile(profile: any) {
@@ -1008,8 +1012,10 @@ class ApiClient {
     return this.request<{
       plan: string;
       usage: Record<string, number>;
+      monthlyUsage: Record<string, number>;
       limits: Record<string, number>;
       usagePeriodStart: string;
+      monthlyUsagePeriodStart: string;
     }>('/subscription/usage');
   }
 
@@ -1017,9 +1023,66 @@ class ApiClient {
     return this.request<{
       checkoutUrl?: string;
       sessionId?: string;
+      upgraded?: boolean;
+      reactivated?: boolean;
+      subscription?: any;
+      requiresAction?: boolean;
+      clientSecret?: string;
     }>('/subscription/upgrade', {
       method: 'POST',
       body: JSON.stringify({ plan }),
+    });
+  }
+
+  async confirmUpgrade(plan: string, sessionId?: string) {
+    return this.request<{
+      subscription: any;
+    }>('/subscription/confirm-upgrade', {
+      method: 'POST',
+      body: JSON.stringify({ plan, sessionId }),
+    });
+  }
+
+  async getPaymentMethods() {
+    return this.request<{
+      paymentMethods: Array<{
+        id: string;
+        brand: string;
+        last4: string;
+        expMonth: number;
+        expYear: number;
+        isDefault: boolean;
+      }>;
+      defaultPaymentMethodId: string | null;
+    }>('/subscription/payment-methods');
+  }
+
+  async addPaymentMethod() {
+    return this.request<{
+      checkoutUrl: string;
+    }>('/subscription/payment-methods/add', {
+      method: 'POST',
+    });
+  }
+
+  async setDefaultPaymentMethod(paymentMethodId: string) {
+    return this.request<{}>('/subscription/payment-methods/default', {
+      method: 'POST',
+      body: JSON.stringify({ paymentMethodId }),
+    });
+  }
+
+  async removePaymentMethod(paymentMethodId: string) {
+    return this.request<{}>(`/subscription/payment-methods/${paymentMethodId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  async openBillingPortal() {
+    return this.request<{
+      portalUrl: string;
+    }>('/subscription/billing-portal', {
+      method: 'POST',
     });
   }
 

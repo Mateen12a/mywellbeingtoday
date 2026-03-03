@@ -626,7 +626,7 @@ export default function Dashboard() {
               </AvatarFallback>
             </Avatar>
             <div className="flex-1 min-w-0">
-              <h1 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-black leading-tight">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-serif font-bold text-black leading-tight dashboard-greeting-text">
                 {greeting}, {firstName}
               </h1>
               <p className="text-gray-800 font-medium text-xs sm:text-sm md:text-base line-clamp-2 mt-0.5 sm:mt-1">
@@ -634,7 +634,7 @@ export default function Dashboard() {
               </p>
             </div>
           </div>
-          <div className="flex items-center gap-2 bg-secondary/50 px-3 sm:px-4 py-1.5 sm:py-2 rounded-full text-xs sm:text-sm font-bold text-secondary-foreground shrink-0 border border-secondary whitespace-nowrap self-start sm:self-auto">
+          <div className="flex items-center gap-1.5 sm:gap-2 bg-secondary/50 px-2 sm:px-4 py-1 sm:py-2 rounded-full text-[10px] sm:text-sm font-bold text-secondary-foreground shrink-0 border border-secondary whitespace-nowrap self-start sm:self-auto">
             <Calendar className="w-3 h-3 sm:w-4 sm:h-4" />
             <span className="hidden sm:inline">
               {new Date().toLocaleDateString(undefined, {
@@ -758,19 +758,19 @@ export default function Dashboard() {
                   </p>
                 </div>
               </div>
-              <div className="flex gap-2 w-full">
+              <div className="flex flex-col sm:flex-row gap-3 w-full">
                 {!hasLoggedActivityToday && (
-                  <Link href="/activity" className="flex-1 min-w-0">
-                    <Button size="sm" className="w-full rounded-full shadow-sm text-xs sm:text-sm h-9">
-                      <Activity className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                  <Link href="/activity" className="w-full sm:flex-1">
+                    <Button size="sm" className="w-full rounded-full shadow-sm text-xs sm:text-sm h-10">
+                      <Activity className="w-4 h-4 mr-2 shrink-0" />
                       <span>Log activity</span>
                     </Button>
                   </Link>
                 )}
                 {!hasLoggedMoodToday && (
-                  <Link href="/mood" className="flex-1 min-w-0">
-                    <Button variant="outline" size="sm" className="w-full rounded-full border-primary/30 text-xs sm:text-sm h-9">
-                      <Heart className="w-3.5 h-3.5 mr-1.5 shrink-0" />
+                  <Link href="/mood" className="w-full sm:flex-1">
+                    <Button variant="outline" size="sm" className="w-full rounded-full border-primary/30 text-xs sm:text-sm h-10">
+                      <Heart className="w-4 h-4 mr-2 shrink-0" />
                       <span>Track your mood</span>
                     </Button>
                   </Link>
@@ -860,7 +860,7 @@ export default function Dashboard() {
       )}
 
       {/* Quick Actions Grid */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-3 sm:gap-4 dashboard-quick-actions">
         {[
           {
             title: "Directory of Health and Social Care Providers",
@@ -886,13 +886,13 @@ export default function Dashboard() {
         ].map((action, i) => (
           <Link key={i} href={action.href}>
             <Card className="hover-elevate cursor-pointer h-full bg-white border border-gray-100">
-              <CardContent className="p-4 sm:p-5 lg:p-6 flex flex-col items-center text-center gap-3">
+              <CardContent className="p-3 sm:p-5 lg:p-6 flex flex-col items-center text-center gap-2 sm:gap-3">
                 <div
-                  className={`h-12 w-12 rounded-xl ${action.bg} ${action.color} flex items-center justify-center border border-transparent`}
+                  className={`h-10 w-10 sm:h-12 sm:w-12 rounded-xl ${action.bg} ${action.color} flex items-center justify-center border border-transparent`}
                 >
-                  <action.icon className="w-6 h-6 stroke-[2.5px]" />
+                  <action.icon className="w-5 h-5 sm:w-6 sm:h-6 stroke-[2.5px]" />
                 </div>
-                <span className="font-bold text-black text-sm">{action.title}</span>
+                <span className="font-bold text-black text-xs sm:text-sm leading-tight">{action.title}</span>
               </CardContent>
             </Card>
           </Link>
@@ -904,7 +904,7 @@ export default function Dashboard() {
         <h2 className="text-xl sm:text-2xl font-serif font-bold text-black mb-4 sm:mb-5 flex items-center gap-2">
           <Lightbulb className="w-5 sm:w-6 h-5 sm:h-6 text-amber-500" /> Suggestions for You
         </h2>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 dashboard-suggestions-grid">
           {reportsLoading || moodsLoading || activitiesLoading ? (
             Array.from({ length: 4 }).map((_, i) => (
               <Card key={i} className="bg-gray-50 border-gray-100">
@@ -958,7 +958,7 @@ export default function Dashboard() {
       </div>
 
       {/* Stats / Recent Activity */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 lg:gap-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 sm:gap-6 lg:gap-8 dashboard-stats-grid">
         <Card className="border-gray-200">
           <CardHeader className="flex flex-row items-center justify-between gap-2 pb-3 min-h-0">
             <CardTitle className="text-lg sm:text-xl font-serif font-bold text-black truncate">
@@ -1040,7 +1040,7 @@ export default function Dashboard() {
               </Button>
             </Link>
           </CardHeader>
-          <CardContent className="h-[280px] sm:h-[300px] p-4 sm:p-5 lg:p-6">
+          <CardContent className="h-[280px] sm:h-[300px] p-4 sm:p-5 lg:p-6 dashboard-chart-container">
             {moodStatsLoading || moodsLoading ? (
               <div className="h-full flex items-center justify-center">
                 <Loader2 className="w-6 h-6 animate-spin text-primary" />

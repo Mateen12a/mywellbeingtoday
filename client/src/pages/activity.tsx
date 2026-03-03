@@ -512,27 +512,27 @@ export default function ActivityLog() {
   const suggestion = savedActivity ? getActivitySuggestion(savedActivity.category, savedActivity.description) : null;
 
   return (
-    <div className="max-w-2xl mx-auto space-y-6 sm:space-y-8 animate-in slide-in-from-bottom-4 duration-500 px-4 sm:px-6">
+    <div className="max-w-2xl mx-auto space-y-4 xs:space-y-6 sm:space-y-8 animate-in slide-in-from-bottom-4 duration-500 px-2 xs:px-4 sm:px-6">
       <div className="space-y-1 sm:space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-serif font-bold text-foreground">Log in activity</h1>
+        <h1 className="text-xl xs:text-2xl sm:text-3xl font-serif font-bold text-foreground">Log in activity</h1>
       </div>
 
       <Card className="border-secondary/50 shadow-lg">
-        <CardHeader className="pb-4 sm:pb-6">
-          <CardTitle className="text-lg sm:text-xl">New Entry</CardTitle>
+        <CardHeader className="pb-3 xs:pb-4 sm:pb-6 px-3 xs:px-6">
+          <CardTitle className="text-base xs:text-lg sm:text-xl">New Entry</CardTitle>
           <CardDescription className="text-xs sm:text-sm">Log in and act on what you do today</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4 sm:space-y-6">
+        <CardContent className="space-y-3 xs:space-y-4 sm:space-y-6 px-3 xs:px-6">
           
-          <div className="grid sm:grid-cols-2 gap-4">
-            <div className="flex flex-col space-y-2">
-              <Label className="text-sm sm:text-base">Date</Label>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 xs:gap-4">
+            <div className="flex flex-col space-y-1.5 xs:space-y-2">
+              <Label className="text-xs xs:text-sm sm:text-base">Date</Label>
               <Popover>
                 <PopoverTrigger asChild>
                   <Button
                     variant={"outline"}
                     className={cn(
-                      "w-full pl-3 text-left font-normal rounded-xl border-input text-sm sm:text-base",
+                      "w-full pl-2 xs:pl-3 text-left font-normal rounded-xl border-input text-xs xs:text-sm sm:text-base h-9 xs:h-11",
                       !date && "text-muted-foreground"
                     )}
                   >
@@ -554,24 +554,24 @@ export default function ActivityLog() {
               </Popover>
             </div>
 
-            <div className="flex flex-col space-y-2">
-              <Label className="text-sm sm:text-base">Time</Label>
+            <div className="flex flex-col space-y-1.5 xs:space-y-2">
+              <Label className="text-xs xs:text-sm sm:text-base">Time</Label>
               <Input 
                 type="time" 
                 value={time} 
                 onChange={(e) => setTime(e.target.value)} 
-                className="rounded-xl text-sm sm:text-base"
+                className="rounded-xl text-xs xs:text-sm sm:text-base h-9 xs:h-11"
               />
             </div>
           </div>
 
-          <div className="flex flex-col space-y-2">
-            <Label className="text-sm sm:text-base">Select category</Label>
+          <div className="flex flex-col space-y-1.5 xs:space-y-2">
+            <Label className="text-xs xs:text-sm sm:text-base">Select category</Label>
             <Select value={category} onValueChange={(val) => {
               setCategory(val);
               if (val !== 'other') setCustomCategory("");
             }}>
-              <SelectTrigger className="w-full rounded-xl text-sm sm:text-base">
+              <SelectTrigger className="w-full rounded-xl text-xs xs:text-sm sm:text-base">
                 <SelectValue placeholder="Select category" />
               </SelectTrigger>
               <SelectContent>
@@ -587,36 +587,36 @@ export default function ActivityLog() {
           </div>
 
           {category === 'other' && (
-            <div className="flex flex-col space-y-2 animate-in fade-in slide-in-from-top-2">
-              <Label className="text-sm sm:text-base">Please specify</Label>
+            <div className="flex flex-col space-y-1.5 xs:space-y-2 animate-in fade-in slide-in-from-top-2">
+              <Label className="text-xs xs:text-sm sm:text-base">Please specify</Label>
               <Input 
                 placeholder="Enter custom category..." 
                 value={customCategory}
                 onChange={(e) => setCustomCategory(e.target.value)}
-                className="rounded-xl text-sm sm:text-base"
+                className="rounded-xl text-xs xs:text-sm sm:text-base"
               />
             </div>
           )}
 
-          <div className="flex flex-col space-y-2">
-            <Label className="text-sm sm:text-base">Type of activity</Label>
+          <div className="flex flex-col space-y-1.5 xs:space-y-2">
+            <Label className="text-xs xs:text-sm sm:text-base">Type of activity</Label>
             <Input 
               placeholder="e.g., Morning yoga, Team meeting, etc." 
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="rounded-xl text-sm sm:text-base"
+              className="rounded-xl text-xs xs:text-sm sm:text-base"
               data-testid="input-activity-title"
             />
           </div>
 
-          <div className="space-y-2">
-            <div className="flex items-center justify-between">
-              <Label className="text-sm sm:text-base">Briefly describe</Label>
+          <div className="space-y-1.5 xs:space-y-2">
+            <div className="flex items-center justify-between gap-1">
+              <Label className="text-xs xs:text-sm sm:text-base">Briefly describe</Label>
               <Button
                 size="sm"
                 variant={isRecording ? "destructive" : "secondary"}
                 className={cn(
-                  "rounded-full transition-all duration-300 h-7 px-2.5 gap-1.5 text-xs",
+                  "rounded-full transition-all duration-300 h-6 xs:h-7 px-2 xs:px-2.5 gap-1 xs:gap-1.5 text-[10px] xs:text-xs shrink-0",
                   isRecording && "animate-pulse"
                 )}
                 onClick={() => toggleVoice(false)}
@@ -629,7 +629,7 @@ export default function ActivityLog() {
             </div>
             <Textarea 
               placeholder="Describe your experience..." 
-              className="min-h-[120px] sm:min-h-[150px] rounded-xl resize-none text-sm sm:text-base"
+              className="min-h-[100px] xs:min-h-[120px] sm:min-h-[150px] rounded-xl resize-none text-xs xs:text-sm sm:text-base"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               data-testid="textarea-activity-description"
@@ -844,7 +844,7 @@ export default function ActivityLog() {
 
               <div className="space-y-2">
                 <p className="text-[11px] text-muted-foreground text-center">Or choose a different mood:</p>
-                <div className="grid grid-cols-3 gap-1 sm:gap-2">
+                <div className="grid grid-cols-3 gap-1 xs:gap-1.5 sm:gap-2">
                   {MOOD_OPTIONS.map((mood) => {
                     const isSuggested = aiMoodSuggestion?.suggestedMood === mood.value;
                     const isAlternative = aiMoodSuggestion?.alternativeMood === mood.value;
@@ -855,7 +855,7 @@ export default function ActivityLog() {
                         onClick={() => handleMoodSelect(mood)}
                         data-testid={`button-mood-quick-${mood.value}`}
                         className={cn(
-                          "flex flex-col items-center gap-1 p-2 sm:p-3 rounded-xl border-2 transition-all duration-200 min-h-[80px] sm:min-h-[90px] touch-manipulation active:scale-95 relative",
+                          "flex flex-col items-center gap-0.5 xs:gap-1 p-1.5 xs:p-2 sm:p-3 rounded-xl border-2 transition-all duration-200 min-h-[60px] xs:min-h-[80px] sm:min-h-[90px] touch-manipulation active:scale-95 relative",
                           mood.color,
                           isSelected && "ring-2 ring-purple-500 ring-offset-2 scale-105 shadow-lg border-purple-400",
                           !isSelected && isSuggested && "ring-2 ring-purple-400 ring-offset-1",
@@ -867,8 +867,8 @@ export default function ActivityLog() {
                             <Sparkles className="w-2.5 h-2.5" /> AI
                           </div>
                         )}
-                        <span className="text-xl sm:text-2xl">{mood.emoji}</span>
-                        <span className="text-xs font-medium text-center leading-tight">{mood.label}</span>
+                        <span className="text-base xs:text-xl sm:text-2xl">{mood.emoji}</span>
+                        <span className="text-[10px] xs:text-xs font-medium text-center leading-tight">{mood.label}</span>
                       </button>
                     );
                   })}
@@ -1191,8 +1191,8 @@ export default function ActivityLog() {
         </DialogContent>
       </Dialog>
 
-      <div id="recent" ref={recentActivityRef} className="space-y-4 pt-4 scroll-mt-4 px-4 sm:px-6">
-        <h2 className="text-lg sm:text-xl font-serif font-bold text-foreground">Recent Activity</h2>
+      <div id="recent" ref={recentActivityRef} className="space-y-3 xs:space-y-4 pt-4 scroll-mt-4">
+        <h2 className="text-base xs:text-lg sm:text-xl font-serif font-bold text-foreground">Recent Activity</h2>
         
         {isLoading ? (
           <div className="grid gap-4">
@@ -1213,47 +1213,47 @@ export default function ActivityLog() {
             </CardContent>
           </Card>
         ) : (
-          <FadeInContent className="grid gap-4">
+          <FadeInContent className="grid gap-3 xs:gap-4">
             {activities.map((activity: any) => (
               <Card key={activity._id} className="hover:bg-secondary/10 transition-colors group">
-                <CardContent className="p-3 sm:p-4 flex items-start gap-2 sm:gap-4">
+                <CardContent className="p-2 xs:p-3 sm:p-4 flex items-start gap-2 sm:gap-4">
                   <div className={cn(
-                    "h-10 w-10 rounded-full flex items-center justify-center shrink-0",
+                    "h-8 w-8 xs:h-10 xs:w-10 rounded-full flex items-center justify-center shrink-0",
                     getCategoryColor(activity.category)
                   )}>
                     {getCategoryIcon(activity.category)}
                   </div>
                   <div className="flex-1 space-y-1 min-w-0">
                     <div className="flex flex-col sm:flex-row sm:justify-between sm:items-start gap-0 sm:gap-2">
-                      <h3 className="font-bold text-foreground truncate">{activity.title}</h3>
-                      <span className="text-xs text-muted-foreground font-medium whitespace-nowrap">
+                      <h3 className="font-bold text-foreground text-sm xs:text-base truncate">{activity.title}</h3>
+                      <span className="text-[10px] xs:text-xs text-muted-foreground font-medium whitespace-nowrap">
                         {format(new Date(activity.date), "MMM d, h:mm a")}
                       </span>
                     </div>
-                    <p className="text-sm text-muted-foreground line-clamp-2">{activity.description || activity.notes || "No description"}</p>
+                    <p className="text-xs xs:text-sm text-muted-foreground line-clamp-2">{activity.description || activity.notes || "No description"}</p>
                     <div className="flex items-center gap-1 pt-1">
-                      <span className="text-xs bg-secondary px-2 py-0.5 rounded-full capitalize">
+                      <span className="text-[10px] xs:text-xs bg-secondary px-1.5 xs:px-2 py-0.5 rounded-full capitalize">
                         {getCategoryInfo(activity.category).label}
                       </span>
                     </div>
                   </div>
-                  <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-0.5 xs:gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8"
+                      className="h-7 w-7 xs:h-8 xs:w-8"
                       onClick={() => handleEditClick(activity)}
                     >
-                      <Edit2 className="h-4 w-4" />
+                      <Edit2 className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
                     </Button>
                     <Button
                       size="icon"
                       variant="ghost"
-                      className="h-8 w-8 text-destructive hover:text-destructive"
+                      className="h-7 w-7 xs:h-8 xs:w-8 text-destructive hover:text-destructive"
                       onClick={() => handleDeleteClick(activity._id)}
                       disabled={deleteMutation.isPending}
                     >
-                      <Trash2 className="h-4 w-4" />
+                      <Trash2 className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
                     </Button>
                   </div>
                 </CardContent>

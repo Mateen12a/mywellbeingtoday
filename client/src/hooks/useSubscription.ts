@@ -1,4 +1,5 @@
-import { useQuery } from "@tanstack/react-query";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@/contexts/AuthContext";
 import api from "@/lib/api";
 
@@ -65,23 +66,43 @@ export const CLIENT_PLAN_LIMITS: Record<string, Record<string, number>> = {
 };
 
 export function useSubscription() {
-  const { isAuthenticated, user } = useAuth();
+  const { isAuthenticated, user, refreshUser } = useAuth();
+  const queryClient = useQueryClient();
 
-  const { data: subData, isLoading: subLoading } = useQuery({
+  // Listen for manual user profile updates to force refetch
+  useEffect(() => {
+    const handleProfileUpdate = () => {
+      queryClient.invalidateQueries({ queryKey: ["subscription"] });
+      queryClient.invalidateQueries({ queryKey: ["subscription-usage"] });
+    };
+    window.addEventListener('user-profile-updated', handleProfileUpdate);
+    return () => window.removeEventListener('user-profile-updated', handleProfileUpdate);
+  }, [queryClient]);
+
+  const { data: subData, isLoading: subLoading, refetch: refetchSub } = useQuery({
     queryKey: ["subscription"],
     queryFn: () => api.getSubscription(),
     enabled: isAuthenticated && user?.role === "user",
-    staleTime: 2 * 60 * 1000,
+    staleTime: 0, // Set to 0 to ensure we always get fresh data when needed
     retry: 1,
   });
 
-  const { data: usageData, isLoading: usageLoading } = useQuery({
+  const { data: usageData, isLoading: usageLoading, refetch: refetchUsage } = useQuery({
     queryKey: ["subscription-usage"],
     queryFn: () => api.getUsage(),
     enabled: isAuthenticated && user?.role === "user",
-    staleTime: 2 * 60 * 1000,
+    staleTime: 0,
     retry: 1,
   });
+
+  // Function to refresh all subscription related data
+  const refreshSubscription = async () => {
+    await Promise.all([
+      refetchSub(),
+      refetchUsage(),
+      refreshUser()
+    ]);
+  };
 
   const isLoading = subLoading || usageLoading;
   const hasData = !!subData?.data?.subscription && !!usageData?.data;
@@ -96,6 +117,14 @@ export function useSubscription() {
   const isPaidPlan = ["starter", "pro", "premium", "team", "franchise"].includes(plan);
 
   const usage = usageData?.data?.usage || {
+    activityLogs: 0,
+    moodLogs: 0,
+    reportDownloads: 0,
+    directoryAccess: 0,
+    aiInteractions: 0,
+  };
+
+  const monthlyUsage = usageData?.data?.monthlyUsage || {
     activityLogs: 0,
     moodLogs: 0,
     reportDownloads: 0,
@@ -164,6 +193,7 @@ export function useSubscription() {
     isFreePlan,
     isPaidPlan,
     usage,
+    monthlyUsage,
     limits,
     isLoading,
     hasData,
@@ -178,5 +208,6 @@ export function useSubscription() {
     featuresAtLimit,
     featureLabels: FEATURE_LABELS,
     subscription,
+    refreshSubscription,
   };
 }

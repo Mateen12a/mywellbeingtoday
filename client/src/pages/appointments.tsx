@@ -143,10 +143,10 @@ function AppointmentCard({
 
   return (
     <Card className="hover:shadow-md transition-shadow">
-      <CardContent className="p-4 sm:p-6">
+      <CardContent className="p-3 sm:p-6">
         <div className="flex flex-col sm:flex-row sm:items-start gap-4">
           <div className="flex items-start gap-4 flex-1">
-            <Avatar className="h-12 w-12 shrink-0">
+            <Avatar className="h-10 w-10 sm:h-12 sm:w-12 shrink-0 appointment-card-avatar">
               <AvatarFallback className="bg-primary/10 text-primary font-semibold">
                 {provider?.userId?.profile?.firstName?.[0] || 'P'}
                 {provider?.userId?.profile?.lastName?.[0] || ''}
@@ -287,17 +287,17 @@ export default function Appointments() {
   return (
     <div className="space-y-6 animate-in fade-in duration-500">
       <div className="flex flex-col gap-2">
-        <h1 className="text-2xl sm:text-3xl font-bold tracking-tight">My Appointments</h1>
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold tracking-tight">My Appointments</h1>
         <p className="text-muted-foreground">
           View and manage your healthcare appointments
         </p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 appointment-stats-grid">
         <Card className="bg-gradient-to-br from-green-50 to-emerald-50 border-green-100">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-3 rounded-full bg-green-100">
-              <CheckCircle2 className="h-6 w-6 text-green-600" />
+          <CardContent className="p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-full bg-green-100">
+              <CheckCircle2 className="h-5 w-5 sm:h-6 sm:w-6 text-green-600" />
             </div>
             <div>
               <p className="text-2xl font-bold text-green-700">
@@ -309,9 +309,9 @@ export default function Appointments() {
         </Card>
         
         <Card className="bg-gradient-to-br from-amber-50 to-orange-50 border-amber-100">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-3 rounded-full bg-amber-100">
-              <AlertCircle className="h-6 w-6 text-amber-600" />
+          <CardContent className="p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-full bg-amber-100">
+              <AlertCircle className="h-5 w-5 sm:h-6 sm:w-6 text-amber-600" />
             </div>
             <div>
               <p className="text-2xl font-bold text-amber-700">
@@ -323,9 +323,9 @@ export default function Appointments() {
         </Card>
         
         <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-100">
-          <CardContent className="p-4 flex items-center gap-4">
-            <div className="p-3 rounded-full bg-blue-100">
-              <History className="h-6 w-6 text-blue-600" />
+          <CardContent className="p-3 sm:p-4 flex items-center gap-3 sm:gap-4">
+            <div className="p-2 sm:p-3 rounded-full bg-blue-100">
+              <History className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600" />
             </div>
             <div>
               <p className="text-2xl font-bold text-blue-700">
@@ -339,12 +339,12 @@ export default function Appointments() {
 
       <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
         <TabsList className="grid w-full max-w-md grid-cols-2">
-          <TabsTrigger value="upcoming" className="flex items-center gap-2">
-            <CalendarDays className="h-4 w-4" />
+          <TabsTrigger value="upcoming" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <CalendarDays className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Upcoming
           </TabsTrigger>
-          <TabsTrigger value="past" className="flex items-center gap-2">
-            <History className="h-4 w-4" />
+          <TabsTrigger value="past" className="flex items-center gap-1 sm:gap-2 text-xs sm:text-sm">
+            <History className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Past
           </TabsTrigger>
         </TabsList>
@@ -411,7 +411,7 @@ export default function Appointments() {
       </Tabs>
 
       <AlertDialog open={cancelDialogOpen} onOpenChange={setCancelDialogOpen}>
-        <AlertDialogContent>
+        <AlertDialogContent className="w-[95vw] sm:max-w-lg">
           <AlertDialogHeader>
             <AlertDialogTitle>Cancel Appointment</AlertDialogTitle>
             <AlertDialogDescription>

@@ -224,7 +224,7 @@ function ActionButtons({
   onAction: (action: AIAction) => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-3 mt-4 pt-4 border-t border-gray-100">
+    <div className="flex flex-wrap gap-1.5 xs:gap-3 mt-2 xs:mt-4 pt-2 xs:pt-4 border-t border-gray-100">
       {actions.map((action, index) => {
         const Icon = getActionIcon(action.type);
         return (
@@ -233,10 +233,10 @@ function ActionButtons({
             variant="outline"
             size="default"
             onClick={() => onAction(action)}
-            className="gap-2 text-sm md:text-base h-10 md:h-11 px-4 bg-white hover:bg-primary/5 hover:border-primary/30 transition-colors"
+            className="gap-1 xs:gap-2 text-[11px] xs:text-sm md:text-base h-8 xs:h-10 md:h-11 px-2 xs:px-4 bg-white hover:bg-primary/5 hover:border-primary/30 transition-colors"
           >
-            <Icon className="h-4 w-4 md:h-5 md:w-5" />
-            {action.label}
+            <Icon className="h-3 w-3 xs:h-4 xs:w-4 md:h-5 md:w-5" />
+            <span className="truncate max-w-[80px] xs:max-w-none">{action.label}</span>
           </Button>
         );
       })}
@@ -1018,23 +1018,23 @@ export default function AIKnowledgeAssistant() {
   );
 
   return (
-    <div className="max-w-5xl mx-auto space-y-6 animate-in fade-in duration-500 pb-20">
-      <div className="space-y-2 text-center">
-        <h1 className="text-3xl font-serif font-bold text-black flex items-center justify-center gap-2">
-          <Sparkles className="w-6 h-6 text-primary" />
+    <div className="max-w-5xl mx-auto space-y-3 xs:space-y-6 animate-in fade-in duration-500 pb-20 px-0 xs:px-0">
+      <div className="space-y-1 xs:space-y-2 text-center">
+        <h1 className="text-xl xs:text-3xl font-serif font-bold text-black flex items-center justify-center gap-1 xs:gap-2">
+          <Sparkles className="w-4 h-4 xs:w-6 xs:h-6 text-primary" />
           AI Assistant
         </h1>
-        <p className="text-gray-800 font-medium text-lg">Your personal wellbeing companion</p>
+        <p className="text-gray-800 font-medium text-sm xs:text-lg">Your personal wellbeing companion</p>
       </div>
 
       <Tabs defaultValue="chat" className="w-full">
-        <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-secondary/20 gap-2 mb-6 no-scrollbar">
-           <TabsTrigger value="chat" className="gap-2 flex-shrink-0"><Bot className="h-4 w-4"/> Chat</TabsTrigger>
-           <TabsTrigger value="analytics" className="gap-2 flex-shrink-0"><BarChart2 className="h-4 w-4"/> Wellbeing Analytics</TabsTrigger>
+        <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-secondary/20 gap-1 xs:gap-2 mb-3 xs:mb-6 no-scrollbar">
+           <TabsTrigger value="chat" className="gap-1 xs:gap-2 flex-shrink-0 text-xs xs:text-sm px-2 xs:px-3"><Bot className="h-3 w-3 xs:h-4 xs:w-4"/> Chat</TabsTrigger>
+           <TabsTrigger value="analytics" className="gap-1 xs:gap-2 flex-shrink-0 text-xs xs:text-sm px-2 xs:px-3"><BarChart2 className="h-3 w-3 xs:h-4 xs:w-4"/> Analytics</TabsTrigger>
         </TabsList>
 
         <TabsContent value="chat">
-          <div className="flex gap-4 h-[calc(100dvh-220px)] sm:h-[600px]">
+          <div className="flex gap-2 xs:gap-4 h-[calc(100dvh-200px)] xs:h-[calc(100dvh-220px)] sm:h-[600px]">
             {/* Desktop Sidebar */}
             <div className="hidden md:block w-64 bg-white border rounded-xl overflow-hidden shrink-0">
               {sidebarContent}
@@ -1043,14 +1043,14 @@ export default function AIKnowledgeAssistant() {
             {/* Chat Area */}
             <Card className="flex-1 flex flex-col border-primary/20 shadow-lg overflow-hidden relative">
               {/* Mobile Menu Button */}
-              <div className="md:hidden absolute top-3 left-3 z-10">
+              <div className="md:hidden absolute top-2 xs:top-3 left-2 xs:left-3 z-10">
                 <Sheet open={sidebarOpen} onOpenChange={setSidebarOpen}>
                   <SheetTrigger asChild>
-                    <Button variant="outline" size="icon">
-                      <Menu className="h-4 w-4" />
+                    <Button variant="outline" size="icon" className="h-8 w-8 xs:h-9 xs:w-9">
+                      <Menu className="h-3.5 w-3.5 xs:h-4 xs:w-4" />
                     </Button>
                   </SheetTrigger>
-                  <SheetContent side="left" className="w-72 p-0">
+                  <SheetContent side="left" className="w-[calc(100vw-40px)] xs:w-72 p-0">
                     {sidebarContent}
                   </SheetContent>
                 </Sheet>
@@ -1060,14 +1060,14 @@ export default function AIKnowledgeAssistant() {
                 <img src={aiAssistantImage} alt="" className="w-96 h-96 object-cover" />
               </div>
 
-              <ScrollArea className="flex-1 p-6 pt-14 md:pt-6">
-                <div className="space-y-8">
+              <ScrollArea className="flex-1 p-2 xs:p-4 sm:p-6 pt-12 xs:pt-14 md:pt-6">
+                <div className="space-y-4 xs:space-y-8">
                   {messages.length === 0 ? (
-                    <div className="text-center py-20">
-                      <Bot className="h-16 w-16 mx-auto text-primary/30 mb-4" />
-                      <h3 className="text-lg font-semibold text-gray-700 mb-2">Start a Conversation</h3>
-                      <p className="text-gray-500 text-sm max-w-md mx-auto">
-                        Ask about your mood patterns, get activity suggestions, or chat about how you're feeling. I'm here to help with your wellbeing journey!
+                    <div className="text-center py-10 xs:py-20">
+                      <Bot className="h-10 w-10 xs:h-16 xs:w-16 mx-auto text-primary/30 mb-2 xs:mb-4" />
+                      <h3 className="text-sm xs:text-lg font-semibold text-gray-700 mb-1 xs:mb-2">Start a Conversation</h3>
+                      <p className="text-gray-500 text-xs xs:text-sm max-w-md mx-auto px-2">
+                        Ask about your mood patterns, get activity suggestions, or chat about how you're feeling.
                       </p>
                     </div>
                   ) : (
@@ -1075,27 +1075,27 @@ export default function AIKnowledgeAssistant() {
                       <div
                         key={msg.id}
                         className={cn(
-                          "flex mb-3 sm:mb-4",
+                          "flex mb-2 xs:mb-3 sm:mb-4",
                           msg.role === 'user' ? "justify-end" : "justify-start"
                         )}
                       >
                         <div className={cn(
-                          "max-w-[92%] sm:max-w-[80%] px-3 py-2 sm:px-4 sm:py-3 rounded-xl text-sm sm:text-base leading-relaxed",
+                          "max-w-[96%] xs:max-w-[92%] sm:max-w-[80%] px-2 py-1.5 xs:px-3 xs:py-2 sm:px-4 sm:py-3 rounded-xl text-xs xs:text-sm sm:text-base leading-relaxed",
                           msg.role === 'assistant' 
                             ? "bg-card border shadow-sm text-foreground" 
                             : "bg-primary text-primary-foreground"
                         )}>
                           {msg.role === 'assistant' ? (
-                            <div className="prose prose-sm sm:prose-base max-w-none prose-p:my-1 sm:prose-p:my-2 prose-ul:my-1 sm:prose-ul:my-2 prose-ol:my-1 sm:prose-ol:my-2 prose-li:my-0.5 sm:prose-li:my-1 prose-headings:my-2 sm:prose-headings:my-3 prose-headings:font-semibold">
+                            <div className="prose prose-xs xs:prose-sm sm:prose-base max-w-none prose-p:my-0.5 xs:prose-p:my-1 sm:prose-p:my-2 prose-ul:my-0.5 xs:prose-ul:my-1 sm:prose-ul:my-2 prose-ol:my-0.5 xs:prose-ol:my-1 sm:prose-ol:my-2 prose-li:my-0 xs:prose-li:my-0.5 sm:prose-li:my-1 prose-headings:my-1 xs:prose-headings:my-2 sm:prose-headings:my-3 prose-headings:font-semibold [&_*]:break-words [&_*]:overflow-wrap-anywhere">
                               <ReactMarkdown>{msg.content}</ReactMarkdown>
                             </div>
                           ) : (
-                            <p className="whitespace-pre-wrap">{msg.content}</p>
+                            <p className="whitespace-pre-wrap break-words">{msg.content}</p>
                           )}
                           {msg.sources && msg.sources.length > 0 && (
-                            <div className="mt-2 sm:mt-4 pt-2 sm:pt-4 border-t border-gray-200 text-xs sm:text-sm font-semibold text-gray-600 flex gap-2 items-center">
-                              <BookOpen className="w-3 h-3 sm:w-4 sm:h-4" />
-                              <span>Sources: {msg.sources.map((s: string) => formatLabel(s)).join(", ")}</span>
+                            <div className="mt-1.5 xs:mt-2 sm:mt-4 pt-1.5 xs:pt-2 sm:pt-4 border-t border-gray-200 text-[10px] xs:text-xs sm:text-sm font-semibold text-gray-600 flex gap-1 xs:gap-2 items-center flex-wrap">
+                              <BookOpen className="w-3 h-3 sm:w-4 sm:h-4 shrink-0" />
+                              <span className="break-words">Sources: {msg.sources.map((s: string) => formatLabel(s)).join(", ")}</span>
                             </div>
                           )}
                           {msg.role === 'assistant' && msg.actions && msg.actions.length > 0 && (
@@ -1106,11 +1106,11 @@ export default function AIKnowledgeAssistant() {
                     ))
                   )}
                   {isTyping && (
-                    <div className="flex mb-3 sm:mb-4 justify-start">
-                      <div className="bg-card border shadow-sm px-3 py-2 sm:px-4 sm:py-3 rounded-xl flex gap-1 items-center">
-                        <span className="w-2 h-2 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}/>
-                        <span className="w-2 h-2 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}/>
-                        <span className="w-2 h-2 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}/>
+                    <div className="flex mb-2 xs:mb-3 sm:mb-4 justify-start">
+                      <div className="bg-card border shadow-sm px-2 py-1.5 xs:px-3 xs:py-2 sm:px-4 sm:py-3 rounded-xl flex gap-1 items-center">
+                        <span className="w-1.5 h-1.5 xs:w-2 xs:h-2 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: '0ms' }}/>
+                        <span className="w-1.5 h-1.5 xs:w-2 xs:h-2 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: '150ms' }}/>
+                        <span className="w-1.5 h-1.5 xs:w-2 xs:h-2 bg-primary/40 rounded-full animate-bounce" style={{ animationDelay: '300ms' }}/>
                       </div>
                     </div>
                   )}
@@ -1118,7 +1118,7 @@ export default function AIKnowledgeAssistant() {
                 </div>
               </ScrollArea>
 
-              <div className="p-4 bg-secondary/10 border-t">
+              <div className="p-2 xs:p-3 sm:p-4 bg-secondary/10 border-t">
                 {isAtLimit("aiInteractions") && (
                   <UpgradePrompt
                     feature="aiInteractions"
@@ -1139,21 +1139,21 @@ export default function AIKnowledgeAssistant() {
                   </p>
                 )}
                 {attachment && (
-                  <div className="mb-3 p-3 bg-white rounded-lg border border-primary/20 flex items-center gap-3">
+                  <div className="mb-2 xs:mb-3 p-2 xs:p-3 bg-white rounded-lg border border-primary/20 flex items-center gap-2 xs:gap-3">
                     {attachment.type === 'image' && attachment.preview ? (
                       <img 
                         src={attachment.preview} 
                         alt="Attachment preview" 
-                        className="w-12 h-12 object-cover rounded-lg"
+                        className="w-8 h-8 xs:w-12 xs:h-12 object-cover rounded-lg"
                       />
                     ) : (
-                      <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                        <File className="w-6 h-6 text-primary" />
+                      <div className="w-8 h-8 xs:w-12 xs:h-12 bg-primary/10 rounded-lg flex items-center justify-center shrink-0">
+                        <File className="w-4 h-4 xs:w-6 xs:h-6 text-primary" />
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium truncate">{attachment.file.name}</p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs xs:text-sm font-medium truncate">{attachment.file.name}</p>
+                      <p className="text-[10px] xs:text-xs text-muted-foreground">
                         {attachment.type === 'image' ? 'Image' : 'Document'} • {(attachment.file.size / 1024).toFixed(1)} KB
                       </p>
                     </div>
@@ -1162,15 +1162,15 @@ export default function AIKnowledgeAssistant() {
                       variant="ghost"
                       size="icon"
                       onClick={removeAttachment}
-                      className="shrink-0 h-8 w-8 text-muted-foreground hover:text-destructive"
+                      className="shrink-0 h-6 w-6 xs:h-8 xs:w-8 text-muted-foreground hover:text-destructive"
                     >
-                      <X className="w-4 h-4" />
+                      <X className="w-3 h-3 xs:w-4 xs:h-4" />
                     </Button>
                   </div>
                 )}
                 <form 
                   onSubmit={(e) => { e.preventDefault(); handleSendMessage(); }}
-                  className="flex gap-2"
+                  className="flex gap-1 xs:gap-2"
                 >
                   <input
                     ref={fileInputRef}
@@ -1188,9 +1188,9 @@ export default function AIKnowledgeAssistant() {
                           size="icon"
                           onClick={() => fileInputRef.current?.click()}
                           disabled={isTyping}
-                          className="rounded-xl shrink-0 h-12 w-12 md:h-14 md:w-14 bg-white"
+                          className="rounded-xl shrink-0 h-9 w-9 xs:h-12 xs:w-12 md:h-14 md:w-14 bg-white"
                         >
-                          <Paperclip className="w-5 h-5 md:w-6 md:h-6" />
+                          <Paperclip className="w-4 h-4 xs:w-5 xs:h-5 md:w-6 md:h-6" />
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -1201,8 +1201,8 @@ export default function AIKnowledgeAssistant() {
                   <Input 
                     value={query}
                     onChange={(e) => setQuery(e.target.value)}
-                    placeholder="Ask about your mood, stress, activities, or wellbeing..."
-                    className="flex-1 bg-white rounded-xl border-primary/20 focus-visible:ring-primary text-base md:text-lg h-12 md:h-14 px-4"
+                    placeholder="Ask about your wellbeing..."
+                    className="flex-1 bg-white rounded-xl border-primary/20 focus-visible:ring-primary text-xs xs:text-base md:text-lg h-9 xs:h-12 md:h-14 px-2 xs:px-4"
                   />
                   {isVoiceSupported && (
                     <TooltipProvider>
@@ -1215,12 +1215,12 @@ export default function AIKnowledgeAssistant() {
                             onClick={toggleListeningMain}
                             disabled={isTyping}
                             className={cn(
-                              "rounded-xl shrink-0 h-12 w-12 md:h-14 md:w-14 bg-white",
+                              "rounded-xl shrink-0 h-9 w-9 xs:h-12 xs:w-12 md:h-14 md:w-14 bg-white",
                               isListeningMain && "animate-pulse"
                             )}
                             data-testid="button-voice-input"
                           >
-                            <Mic className={cn("w-5 h-5 md:w-6 md:h-6", isListeningMain && "text-white")} />
+                            <Mic className={cn("w-4 h-4 xs:w-5 xs:h-5 md:w-6 md:h-6", isListeningMain && "text-white")} />
                           </Button>
                         </TooltipTrigger>
                         <TooltipContent>
@@ -1229,13 +1229,13 @@ export default function AIKnowledgeAssistant() {
                       </Tooltip>
                     </TooltipProvider>
                   )}
-                  <Button type="submit" size="icon" disabled={(!query.trim() && !attachment) || isTyping || isAtLimit("aiInteractions")} className="rounded-xl shrink-0 h-12 w-12 md:h-14 md:w-14">
-                    <Send className="w-5 h-5 md:w-6 md:h-6" />
+                  <Button type="submit" size="icon" disabled={(!query.trim() && !attachment) || isTyping || isAtLimit("aiInteractions")} className="rounded-xl shrink-0 h-9 w-9 xs:h-12 xs:w-12 md:h-14 md:w-14">
+                    <Send className="w-4 h-4 xs:w-5 xs:h-5 md:w-6 md:h-6" />
                   </Button>
                 </form>
-                <div className="text-center mt-2 flex items-center justify-center gap-1 text-[10px] text-muted-foreground">
-                   <ShieldAlert className="w-3 h-3" />
-                   <span>AI provides general insights, not medical advice. Supports images (JPG, PNG, GIF) and documents (PDF, TXT) up to 5MB.</span>
+                <div className="text-center mt-1 xs:mt-2 flex items-center justify-center gap-1 text-[9px] xs:text-[10px] text-muted-foreground px-1">
+                   <ShieldAlert className="w-3 h-3 shrink-0" />
+                   <span className="break-words">AI provides general insights, not medical advice.</span>
                 </div>
               </div>
             </Card>
@@ -1346,50 +1346,50 @@ export default function AIKnowledgeAssistant() {
                       <p>{latestReport.analysis?.summary}</p>
                    </div>
 
-                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                     <div className="p-3 bg-white rounded-lg border">
+                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 xs:gap-4">
+                     <div className="p-2 xs:p-3 bg-white rounded-lg border">
                        <div className="flex items-center justify-between mb-1">
-                         <span className="text-xs text-muted-foreground">Mood</span>
+                         <span className="text-[10px] xs:text-xs text-muted-foreground">Mood</span>
                          {getTrendIcon(latestReport.analysis?.trends?.mood)}
                        </div>
-                       <div className="text-2xl font-bold text-primary">
+                       <div className="text-lg xs:text-2xl font-bold text-primary">
                          {latestReport.dataPoints?.averageMoodScore?.toFixed(1) || '—'}
-                         <span className="text-xs text-muted-foreground font-normal">/10</span>
+                         <span className="text-[10px] xs:text-xs text-muted-foreground font-normal">/10</span>
                        </div>
-                       <span className="text-xs text-muted-foreground capitalize">{latestReport.analysis?.trends?.mood || 'N/A'}</span>
+                       <span className="text-[10px] xs:text-xs text-muted-foreground capitalize">{latestReport.analysis?.trends?.mood || 'N/A'}</span>
                      </div>
-                     <div className="p-3 bg-white rounded-lg border">
+                     <div className="p-2 xs:p-3 bg-white rounded-lg border">
                        <div className="flex items-center justify-between mb-1">
-                         <span className="text-xs text-muted-foreground">Activity</span>
+                         <span className="text-[10px] xs:text-xs text-muted-foreground">Activity</span>
                          {getTrendIcon(latestReport.analysis?.trends?.activity)}
                        </div>
-                       <div className="text-2xl font-bold text-primary">
+                       <div className="text-lg xs:text-2xl font-bold text-primary">
                          {latestReport.dataPoints?.totalActivityMinutes || 0}
-                         <span className="text-xs text-muted-foreground font-normal"> mins</span>
+                         <span className="text-[10px] xs:text-xs text-muted-foreground font-normal"> mins</span>
                        </div>
-                       <span className="text-xs text-muted-foreground capitalize">{latestReport.analysis?.trends?.activity || 'N/A'}</span>
+                       <span className="text-[10px] xs:text-xs text-muted-foreground capitalize">{latestReport.analysis?.trends?.activity || 'N/A'}</span>
                      </div>
-                     <div className="p-3 bg-white rounded-lg border">
+                     <div className="p-2 xs:p-3 bg-white rounded-lg border">
                        <div className="flex items-center justify-between mb-1">
-                         <span className="text-xs text-muted-foreground">Energy</span>
+                         <span className="text-[10px] xs:text-xs text-muted-foreground">Energy</span>
                          {getTrendIcon(latestReport.analysis?.trends?.sleep)}
                        </div>
-                       <div className="text-2xl font-bold text-primary">
+                       <div className="text-lg xs:text-2xl font-bold text-primary">
                          {latestReport.dataPoints?.averageEnergyLevel?.toFixed(1) || '—'}
-                         <span className="text-xs text-muted-foreground font-normal">/10</span>
+                         <span className="text-[10px] xs:text-xs text-muted-foreground font-normal">/10</span>
                        </div>
-                       <span className="text-xs text-muted-foreground capitalize">{latestReport.analysis?.trends?.sleep || 'N/A'}</span>
+                       <span className="text-[10px] xs:text-xs text-muted-foreground capitalize">{latestReport.analysis?.trends?.sleep || 'N/A'}</span>
                      </div>
-                     <div className="p-3 bg-white rounded-lg border">
+                     <div className="p-2 xs:p-3 bg-white rounded-lg border">
                        <div className="flex items-center justify-between mb-1">
-                         <span className="text-xs text-muted-foreground">Stress</span>
+                         <span className="text-[10px] xs:text-xs text-muted-foreground">Stress</span>
                          {getTrendIcon(latestReport.analysis?.trends?.stress)}
                        </div>
-                       <div className="text-2xl font-bold text-primary">
+                       <div className="text-lg xs:text-2xl font-bold text-primary">
                          {latestReport.dataPoints?.averageStressLevel?.toFixed(1) || '—'}
-                         <span className="text-xs text-muted-foreground font-normal">/10</span>
+                         <span className="text-[10px] xs:text-xs text-muted-foreground font-normal">/10</span>
                        </div>
-                       <span className="text-xs text-muted-foreground capitalize">{latestReport.analysis?.trends?.stress || 'N/A'}</span>
+                       <span className="text-[10px] xs:text-xs text-muted-foreground capitalize">{latestReport.analysis?.trends?.stress || 'N/A'}</span>
                      </div>
                    </div>
 
@@ -1421,22 +1421,22 @@ export default function AIKnowledgeAssistant() {
                      </div>
                    )}
 
-                   <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center pt-4 border-t">
+                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2 xs:gap-3 text-center pt-3 xs:pt-4 border-t">
                      <div>
-                       <div className="text-2xl font-bold text-primary">{latestReport.dataPoints?.moodLogs || 0}</div>
-                       <div className="text-xs text-muted-foreground">Mood Logs</div>
+                       <div className="text-lg xs:text-2xl font-bold text-primary">{latestReport.dataPoints?.moodLogs || 0}</div>
+                       <div className="text-[10px] xs:text-xs text-muted-foreground">Mood Logs</div>
                      </div>
                      <div>
-                       <div className="text-2xl font-bold text-primary">{latestReport.dataPoints?.activityLogs || 0}</div>
-                       <div className="text-xs text-muted-foreground">Activities</div>
+                       <div className="text-lg xs:text-2xl font-bold text-primary">{latestReport.dataPoints?.activityLogs || 0}</div>
+                       <div className="text-[10px] xs:text-xs text-muted-foreground">Activities</div>
                      </div>
                      <div>
-                       <div className="text-2xl font-bold text-primary">{latestReport.dataPoints?.averageMoodScore?.toFixed(1) || '-'}</div>
-                       <div className="text-xs text-muted-foreground">Avg Mood</div>
+                       <div className="text-lg xs:text-2xl font-bold text-primary">{latestReport.dataPoints?.averageMoodScore?.toFixed(1) || '-'}</div>
+                       <div className="text-[10px] xs:text-xs text-muted-foreground">Avg Mood</div>
                      </div>
                      <div>
-                       <div className="text-2xl font-bold text-primary">{latestReport.dataPoints?.totalActivityMinutes || 0}</div>
-                       <div className="text-xs text-muted-foreground">Active Mins</div>
+                       <div className="text-lg xs:text-2xl font-bold text-primary">{latestReport.dataPoints?.totalActivityMinutes || 0}</div>
+                       <div className="text-[10px] xs:text-xs text-muted-foreground">Active Mins</div>
                      </div>
                    </div>
 

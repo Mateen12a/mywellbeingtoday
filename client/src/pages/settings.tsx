@@ -758,12 +758,12 @@ export default function Settings() {
     <div className="max-w-4xl mx-auto space-y-8 animate-in fade-in duration-500 pb-20">
       <div className="space-y-4">
         <div>
-          <h1 className="text-3xl md:text-4xl font-serif font-bold text-foreground">Settings & Account</h1>
-          <p className="text-muted-foreground text-lg">Manage your profile, preferences, and security.</p>
+          <h1 className="text-xl sm:text-2xl md:text-4xl font-serif font-bold text-foreground">Settings & Account</h1>
+          <p className="text-muted-foreground text-sm sm:text-base md:text-lg">Manage your profile, preferences, and security.</p>
         </div>
 
         <Card className="bg-primary/5 border-primary/20">
-          <CardContent className="p-6">
+          <CardContent className="p-3 sm:p-6">
             <div className="flex justify-between items-center mb-2">
                <h3 className="font-semibold flex items-center gap-2">
                  <Shield className="w-4 h-4 text-primary" /> Profile Strength
@@ -779,7 +779,7 @@ export default function Settings() {
       </div>
 
       <Tabs value={activeTab} onValueChange={handleTabChange} className="w-full">
-        <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-secondary/20 gap-1 sm:gap-2 mb-4 sm:mb-6 no-scrollbar">
+        <TabsList className="w-full justify-start overflow-x-auto h-auto p-1 bg-secondary/20 gap-1 sm:gap-2 mb-4 sm:mb-6 no-scrollbar settings-tabs-list">
           <TabsTrigger value="profile" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3"><User className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0"/> <span className="hidden sm:inline">Personal</span><span className="sm:hidden">Profile</span></TabsTrigger>
           <TabsTrigger value="notifications" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3"><Bell className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0"/> <span className="hidden sm:inline">Notifications</span><span className="sm:hidden">Alerts</span></TabsTrigger>
           <TabsTrigger value="privacy" className="gap-1.5 text-xs sm:text-sm px-2 sm:px-3"><Lock className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0"/> Privacy</TabsTrigger>
@@ -826,9 +826,9 @@ export default function Settings() {
               </div>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="flex items-center gap-6 mb-6">
+              <div className="flex items-center gap-4 sm:gap-6 mb-6 settings-avatar-section">
                 <div className="relative">
-                  <Avatar className="h-24 w-24 border-4 border-background shadow-lg">
+                  <Avatar className="h-16 w-16 sm:h-24 sm:w-24 border-4 border-background shadow-lg settings-avatar">
                     <AvatarImage src={avatarPreview || profileData?.profile?.avatarUrl} className="object-cover" />
                     <AvatarFallback className="text-2xl">{getInitials()}</AvatarFallback>
                   </Avatar>

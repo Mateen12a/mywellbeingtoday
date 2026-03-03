@@ -26,7 +26,7 @@ const fadeInUp = {
 export default function About() {
   const { isAuthenticated } = useAuth();
   return (
-    <div className="flex flex-col gap-16 md:gap-24 pb-20">
+    <div className="flex flex-col gap-8 max-[300px]:gap-6 sm:gap-16 md:gap-24 pb-10 max-[300px]:pb-6 sm:pb-20">
       <section className="relative overflow-hidden">
         <div className="absolute inset-0 -z-10">
           <div className="absolute inset-0 bg-gradient-to-br from-primary/5 via-blue-50 to-white" />
@@ -34,7 +34,7 @@ export default function About() {
           <div className="absolute bottom-0 left-0 w-[300px] h-[300px] bg-gradient-to-tr from-green-100 to-primary/10 rounded-full blur-3xl translate-y-1/2 -translate-x-1/4" />
         </div>
 
-        <div className="max-w-4xl mx-auto text-center py-12 md:py-20 px-4 space-y-6">
+        <div className="max-w-4xl mx-auto text-center py-8 max-[300px]:py-4 md:py-20 px-2 max-[300px]:px-1 sm:px-4 space-y-4 max-[300px]:space-y-3 sm:space-y-6">
           <Link href="/">
             <Button variant="ghost" className="gap-2 mb-4">
               <ArrowLeft className="h-4 w-4" /> Back to Home
@@ -44,7 +44,7 @@ export default function About() {
           <motion.h1
             {...fadeInUp}
             transition={{ duration: 0.5 }}
-            className="text-3xl sm:text-4xl md:text-5xl font-serif font-bold text-slate-900 leading-tight"
+            className="text-xl max-[300px]:text-lg sm:text-4xl md:text-5xl font-serif font-bold text-slate-900 leading-tight"
           >
             Empowering you to take charge of your{" "}
             <span className="text-primary">wellbeing</span>
@@ -62,10 +62,10 @@ export default function About() {
         </div>
       </section>
 
-      <section className="max-w-4xl mx-auto px-4 space-y-6">
+      <section className="max-w-4xl mx-auto px-2 max-[300px]:px-1 sm:px-4 space-y-4 max-[300px]:space-y-3 sm:space-y-6">
         <motion.div {...fadeInUp} transition={{ duration: 0.5 }}>
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center">
+          <div className="flex items-center gap-2 max-[300px]:gap-1.5 sm:gap-3 mb-3 max-[300px]:mb-2 sm:mb-4">
+            <div className="h-10 w-10 max-[300px]:h-8 max-[300px]:w-8 sm:h-12 sm:w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
               <Target className="h-6 w-6 text-primary" />
             </div>
             <h2 className="text-2xl md:text-3xl font-serif font-bold text-slate-900">
@@ -86,9 +86,9 @@ export default function About() {
         </motion.div>
       </section>
 
-      <section className="max-w-5xl mx-auto px-4 space-y-8">
-        <motion.div {...fadeInUp} transition={{ duration: 0.5 }} className="text-center space-y-3">
-          <h2 className="text-2xl md:text-3xl font-serif font-bold text-slate-900">
+      <section className="max-w-5xl mx-auto px-2 max-[300px]:px-1 sm:px-4 space-y-6 max-[300px]:space-y-4 sm:space-y-8">
+        <motion.div {...fadeInUp} transition={{ duration: 0.5 }} className="text-center space-y-2 max-[300px]:space-y-1.5 sm:space-y-3">
+          <h2 className="text-xl max-[300px]:text-lg sm:text-2xl md:text-3xl font-serif font-bold text-slate-900">
             What We Offer
           </h2>
           <p className="text-slate-600 max-w-2xl mx-auto">
@@ -97,7 +97,7 @@ export default function About() {
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 max-[300px]:grid-cols-1 sm:grid-cols-2 gap-4 max-[300px]:gap-3 sm:gap-6">
           {[
             {
               icon: Activity,
@@ -138,13 +138,13 @@ export default function About() {
               transition={{ duration: 0.5, delay: i * 0.1 }}
             >
               <Card className="h-full border-0 shadow-lg hover:shadow-xl transition-shadow duration-300">
-                <CardContent className="p-6 md:p-8 space-y-4">
+                <CardContent className="p-4 max-[300px]:p-3 sm:p-6 md:p-8 space-y-3 max-[300px]:space-y-2 sm:space-y-4">
                   <div
-                    className={`h-12 w-12 rounded-2xl ${feature.bg} ${feature.color} flex items-center justify-center`}
+                    className={`h-10 w-10 max-[300px]:h-8 max-[300px]:w-8 sm:h-12 sm:w-12 rounded-2xl ${feature.bg} ${feature.color} flex items-center justify-center`}
                   >
-                    <feature.icon className="w-6 h-6" />
+                    <feature.icon className="w-5 h-5 max-[300px]:w-4 max-[300px]:h-4 sm:w-6 sm:h-6" />
                   </div>
-                  <h3 className="text-xl font-bold font-serif text-slate-900">
+                  <h3 className="text-base max-[300px]:text-sm sm:text-xl font-bold font-serif text-slate-900">
                     {feature.title}
                   </h3>
                   <p className="text-slate-600 leading-relaxed">
@@ -157,9 +157,9 @@ export default function About() {
         </div>
       </section>
 
-      <section className="max-w-5xl mx-auto px-4 space-y-8">
-        <motion.div {...fadeInUp} transition={{ duration: 0.5 }} className="text-center space-y-3">
-          <h2 className="text-2xl md:text-3xl font-serif font-bold text-slate-900">
+      <section className="max-w-5xl mx-auto px-2 max-[300px]:px-1 sm:px-4 space-y-6 max-[300px]:space-y-4 sm:space-y-8">
+        <motion.div {...fadeInUp} transition={{ duration: 0.5 }} className="text-center space-y-2 max-[300px]:space-y-1.5 sm:space-y-3">
+          <h2 className="text-xl max-[300px]:text-lg sm:text-2xl md:text-3xl font-serif font-bold text-slate-900">
             Our Values
           </h2>
           <p className="text-slate-600 max-w-2xl mx-auto">
@@ -167,7 +167,7 @@ export default function About() {
           </p>
         </motion.div>
 
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 max-[300px]:grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 max-[300px]:gap-3 sm:gap-6">
           {[
             {
               icon: Shield,
@@ -200,8 +200,8 @@ export default function About() {
               transition={{ duration: 0.5, delay: i * 0.1 }}
             >
               <Card className="h-full text-center border-0 shadow-md hover:shadow-lg transition-shadow duration-300">
-                <CardContent className="p-6 space-y-3">
-                  <div className="h-12 w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
+                <CardContent className="p-4 max-[300px]:p-3 sm:p-6 space-y-2 max-[300px]:space-y-1.5 sm:space-y-3">
+                  <div className="h-10 w-10 max-[300px]:h-8 max-[300px]:w-8 sm:h-12 sm:w-12 rounded-full bg-primary/10 text-primary flex items-center justify-center mx-auto">
                     <value.icon className="w-6 h-6" />
                   </div>
                   <h3 className="text-lg font-bold font-serif text-slate-900">
@@ -217,13 +217,13 @@ export default function About() {
         </div>
       </section>
 
-      <section className="max-w-3xl mx-auto px-4">
+      <section className="max-w-3xl mx-auto px-2 max-[300px]:px-1 sm:px-4">
         <motion.div {...fadeInUp} transition={{ duration: 0.5 }}>
           <Card className="bg-gradient-to-br from-primary/5 to-blue-50 border border-primary/10 shadow-md">
-            <CardContent className="p-6 md:p-8 text-center space-y-3">
+            <CardContent className="p-4 max-[300px]:p-3 sm:p-6 md:p-8 text-center space-y-2 max-[300px]:space-y-1.5 sm:space-y-3">
               <div className="flex items-center justify-center gap-2 text-primary">
-                <Heart className="w-5 h-5" />
-                <h3 className="text-lg font-serif font-bold">
+                <Heart className="w-4 h-4 sm:w-5 sm:h-5" />
+                <h3 className="text-base max-[300px]:text-sm sm:text-lg font-serif font-bold">
                   iOS & Android Apps Coming Soon
                 </h3>
               </div>
@@ -235,11 +235,11 @@ export default function About() {
         </motion.div>
       </section>
 
-      <section className="max-w-3xl mx-auto px-4">
+      <section className="max-w-3xl mx-auto px-2 max-[300px]:px-1 sm:px-4">
         <motion.div {...fadeInUp} transition={{ duration: 0.5 }}>
           <Card className="bg-gradient-to-br from-primary/10 to-blue-50 border-0 shadow-xl">
-            <CardContent className="p-8 md:p-12 text-center space-y-6">
-              <h2 className="text-2xl md:text-3xl font-serif font-bold text-slate-900">
+            <CardContent className="p-4 max-[300px]:p-3 sm:p-8 md:p-12 text-center space-y-4 max-[300px]:space-y-3 sm:space-y-6">
+              <h2 className="text-xl max-[300px]:text-lg sm:text-2xl md:text-3xl font-serif font-bold text-slate-900">
                 Start your wellbeing journey today
               </h2>
               <p className="text-slate-600 text-lg max-w-xl mx-auto leading-relaxed">
