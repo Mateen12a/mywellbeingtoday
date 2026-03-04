@@ -283,10 +283,47 @@ export default function History() {
     return <Minus className="h-3.5 w-3.5 text-gray-400" />;
   };
 
+  const TodayMoodCard = () => (
+    <div className="flex items-center gap-3">
+      <span className="text-3xl xs:text-4xl">
+        {todayMood?.summary?.avgScore ? getMoodEmoji(todayMood.summary.avgScore) : '—'}
+      </span>
+      <div>
+        <p className={`text-xl xs:text-2xl font-bold ${todayMood?.summary?.avgScore ? getMoodColor(todayMood.summary.avgScore) : 'text-muted-foreground'}`}>
+          {todayMood?.summary?.avgScore ? todayMood.summary.avgScore.toFixed(1) : '—'}
+          <span className="text-xs font-normal text-muted-foreground ml-1">/10</span>
+        </p>
+        <p className="text-[10px] xs:text-xs text-muted-foreground">
+          {todayMood?.summary?.logsCount 
+            ? `${todayMood.summary.logsCount} log${todayMood.summary.logsCount > 1 ? 's' : ''} today`
+            : 'No logs yet'}
+        </p>
+      </div>
+    </div>
+  );
+
+  const RangeMoodCard = () => (
+    <div className="flex items-center gap-3">
+      <span className="text-3xl xs:text-4xl">{avgMood > 0 ? getMoodEmoji(avgMood) : ''}</span>
+      <div>
+        <div className="flex items-center gap-1.5">
+          <span className={`text-xl xs:text-2xl font-bold ${avgMood > 0 ? getMoodColor(avgMood) : 'text-muted-foreground'}`}>
+            {avgMood > 0 ? avgMood.toFixed(1) : '—'}
+          </span>
+          <span className="text-xs text-muted-foreground">/10</span>
+          {avgMood > 0 && getTrendIcon(moodTrend)}
+        </div>
+        <p className="text-[10px] xs:text-xs text-muted-foreground">
+          {avgMood > 0 ? `${getMoodWord(avgMood)} · ${totalMoodLogs} log${totalMoodLogs !== 1 ? 's' : ''}` : 'No data yet'}
+        </p>
+      </div>
+    </div>
+  );
+
   return (
     <TooltipProvider>
       <div className="space-y-4 xs:space-y-5 sm:space-y-6 animate-in fade-in duration-500 max-w-5xl mx-auto px-2 xs:px-3 sm:px-4">
-        <div className="flex flex-col gap-2 xs:gap-3">
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 xs:gap-3">
           <div>
             <h1 className="text-lg xs:text-xl sm:text-2xl md:text-3xl font-serif font-bold text-foreground">Your Wellbeing</h1>
             <p className="text-[10px] xs:text-xs sm:text-sm text-muted-foreground mt-0.5">See how you've been feeling and what you've been doing.</p>
@@ -299,314 +336,173 @@ export default function History() {
           </div>
         </div>
 
-        <Tabs defaultValue="overview" className="space-y-4 xs:space-y-5">
-          <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
-            <TabsList className="bg-secondary/30 p-0.5 xs:p-1 w-full xs:w-auto overflow-x-auto">
-              <TabsTrigger value="overview" className="text-[10px] xs:text-xs sm:text-sm px-2 xs:px-3">Overview</TabsTrigger>
-              <TabsTrigger value="mood" className="text-[10px] xs:text-xs sm:text-sm px-2 xs:px-3">Mood</TabsTrigger>
-              <TabsTrigger value="activities" className="text-[10px] xs:text-xs sm:text-sm px-2 xs:px-3">Activities</TabsTrigger>
-            </TabsList>
-            
-            <Select value={timeRange} onValueChange={setTimeRange}>
-              <SelectTrigger className="w-full sm:w-[160px] text-xs xs:text-sm h-8 xs:h-9">
-                <CalendarIcon className="mr-1 xs:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
-                <SelectValue placeholder="Time Range" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="today">Today</SelectItem>
-                <SelectItem value="week">Last 7 Days</SelectItem>
-                <SelectItem value="month">Last 30 Days</SelectItem>
-                <SelectItem value="year">Last Year</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
+          <Select value={timeRange} onValueChange={setTimeRange}>
+            <SelectTrigger className="w-full sm:w-[160px] text-xs xs:text-sm h-8 xs:h-9">
+              <CalendarIcon className="mr-1 xs:mr-2 h-3 w-3 sm:h-4 sm:w-4" />
+              <SelectValue placeholder="Time Range" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="today">Today</SelectItem>
+              <SelectItem value="week">Last 7 Days</SelectItem>
+              <SelectItem value="month">Last 30 Days</SelectItem>
+              <SelectItem value="year">Last Year</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
 
-          <TabsContent value="overview" className="space-y-4 xs:space-y-5">
-            {isToday ? (
-              <>
-                <AISuggestionsCard
-                  avgMood={todayMood?.summary?.avgScore || avgMood}
-                  avgStress={todayMood?.summary?.avgStress || avgStress}
-                  avgEnergy={todayMood?.summary?.avgEnergy || avgEnergy}
-                  totalActivities={todayActivities?.activities?.length || totalActivities}
-                  moodTrend={moodTrend}
-                  stressTrend={stressTrend}
-                  isLoading={isLoading}
-                />
+        <AISuggestionsCard
+          avgMood={isToday ? (todayMood?.summary?.avgScore || avgMood) : avgMood}
+          avgStress={isToday ? (todayMood?.summary?.avgStress || avgStress) : avgStress}
+          avgEnergy={isToday ? (todayMood?.summary?.avgEnergy || avgEnergy) : avgEnergy}
+          totalActivities={isToday ? (todayActivities?.activities?.length || totalActivities) : totalActivities}
+          moodTrend={moodTrend}
+          stressTrend={stressTrend}
+          isLoading={isLoading}
+        />
 
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 xs:gap-3">
+        <div className="grid grid-cols-3 gap-2 xs:gap-3">
+          {isLoading ? (
+            <>
+              <Skeleton className="h-20 xs:h-24" />
+              <Skeleton className="h-20 xs:h-24" />
+              <Skeleton className="h-20 xs:h-24" />
+            </>
+          ) : (
+            <>
+              <Card className="border-green-100">
+                <CardContent className="p-2.5 xs:p-3 sm:p-4">
+                  <p className="text-[10px] xs:text-xs text-muted-foreground mb-1.5">{isToday ? "Mood" : `Mood`}</p>
+                  {isToday ? <TodayMoodCard /> : <RangeMoodCard />}
+                </CardContent>
+              </Card>
+
+              <Card className="border-blue-100">
+                <CardContent className="p-2.5 xs:p-3 sm:p-4">
+                  <p className="text-[10px] xs:text-xs text-muted-foreground mb-1.5">Activities</p>
+                  <div className="flex items-center gap-1.5">
+                    <Activity className="h-4 w-4 xs:h-5 xs:w-5 text-blue-500 shrink-0" />
+                    <span className="text-xl xs:text-2xl font-bold text-blue-700">
+                      {isToday ? (todayActivities?.activities?.length || 0) : totalActivities}
+                    </span>
+                  </div>
+                  <p className="text-[10px] xs:text-xs text-muted-foreground mt-1">
+                    {isToday
+                      ? (todayActivities?.summary?.totalDuration ? `${todayActivities.summary.totalDuration} mins` : 'Log something!')
+                      : (totalActivities > 0 ? 'sessions logged' : 'Start logging!')}
+                  </p>
+                </CardContent>
+              </Card>
+
+              <Card className="border-purple-100">
+                <CardContent className="p-2.5 xs:p-3 sm:p-4">
+                  <p className="text-[10px] xs:text-xs text-muted-foreground mb-1.5">Stress & Energy</p>
+                  <div className="flex items-center gap-2">
+                    <div className="flex items-center gap-1">
+                      <Brain className="h-3.5 w-3.5 text-purple-500" />
+                      <span className="text-lg xs:text-xl font-bold text-purple-700">
+                        {isToday
+                          ? (todayMood?.summary?.avgStress ? Number(todayMood.summary.avgStress).toFixed(1) : '—')
+                          : (avgStress ? Number(avgStress).toFixed(1) : '—')}
+                      </span>
+                    </div>
+                    <span className="text-muted-foreground text-xs">/</span>
+                    <div className="flex items-center gap-1">
+                      <Zap className="h-3.5 w-3.5 text-orange-500" />
+                      <span className="text-lg xs:text-xl font-bold text-orange-700">
+                        {isToday
+                          ? (todayMood?.summary?.avgEnergy ? Number(todayMood.summary.avgEnergy).toFixed(1) : '—')
+                          : (avgEnergy ? Number(avgEnergy).toFixed(1) : '—')}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-[10px] xs:text-xs text-muted-foreground mt-1">stress / energy</p>
+                </CardContent>
+              </Card>
+            </>
+          )}
+        </div>
+
+        <Tabs defaultValue="mood" className="space-y-4">
+          <TabsList className="bg-secondary/30 p-0.5 xs:p-1 w-full xs:w-auto overflow-x-auto">
+            {isToday && <TabsTrigger value="timeline" className="text-[10px] xs:text-xs sm:text-sm px-2 xs:px-3">Timeline</TabsTrigger>}
+            <TabsTrigger value="mood" className="text-[10px] xs:text-xs sm:text-sm px-2 xs:px-3">Mood Trends</TabsTrigger>
+            <TabsTrigger value="activities" className="text-[10px] xs:text-xs sm:text-sm px-2 xs:px-3">Activities</TabsTrigger>
+          </TabsList>
+
+          {isToday && (
+            <TabsContent value="timeline">
+              <Card>
+                <CardHeader className="pb-2 px-3 xs:px-5">
+                  <CardTitle className="text-sm xs:text-base font-medium flex items-center gap-1.5">
+                    <Clock className="h-4 w-4" />
+                    Your Day So Far
+                  </CardTitle>
+                </CardHeader>
+                <CardContent className="px-3 xs:px-5">
                   {isLoading ? (
-                    <>
-                      <Skeleton className="h-28" />
-                      <Skeleton className="h-28" />
-                      <Skeleton className="h-28 col-span-2 md:col-span-1" />
-                    </>
-                  ) : (
-                    <>
-                      <Card className="border-green-100">
-                        <CardContent className="p-3 xs:p-4">
-                          <p className="text-[10px] xs:text-xs text-muted-foreground mb-1">Today's Mood</p>
-                          <div className="flex items-center gap-1.5 xs:gap-2">
-                            <span className="text-2xl xs:text-3xl">
-                              {todayMood?.summary?.avgScore ? getMoodEmoji(todayMood.summary.avgScore) : '—'}
-                            </span>
-                            <div>
-                              <p className={`text-lg xs:text-xl font-bold ${todayMood?.summary?.avgScore ? getMoodColor(todayMood.summary.avgScore) : 'text-muted-foreground'}`}>
-                                {todayMood?.summary?.avgScore ? todayMood.summary.avgScore.toFixed(1) : '—'}
-                              </p>
-                              <p className="text-[10px] xs:text-xs text-muted-foreground">out of 10</p>
+                    <div className="flex items-center justify-center py-6">
+                      <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                    </div>
+                  ) : (todayMood?.moodLogs?.length ?? 0) > 0 ? (
+                    <div className="space-y-4">
+                      {(['morning', 'afternoon', 'evening'] as const).map((period) => {
+                        const logs = groupedTodayMoods[period];
+                        const { label, icon: Icon, color } = getTimeOfDayLabel(period);
+                        if (logs.length === 0) return null;
+                        
+                        return (
+                          <div key={period} className="space-y-2">
+                            <div className={`flex items-center gap-1.5 ${color}`}>
+                              <Icon className="h-3.5 w-3.5" />
+                              <span className="text-xs xs:text-sm font-medium">{label}</span>
+                              <Badge variant="secondary" className="ml-auto text-[10px] xs:text-xs">
+                                {logs.length}
+                              </Badge>
                             </div>
-                          </div>
-                          <p className="text-[10px] xs:text-xs text-muted-foreground mt-1">
-                            {todayMood?.summary?.logsCount 
-                              ? `${todayMood.summary.logsCount} log${todayMood.summary.logsCount > 1 ? 's' : ''}`
-                              : 'No logs yet'}
-                          </p>
-                        </CardContent>
-                      </Card>
-                      
-                      <Card className="border-blue-100">
-                        <CardContent className="p-3 xs:p-4">
-                          <p className="text-[10px] xs:text-xs text-muted-foreground mb-1">Activities</p>
-                          <p className="text-2xl xs:text-3xl font-bold text-blue-700">
-                            {todayActivities?.activities?.length || 0}
-                          </p>
-                          <p className="text-[10px] xs:text-xs text-muted-foreground mt-1">
-                            {todayActivities?.summary?.totalDuration 
-                              ? `${todayActivities.summary.totalDuration} mins`
-                              : 'Log something!'}
-                          </p>
-                        </CardContent>
-                      </Card>
-
-                      <Card className="border-orange-100 col-span-2 md:col-span-1">
-                        <CardContent className="p-3 xs:p-4">
-                          <p className="text-[10px] xs:text-xs text-muted-foreground mb-1">Energy</p>
-                          <div className="flex items-center gap-2">
-                            <Zap className="h-4 w-4 text-orange-500" />
-                            <p className="text-2xl xs:text-3xl font-bold text-orange-700">
-                              {todayMood?.summary?.avgEnergy ? todayMood.summary.avgEnergy.toFixed(1) : '—'}
-                            </p>
-                            {todayMood?.summary?.avgEnergy && (
-                              <span className="text-[10px] xs:text-xs text-muted-foreground">/ 10</span>
-                            )}
-                          </div>
-                        </CardContent>
-                      </Card>
-                    </>
-                  )}
-                </div>
-
-                <Card>
-                  <CardHeader className="pb-2 px-3 xs:px-5">
-                    <CardTitle className="text-sm xs:text-base font-medium flex items-center gap-1.5">
-                      <Clock className="h-4 w-4" />
-                      Your Day So Far
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="px-3 xs:px-5">
-                    {isLoading ? (
-                      <div className="flex items-center justify-center py-6">
-                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                      </div>
-                    ) : (todayMood?.moodLogs?.length ?? 0) > 0 ? (
-                      <div className="space-y-4">
-                        {(['morning', 'afternoon', 'evening'] as const).map((period) => {
-                          const logs = groupedTodayMoods[period];
-                          const { label, icon: Icon, color } = getTimeOfDayLabel(period);
-                          if (logs.length === 0) return null;
-                          
-                          return (
-                            <div key={period} className="space-y-2">
-                              <div className={`flex items-center gap-1.5 ${color}`}>
-                                <Icon className="h-3.5 w-3.5" />
-                                <span className="text-xs xs:text-sm font-medium">{label}</span>
-                                <Badge variant="secondary" className="ml-auto text-[10px] xs:text-xs">
-                                  {logs.length}
-                                </Badge>
-                              </div>
-                              
-                              <div className="space-y-1.5 pl-2 xs:pl-5">
-                                {logs.map((log: any) => (
-                                  <div 
-                                    key={log._id} 
-                                    className="flex items-center gap-2 xs:gap-3 p-2 rounded-lg bg-secondary/20 border text-xs xs:text-sm"
-                                  >
-                                    <span className="text-base xs:text-lg">{getMoodEmoji(log.moodScore || 5)}</span>
-                                    <div className="flex-1 min-w-0">
-                                      <span className="font-medium capitalize">{log.mood}</span>
-                                      {log.notes && (
-                                        <p className="text-[10px] xs:text-xs text-muted-foreground truncate">{log.notes}</p>
-                                      )}
-                                    </div>
-                                    <span className="text-[10px] xs:text-xs text-muted-foreground whitespace-nowrap">
-                                      {format(new Date(log.date), 'h:mm a')}
-                                    </span>
+                            
+                            <div className="space-y-1.5 pl-2 xs:pl-5">
+                              {logs.map((log: any) => (
+                                <div 
+                                  key={log._id} 
+                                  className="flex items-center gap-2 xs:gap-3 p-2 rounded-lg bg-secondary/20 border text-xs xs:text-sm"
+                                >
+                                  <span className="text-base xs:text-lg">{getMoodEmoji(log.moodScore || 5)}</span>
+                                  <div className="flex-1 min-w-0">
+                                    <span className="font-medium capitalize">{log.mood}</span>
+                                    {log.notes && (
+                                      <p className="text-[10px] xs:text-xs text-muted-foreground truncate">{log.notes}</p>
+                                    )}
                                   </div>
-                                ))}
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    ) : (
-                      <div className="text-center py-8">
-                        <p className="text-sm text-muted-foreground">No mood entries yet today</p>
-                        <p className="text-xs text-muted-foreground mt-1">Log your mood to start tracking</p>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              </>
-            ) : (
-              <>
-                <AISuggestionsCard
-                  avgMood={avgMood}
-                  avgStress={avgStress}
-                  avgEnergy={avgEnergy}
-                  totalActivities={totalActivities}
-                  moodTrend={moodTrend}
-                  stressTrend={stressTrend}
-                  isLoading={isLoading}
-                />
-
-                <div className="grid grid-cols-2 md:grid-cols-3 gap-2 xs:gap-3">
-                  {isLoading ? (
-                    <>
-                      <Skeleton className="h-24" />
-                      <Skeleton className="h-24" />
-                      <Skeleton className="h-24 col-span-2 md:col-span-1" />
-                    </>
-                  ) : (
-                    <>
-                      <Card className="border-green-100">
-                        <CardContent className="p-3 xs:p-4">
-                          <p className="text-[10px] xs:text-xs text-muted-foreground mb-1">Your Mood {timeLabel}</p>
-                          <div className="flex items-center gap-1.5">
-                            <span className="text-xl xs:text-2xl">{avgMood > 0 ? getMoodEmoji(avgMood) : ''}</span>
-                            <span className={`text-xl xs:text-2xl font-bold ${avgMood > 0 ? getMoodColor(avgMood) : 'text-muted-foreground'}`}>
-                              {avgMood > 0 ? avgMood.toFixed(1) : '—'}
-                            </span>
-                            <span className="text-[10px] xs:text-xs text-muted-foreground">/10</span>
-                            {avgMood > 0 && getTrendIcon(moodTrend)}
-                          </div>
-                          <p className="text-[10px] xs:text-xs text-muted-foreground mt-1">
-                            {avgMood > 0 ? `${getMoodWord(avgMood)} · ${totalMoodLogs} log${totalMoodLogs !== 1 ? 's' : ''}` : 'No data yet'}
-                          </p>
-                        </CardContent>
-                      </Card>
-                      
-                      <Card className="border-blue-100">
-                        <CardContent className="p-3 xs:p-4">
-                          <p className="text-[10px] xs:text-xs text-muted-foreground mb-1">Activities {timeLabel}</p>
-                          <div className="flex items-center gap-1.5">
-                            <Activity className="h-4 w-4 xs:h-5 xs:w-5 text-blue-500" />
-                            <span className="text-xl xs:text-2xl font-bold text-blue-700">{totalActivities}</span>
-                          </div>
-                          <p className="text-[10px] xs:text-xs text-muted-foreground mt-1">
-                            {totalActivities > 0 ? 'sessions logged' : 'Start logging!'}
-                          </p>
-                        </CardContent>
-                      </Card>
-
-                      <Card className="border-purple-100 col-span-2 md:col-span-1">
-                        <CardContent className="p-3 xs:p-4">
-                          <div className="flex items-center justify-between gap-2">
-                            <div>
-                              <p className="text-[10px] xs:text-xs text-muted-foreground mb-1">Stress</p>
-                              <div className="flex items-center gap-1.5">
-                                <Brain className="h-4 w-4 text-purple-500" />
-                                <span className="text-xl xs:text-2xl font-bold text-purple-700">
-                                  {avgStress ? Number(avgStress).toFixed(1) : '—'}
-                                </span>
-                                {avgStress && <span className="text-[10px] xs:text-xs text-muted-foreground">/10</span>}
-                                {getTrendIcon(stressTrend)}
-                              </div>
-                            </div>
-                            {avgEnergy && (
-                              <div>
-                                <p className="text-[10px] xs:text-xs text-muted-foreground mb-1">Energy</p>
-                                <div className="flex items-center gap-1.5">
-                                  <Zap className="h-4 w-4 text-orange-500" />
-                                  <span className="text-xl xs:text-2xl font-bold text-orange-700">
-                                    {Number(avgEnergy).toFixed(1)}
+                                  <span className="text-[10px] xs:text-xs text-muted-foreground whitespace-nowrap">
+                                    {format(new Date(log.date), 'h:mm a')}
                                   </span>
                                 </div>
-                              </div>
-                            )}
+                              ))}
+                            </div>
                           </div>
-                        </CardContent>
-                      </Card>
-                    </>
-                  )}
-                </div>
-
-                <Card>
-                  <CardHeader className="pb-2 px-3 xs:px-5">
-                    <CardTitle className="text-sm xs:text-base font-medium">
-                      Your Mood {timeLabel}
-                    </CardTitle>
-                    <CardDescription className="text-[10px] xs:text-xs">
-                      How your mood and stress have changed over time
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="px-3 xs:px-5 overflow-x-auto">
-                    <div className="h-[220px] sm:h-[280px] md:h-[320px] w-full">
-                      {isLoading ? (
-                        <div className="flex items-center justify-center h-full">
-                          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-                        </div>
-                      ) : chartData.length > 0 ? (
-                        <ResponsiveContainer width="100%" height="100%">
-                          <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
-                            <defs>
-                              <linearGradient id="colorMood" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
-                                <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
-                              </linearGradient>
-                              <linearGradient id="colorStress" x1="0" y1="0" x2="0" y2="1">
-                                <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8}/>
-                                <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
-                              </linearGradient>
-                            </defs>
-                            <XAxis dataKey="date" stroke="#888888" fontSize={10} tickLine={false} axisLine={false} />
-                            <YAxis stroke="#888888" fontSize={10} tickLine={false} axisLine={false} domain={[0, 10]} width={25} />
-                            <CartesianGrid strokeDasharray="3 3" vertical={false} opacity={0.2} />
-                            <RechartsTooltip 
-                              contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: '8px', border: 'none', boxShadow: '0 2px 8px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
-                            />
-                            <Area type="monotone" dataKey="mood" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorMood)" name="Mood" />
-                            <Area type="monotone" dataKey="stress" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorStress)" name="Stress" />
-                            <Legend verticalAlign="top" height={30} iconSize={10} wrapperStyle={{ fontSize: '11px' }} />
-                          </AreaChart>
-                        </ResponsiveContainer>
-                      ) : (
-                        <div className="flex flex-col items-center justify-center h-full text-center px-4">
-                          <Heart className="h-8 w-8 text-muted-foreground/30 mb-2" />
-                          <p className="text-sm text-muted-foreground">No mood data yet</p>
-                          <p className="text-xs text-muted-foreground mt-1">Log your mood daily to see trends here</p>
-                        </div>
-                      )}
+                        );
+                      })}
                     </div>
-                    {chartData.length > 0 && (
-                      <p className="text-[10px] xs:text-xs text-muted-foreground mt-2">
-                        <span className="text-green-600">●</span> Mood (higher = better) · <span className="text-amber-500">●</span> Stress (lower = better)
-                      </p>
-                    )}
-                  </CardContent>
-                </Card>
-              </>
-            )}
-          </TabsContent>
+                  ) : (
+                    <div className="text-center py-8">
+                      <p className="text-sm text-muted-foreground">No mood entries yet today</p>
+                      <p className="text-xs text-muted-foreground mt-1">Log your mood to start tracking</p>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </TabsContent>
+          )}
 
           <TabsContent value="mood">
             <Card>
-              <CardHeader className="px-3 xs:px-5">
-                <CardTitle className="text-sm xs:text-base font-medium">Your Mood Over Time</CardTitle>
-                <CardDescription className="text-[10px] xs:text-xs">Track how your mood and energy change day to day</CardDescription>
+              <CardHeader className="pb-2 px-3 xs:px-5">
+                <CardTitle className="text-sm xs:text-base font-medium">Mood & Stress {timeLabel}</CardTitle>
+                <CardDescription className="text-[10px] xs:text-xs">How your mood and stress have changed over time</CardDescription>
               </CardHeader>
               <CardContent className="px-3 xs:px-5 overflow-x-auto">
-                <div className="h-[230px] sm:h-[320px] md:h-[380px] w-full">
+                <div className="h-[220px] sm:h-[280px] md:h-[320px] w-full">
                   {isLoading ? (
                     <div className="flex items-center justify-center h-full">
                       <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -615,12 +511,16 @@ export default function History() {
                     <ResponsiveContainer width="100%" height="100%">
                       <AreaChart data={chartData} margin={{ top: 5, right: 10, left: -20, bottom: 5 }}>
                         <defs>
-                          <linearGradient id="colorMoodDetailed" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.8}/>
-                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0}/>
+                          <linearGradient id="colorMood" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#10b981" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                          </linearGradient>
+                          <linearGradient id="colorStress" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="5%" stopColor="#f59e0b" stopOpacity={0.8}/>
+                            <stop offset="95%" stopColor="#f59e0b" stopOpacity={0}/>
                           </linearGradient>
                           <linearGradient id="colorEnergy" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.8}/>
+                            <stop offset="5%" stopColor="#06b6d4" stopOpacity={0.6}/>
                             <stop offset="95%" stopColor="#06b6d4" stopOpacity={0}/>
                           </linearGradient>
                         </defs>
@@ -630,21 +530,23 @@ export default function History() {
                         <RechartsTooltip 
                           contentStyle={{ backgroundColor: 'rgba(255, 255, 255, 0.95)', borderRadius: '8px', border: 'none', boxShadow: '0 2px 8px rgb(0 0 0 / 0.1)', fontSize: '12px' }}
                         />
-                        <Area type="monotone" dataKey="mood" stroke="#8b5cf6" strokeWidth={2.5} fillOpacity={1} fill="url(#colorMoodDetailed)" name="Mood" />
-                        <Area type="monotone" dataKey="energy" stroke="#06b6d4" strokeWidth={2} fillOpacity={1} fill="url(#colorEnergy)" name="Energy" />
+                        <Area type="monotone" dataKey="mood" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorMood)" name="Mood" />
+                        <Area type="monotone" dataKey="stress" stroke="#f59e0b" strokeWidth={2} fillOpacity={1} fill="url(#colorStress)" name="Stress" />
+                        <Area type="monotone" dataKey="energy" stroke="#06b6d4" strokeWidth={1.5} fillOpacity={1} fill="url(#colorEnergy)" name="Energy" />
                         <Legend verticalAlign="top" height={30} iconSize={10} wrapperStyle={{ fontSize: '11px' }} />
                       </AreaChart>
                     </ResponsiveContainer>
                   ) : (
-                    <div className="flex flex-col items-center justify-center h-full text-center">
+                    <div className="flex flex-col items-center justify-center h-full text-center px-4">
+                      <Heart className="h-8 w-8 text-muted-foreground/30 mb-2" />
                       <p className="text-sm text-muted-foreground">No mood data yet</p>
-                      <p className="text-xs text-muted-foreground mt-1">Log your mood daily to see your patterns</p>
+                      <p className="text-xs text-muted-foreground mt-1">Log your mood daily to see trends here</p>
                     </div>
                   )}
                 </div>
                 {chartData.length > 0 && (
                   <p className="text-[10px] xs:text-xs text-muted-foreground mt-2">
-                    <span className="text-purple-600">●</span> Mood score · <span className="text-cyan-500">●</span> Energy level · Both scored out of 10
+                    <span className="text-green-600">●</span> Mood (higher = better) · <span className="text-amber-500">●</span> Stress (lower = better) · <span className="text-cyan-500">●</span> Energy
                   </p>
                 )}
               </CardContent>

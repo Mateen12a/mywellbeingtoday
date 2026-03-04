@@ -9,8 +9,7 @@ const PRICING = {
     price: 0,
     interval: null,
     displayPrice: 'Free',
-    name: 'Free Trial',
-    trialDays: 7
+    name: 'Free'
   },
   starter: {
     price: 5,
@@ -48,42 +47,36 @@ export const PLAN_LIMITS = {
   free: {
     activityLogs: 2,
     moodLogs: 2,
-    reportDownloads: 1,
     directoryAccess: 2,
     aiInteractions: 2
   },
   starter: {
     activityLogs: 10,
     moodLogs: 10,
-    reportDownloads: 3,
     directoryAccess: 10,
     aiInteractions: 10
   },
   pro: {
     activityLogs: -1,
     moodLogs: -1,
-    reportDownloads: -1,
     directoryAccess: -1,
     aiInteractions: -1
   },
   premium: {
     activityLogs: -1,
     moodLogs: -1,
-    reportDownloads: -1,
     directoryAccess: -1,
     aiInteractions: -1
   },
   team: {
     activityLogs: -1,
     moodLogs: -1,
-    reportDownloads: -1,
     directoryAccess: -1,
     aiInteractions: -1
   },
   franchise: {
     activityLogs: -1,
     moodLogs: -1,
-    reportDownloads: -1,
     directoryAccess: -1,
     aiInteractions: -1
   }

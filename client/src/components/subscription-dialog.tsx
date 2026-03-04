@@ -38,7 +38,7 @@ const PLAN_DETAILS = {
     features: [
       "2 basic activity logs",
       "2 basic mood track & insight",
-      "Free report downloads",
+      "Free wellbeing reports",
       "2 directory access",
       "2 AI interactions",
     ],
@@ -134,7 +134,6 @@ const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, premium
 const USAGE_LABELS: Record<string, { label: string; icon: typeof Activity }> = {
   activityLogs: { label: "Activity Logs", icon: Activity },
   moodLogs: { label: "Mood Tracking", icon: Brain },
-  reportDownloads: { label: "Report Downloads", icon: Activity },
   directoryAccess: { label: "Directory Access", icon: Search },
   aiInteractions: { label: "AI Interactions", icon: Bot },
 };

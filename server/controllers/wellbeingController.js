@@ -7,11 +7,6 @@ import { incrementUsage, checkUsageLimit, PLAN_LIMITS } from '../routes/subscrip
 
 export const generateReport = async (req, res, next) => {
   try {
-    const usageCheck = await checkUsageLimit(req.user._id, 'reportDownloads');
-    if (!usageCheck.allowed) {
-      return res.status(403).json({ success: false, message: usageCheck.reason });
-    }
-
     const { days = 7 } = req.body;
     const endDate = new Date();
     const startDate = new Date();
@@ -85,7 +80,6 @@ export const generateReport = async (req, res, next) => {
       aiModel: wellbeingAnalysis.aiModel || ''
     });
 
-    await incrementUsage(req.user._id, 'reportDownloads');
     await logAction(req.user._id, 'GENERATE_REPORT', 'wellbeingReport', report._id, null, req);
     res.status(201).json({
       success: true,

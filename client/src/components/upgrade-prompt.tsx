@@ -6,22 +6,21 @@ import { useSubscriptionDialog } from "@/contexts/SubscriptionDialogContext";
 const NEXT_PLAN: Record<string, { name: string; limits: Record<string, number> }> = {
   free: {
     name: "Starter",
-    limits: { activityLogs: 10, moodLogs: 10, reportDownloads: 3, directoryAccess: 10, aiInteractions: 10 },
+    limits: { activityLogs: 10, moodLogs: 10, directoryAccess: 10, aiInteractions: 10 },
   },
   starter: {
     name: "Pro",
-    limits: { activityLogs: -1, moodLogs: -1, reportDownloads: -1, directoryAccess: -1, aiInteractions: -1 },
+    limits: { activityLogs: -1, moodLogs: -1, directoryAccess: -1, aiInteractions: -1 },
   },
   pro: {
     name: "Premium",
-    limits: { activityLogs: -1, moodLogs: -1, reportDownloads: -1, directoryAccess: -1, aiInteractions: -1 },
+    limits: { activityLogs: -1, moodLogs: -1, directoryAccess: -1, aiInteractions: -1 },
   },
 };
 
 const FEATURE_LABELS: Record<string, string> = {
   activityLogs: "activity logs",
   moodLogs: "mood logs",
-  reportDownloads: "report downloads",
   directoryAccess: "directory searches",
   aiInteractions: "AI interactions",
 };

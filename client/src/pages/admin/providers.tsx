@@ -409,17 +409,17 @@ export default function AdminProvidersPage() {
               <table className="w-full text-sm text-left">
                 <thead className="bg-muted/30 text-muted-foreground font-medium border-b border-border/40">
                   <tr>
-                    <th className="px-6 py-4 font-semibold">Provider</th>
-                    <th className="px-6 py-4 font-semibold">Specialty</th>
-                    <th className="px-6 py-4 font-semibold">Location</th>
-                    <th className="px-6 py-4 font-semibold">Status</th>
-                    <th className="px-6 py-4 font-semibold">
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold">Provider</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold hidden md:table-cell">Specialty</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold hidden lg:table-cell">Location</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold hidden sm:table-cell">Status</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold hidden xl:table-cell">
                       <div className="flex items-center gap-1.5">
                         <Bot className="h-3.5 w-3.5" />
                         <span>AI Review</span>
                       </div>
                     </th>
-                    <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/40">
@@ -444,30 +444,43 @@ export default function AdminProvidersPage() {
                           className={`hover:bg-muted/20 transition-colors ${hasHighRisk ? "bg-red-50/30 dark:bg-red-900/10" : ""}`}
                           data-testid={`row-provider-${provider._id}`}
                         >
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-9 w-9 border border-border/50">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4">
+                            <div className="flex items-center gap-2 sm:gap-3">
+                              <Avatar className="h-8 w-8 sm:h-9 sm:w-9 border border-border/50 shrink-0">
                                 <AvatarFallback className="text-xs font-medium">
                                   {providerName[0] || "P"}
                                 </AvatarFallback>
                               </Avatar>
-                              <div>
-                                <div className="font-medium text-foreground">
+                              <div className="min-w-0">
+                                <div className="font-medium text-foreground text-xs sm:text-sm truncate">
                                   {providerName}
                                 </div>
-                                <div className="text-xs text-muted-foreground">
+                                <div className="text-[10px] sm:text-xs text-muted-foreground truncate">
                                   {provider.userId?.email || "No email"}
+                                </div>
+                                <div className="flex flex-wrap gap-1 mt-1 sm:hidden">
+                                  <Badge variant="outline" className="text-[10px] px-1.5 py-0">{specialty}</Badge>
+                                  <Badge
+                                    variant={isVerified ? "default" : "secondary"}
+                                    className={`text-[10px] px-1.5 py-0 ${
+                                      isVerified
+                                        ? "bg-emerald-100 text-emerald-700"
+                                        : "bg-amber-100 text-amber-700"
+                                    }`}
+                                  >
+                                    {isVerified ? "Verified" : "Pending"}
+                                  </Badge>
                                 </div>
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4">
-                            <Badge variant="outline">{specialty}</Badge>
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 hidden md:table-cell">
+                            <Badge variant="outline" className="text-xs">{specialty}</Badge>
                           </td>
-                          <td className="px-6 py-4 text-muted-foreground">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 text-muted-foreground hidden lg:table-cell">
                             {city}
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 hidden sm:table-cell">
                             <Badge
                               variant={isVerified ? "default" : "secondary"}
                               className={
@@ -479,7 +492,7 @@ export default function AdminProvidersPage() {
                               {isVerified ? "Verified" : "Pending"}
                             </Badge>
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 hidden xl:table-cell">
                             <div className="flex flex-wrap gap-1.5 max-w-[220px]">
                               {riskIndicators.length === 0 ? (
                                 <span className="text-xs text-muted-foreground/70 flex items-center gap-1">
@@ -508,7 +521,7 @@ export default function AdminProvidersPage() {
                               )}
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-right">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
                             <div className="flex items-center justify-end gap-1">
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -630,13 +643,13 @@ export default function AdminProvidersPage() {
         open={viewProfileDialog.open}
         onOpenChange={(open) => !open && setViewProfileDialog({ open: false, provider: null })}
       >
-        <DialogContent className="sm:max-w-[700px] max-h-[90vh]">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              Provider Profile
+        <DialogContent className="sm:max-w-[700px] max-w-[95vw] max-h-[90vh] p-0">
+          <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-0">
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <User className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+              <span className="truncate">Provider Profile</span>
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="truncate text-xs sm:text-sm">
               Complete profile details for {viewProfileDialog.provider?.userId?.profile?.firstName} {viewProfileDialog.provider?.userId?.profile?.lastName}
             </DialogDescription>
           </DialogHeader>
@@ -647,20 +660,19 @@ export default function AdminProvidersPage() {
             const documents = provider.verification?.documents || [];
             
             return (
-              <ScrollArea className="max-h-[60vh] pr-4">
-                <div className="space-y-5">
-                  {/* Header with avatar and status */}
-                  <div className="flex items-start gap-4">
-                    <Avatar className="h-16 w-16">
-                      <AvatarFallback className="text-lg bg-primary/10 text-primary font-semibold">
+              <ScrollArea className="max-h-[60vh] px-4 sm:px-6">
+                <div className="space-y-4 sm:space-y-5 pb-4">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <Avatar className="h-14 w-14 sm:h-16 sm:w-16 shrink-0">
+                      <AvatarFallback className="text-base sm:text-lg bg-primary/10 text-primary font-semibold">
                         {(provider.userId?.profile?.firstName?.[0] || '') + (provider.userId?.profile?.lastName?.[0] || '')}
                       </AvatarFallback>
                     </Avatar>
-                    <div className="flex-1">
-                      <h3 className="font-semibold text-lg">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-semibold text-base sm:text-lg truncate">
                         {provider.professionalInfo?.title || ''} {provider.userId?.profile?.firstName} {provider.userId?.profile?.lastName}
                       </h3>
-                      <div className="flex flex-wrap items-center gap-2 mt-1">
+                      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 mt-1">
                         <Badge variant={isVerified ? "default" : "secondary"} className={isVerified ? "bg-emerald-100 text-emerald-700" : "bg-amber-100 text-amber-700"}>
                           {isVerified ? "Verified" : "Pending Verification"}
                         </Badge>
@@ -676,28 +688,27 @@ export default function AdminProvidersPage() {
                   
                   <Separator />
                   
-                  {/* Contact Information */}
                   <div>
-                    <h4 className="text-sm font-semibold mb-3 flex items-center gap-2">
-                      <Mail className="h-4 w-4" />
+                    <h4 className="text-xs sm:text-sm font-semibold mb-2 sm:mb-3 flex items-center gap-2">
+                      <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
                       Contact Information
                     </h4>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-sm">
-                      <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">Email:</span>
-                        <span className="font-medium">{provider.userId?.email || 'Not provided'}</span>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-muted-foreground shrink-0">Email:</span>
+                        <span className="font-medium truncate">{provider.userId?.email || 'Not provided'}</span>
                       </div>
                       <div className="flex items-center gap-2">
-                        <span className="text-muted-foreground">Phone:</span>
+                        <span className="text-muted-foreground shrink-0">Phone:</span>
                         <span className="font-medium">{provider.practice?.phone || provider.userId?.profile?.phone || 'Not provided'}</span>
                       </div>
                       {provider.practice?.website && (
-                        <div className="flex items-center gap-2 col-span-2">
-                          <Globe className="h-4 w-4 text-muted-foreground" />
-                          <span className="text-muted-foreground">Website:</span>
-                          <a href={provider.practice.website} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline flex items-center gap-1">
-                            {provider.practice.website}
-                            <ExternalLink className="h-3 w-3" />
+                        <div className="flex items-center gap-2 sm:col-span-2 min-w-0">
+                          <Globe className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          <span className="text-muted-foreground shrink-0">Website:</span>
+                          <a href={provider.practice.website} target="_blank" rel="noopener noreferrer" className="font-medium text-primary hover:underline flex items-center gap-1 truncate">
+                            <span className="truncate">{provider.practice.website}</span>
+                            <ExternalLink className="h-3 w-3 shrink-0" />
                           </a>
                         </div>
                       )}

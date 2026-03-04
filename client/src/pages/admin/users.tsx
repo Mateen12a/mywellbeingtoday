@@ -47,7 +47,8 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Search, MoreHorizontal, AlertCircle, User, Loader2, Trash2, Bot, AlertTriangle, Eye, Ban, Mail, Phone, Calendar, MapPin, CreditCard, Activity, Heart, FileText, Users, Brain, BarChart3 } from "lucide-react";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Search, MoreHorizontal, AlertCircle, User, Loader2, Trash2, Bot, AlertTriangle, Eye, Ban, Mail, Phone, Calendar, MapPin, CreditCard, Activity, Heart, Users, Brain, BarChart3, Briefcase, Building2, Clock, Globe, Shield } from "lucide-react";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import AdminLayout from "@/components/admin-layout";
@@ -129,7 +130,6 @@ const PLAN_BADGE: Record<string, { label: string; className: string }> = {
 const USAGE_FEATURES = [
   { key: "activityLogs", label: "Activity Logs", icon: Activity },
   { key: "moodLogs", label: "Mood Tracking", icon: Heart },
-  { key: "reportDownloads", label: "Reports", icon: FileText },
   { key: "directoryAccess", label: "Directory", icon: Users },
   { key: "aiInteractions", label: "AI Interactions", icon: Brain },
 ];
@@ -391,18 +391,18 @@ export default function AdminUsersPage() {
               <table className="w-full text-sm text-left">
                 <thead className="bg-muted/30 text-muted-foreground font-medium border-b border-border/40">
                   <tr>
-                    <th className="px-6 py-4 font-semibold">User</th>
-                    <th className="px-6 py-4 font-semibold">Role</th>
-                    <th className="px-6 py-4 font-semibold">Plan</th>
-                    <th className="px-6 py-4 font-semibold">Joined</th>
-                    <th className="px-6 py-4 font-semibold">Status</th>
-                    <th className="px-6 py-4 font-semibold">
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold">User</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold hidden md:table-cell">Role</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold hidden sm:table-cell">Plan</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold hidden lg:table-cell">Joined</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold hidden sm:table-cell">Status</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold hidden xl:table-cell">
                       <div className="flex items-center gap-1.5">
                         <Bot className="h-3.5 w-3.5" />
                         <span>AI Review</span>
                       </div>
                     </th>
-                    <th className="px-6 py-4 font-semibold text-right">Actions</th>
+                    <th className="px-3 sm:px-6 py-3 sm:py-4 font-semibold text-right">Actions</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-border/40">
@@ -423,27 +423,48 @@ export default function AdminUsersPage() {
                           className={`hover:bg-muted/20 transition-colors ${hasHighRisk ? "bg-red-50/30 dark:bg-red-900/10" : ""}`}
                           data-testid={`row-user-${user._id}`}
                         >
-                          <td className="px-6 py-4">
-                            <div className="flex items-center gap-3">
-                              <Avatar className="h-9 w-9 border border-border/50">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4">
+                            <div className="flex items-center gap-2 sm:gap-3">
+                              <Avatar className="h-8 w-8 sm:h-9 sm:w-9 border border-border/50 shrink-0">
                                 <AvatarFallback className="text-xs font-medium">
                                   {getInitials(user)}
                                 </AvatarFallback>
                               </Avatar>
-                              <div>
-                                <div className="font-medium text-foreground">
+                              <div className="min-w-0">
+                                <div className="font-medium text-foreground text-xs sm:text-sm truncate">
                                   {getUserDisplayName(user)}
                                 </div>
-                                <div className="text-xs text-muted-foreground">{user.email}</div>
+                                <div className="text-[10px] sm:text-xs text-muted-foreground truncate">{user.email}</div>
+                                <div className="flex flex-wrap gap-1 mt-1 sm:hidden">
+                                  {(() => {
+                                    const plan = user.subscription?.plan || "free";
+                                    const badge = PLAN_BADGE[plan] || PLAN_BADGE.free;
+                                    return (
+                                      <Badge variant="outline" className={`text-[10px] px-1.5 py-0 ${badge.className}`}>
+                                        {badge.label}
+                                      </Badge>
+                                    );
+                                  })()}
+                                  <Badge
+                                    variant={user.isActive !== false ? "default" : "secondary"}
+                                    className={`text-[10px] px-1.5 py-0 ${
+                                      user.isActive !== false
+                                        ? "bg-emerald-100 text-emerald-700"
+                                        : "bg-red-100 text-red-700"
+                                    }`}
+                                  >
+                                    {user.isActive !== false ? "active" : "disabled"}
+                                  </Badge>
+                                </div>
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4">
-                            <Badge variant="outline" className="capitalize">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 hidden md:table-cell">
+                            <Badge variant="outline" className="capitalize text-xs">
                               {formatLabel(user.role)}
                             </Badge>
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 hidden sm:table-cell">
                             {(() => {
                               const plan = user.subscription?.plan || "free";
                               const badge = PLAN_BADGE[plan] || PLAN_BADGE.free;
@@ -454,10 +475,10 @@ export default function AdminUsersPage() {
                               );
                             })()}
                           </td>
-                          <td className="px-6 py-4 text-muted-foreground">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 text-muted-foreground hidden lg:table-cell">
                             {formatDate(user.createdAt)}
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 hidden sm:table-cell">
                             <Badge
                               variant={user.isActive !== false ? "default" : "secondary"}
                               className={
@@ -469,7 +490,7 @@ export default function AdminUsersPage() {
                               {user.isActive !== false ? "active" : "disabled"}
                             </Badge>
                           </td>
-                          <td className="px-6 py-4">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 hidden xl:table-cell">
                             <div className="flex flex-wrap gap-1.5 max-w-[200px]">
                               {riskIndicators.length === 0 ? (
                                 <span className="text-xs text-muted-foreground/70 flex items-center gap-1">
@@ -497,7 +518,7 @@ export default function AdminUsersPage() {
                               )}
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-right">
+                          <td className="px-3 sm:px-6 py-3 sm:py-4 text-right">
                             <div className="flex items-center justify-end gap-1">
                               <Tooltip>
                                 <TooltipTrigger asChild>
@@ -723,193 +744,280 @@ export default function AdminUsersPage() {
         open={viewProfileDialog.open}
         onOpenChange={(open) => !open && setViewProfileDialog({ open: false, user: null })}
       >
-        <DialogContent className="sm:max-w-[520px] max-h-[85vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="flex items-center gap-2">
-              <User className="h-5 w-5" />
-              User Profile
+        <DialogContent className="sm:max-w-[600px] max-w-[95vw] max-h-[90vh] p-0">
+          <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-0">
+            <DialogTitle className="flex items-center gap-2 text-base sm:text-lg">
+              <User className="h-4 w-4 sm:h-5 sm:w-5 shrink-0" />
+              <span className="truncate">User Profile</span>
             </DialogTitle>
-            <DialogDescription>
+            <DialogDescription className="truncate text-xs sm:text-sm">
               Viewing profile details for {getUserDisplayName(viewProfileDialog.user)}
             </DialogDescription>
           </DialogHeader>
-          {viewProfileDialog.user && (
-            <div className="space-y-4">
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarFallback className="text-lg bg-primary/10 text-primary font-semibold">
-                    {getInitials(viewProfileDialog.user)}
-                  </AvatarFallback>
-                </Avatar>
-                <div>
-                  <h3 className="font-semibold text-lg">{getUserDisplayName(viewProfileDialog.user)}</h3>
-                  <div className="flex items-center gap-2 mt-1">
-                    <Badge variant={viewProfileDialog.user.isActive !== false ? "default" : "secondary"}>
-                      {viewProfileDialog.user.isActive !== false ? "Active" : "Disabled"}
-                    </Badge>
-                    <Badge variant="outline" className="capitalize">
-                      {formatLabel(viewProfileDialog.user.role)}
-                    </Badge>
-                  </div>
-                </div>
-              </div>
-              
-              <Separator />
-              
-              <div className="space-y-3">
-                <div className="flex items-center gap-3 text-sm">
-                  <Mail className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Email:</span>
-                  <span className="font-medium">{viewProfileDialog.user.email}</span>
-                  {viewProfileDialog.user.isEmailVerified && (
-                    <Badge variant="outline" className="text-green-600 border-green-600 text-xs">Verified</Badge>
-                  )}
-                </div>
-                
-                {viewProfileDialog.user.profile?.phone && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <Phone className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Phone:</span>
-                    <span className="font-medium">{viewProfileDialog.user.profile.phone}</span>
-                  </div>
-                )}
-                
-                <div className="flex items-center gap-3 text-sm">
-                  <Calendar className="h-4 w-4 text-muted-foreground" />
-                  <span className="text-muted-foreground">Joined:</span>
-                  <span className="font-medium">
-                    {new Date(viewProfileDialog.user.createdAt).toLocaleDateString('en-GB', {
-                      day: 'numeric',
-                      month: 'long',
-                      year: 'numeric'
-                    })}
-                  </span>
-                </div>
-                
-                {viewProfileDialog.user.lastLoginAt && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <Calendar className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Last Login:</span>
-                    <span className="font-medium">
-                      {new Date(viewProfileDialog.user.lastLoginAt).toLocaleDateString('en-GB', {
-                        day: 'numeric',
-                        month: 'long',
-                        year: 'numeric'
-                      })}
-                    </span>
-                  </div>
-                )}
+          {viewProfileDialog.user && (() => {
+            const u = viewProfileDialog.user;
+            const profile = u.profile || {};
+            const address = profile.address || {};
+            const fullAddress = [address.street, address.city, address.postcode, address.country].filter(Boolean).join(', ');
+            const occupation = profile.occupation === 'other' ? profile.occupationOther : profile.occupation;
 
-                {viewProfileDialog.user.profile?.address?.city && (
-                  <div className="flex items-center gap-3 text-sm">
-                    <MapPin className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-muted-foreground">Location:</span>
-                    <span className="font-medium">{viewProfileDialog.user.profile.address.city}</span>
+            return (
+              <ScrollArea className="max-h-[65vh] px-4 sm:px-6">
+                <div className="space-y-4 sm:space-y-5 pb-4">
+                  <div className="flex items-start gap-3 sm:gap-4">
+                    <Avatar className="h-14 w-14 sm:h-16 sm:w-16 shrink-0">
+                      {profile.avatarUrl ? (
+                        <img src={profile.avatarUrl} alt="" className="h-full w-full object-cover rounded-full" />
+                      ) : (
+                        <AvatarFallback className="text-base sm:text-lg bg-primary/10 text-primary font-semibold">
+                          {getInitials(u)}
+                        </AvatarFallback>
+                      )}
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <h3 className="font-semibold text-base sm:text-lg truncate">{getUserDisplayName(u)}</h3>
+                      {profile.displayName && profile.displayName !== `${profile.firstName} ${profile.lastName}` && (
+                        <p className="text-xs text-muted-foreground truncate">Display: {profile.displayName}</p>
+                      )}
+                      <div className="flex flex-wrap items-center gap-1.5 mt-1.5">
+                        <Badge variant={u.isActive !== false ? "default" : "secondary"} className="text-xs">
+                          {u.isActive !== false ? "Active" : "Disabled"}
+                        </Badge>
+                        <Badge variant="outline" className="capitalize text-xs">
+                          {formatLabel(u.role)}
+                        </Badge>
+                        {u.verification?.emailVerified && (
+                          <Badge variant="outline" className="text-green-600 border-green-300 text-xs">Email Verified</Badge>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                )}
-              </div>
-              
-              {analyzeUserRisk(viewProfileDialog.user).length > 0 && (
-                <>
+
+                  <Separator />
+
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-semibold mb-2 sm:mb-3 flex items-center gap-2">
+                      <Mail className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      Contact Information
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <span className="text-muted-foreground shrink-0">Email:</span>
+                        <span className="font-medium truncate">{u.email}</span>
+                      </div>
+                      {profile.phone && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground shrink-0">Phone:</span>
+                          <span className="font-medium">{profile.phone}</span>
+                        </div>
+                      )}
+                      {fullAddress && (
+                        <div className="flex items-start gap-2 sm:col-span-2">
+                          <MapPin className="h-3.5 w-3.5 text-muted-foreground mt-0.5 shrink-0" />
+                          <span className="font-medium break-words">{fullAddress}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-semibold mb-2 sm:mb-3 flex items-center gap-2">
+                      <User className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      Personal Information
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
+                      {profile.dateOfBirth && (
+                        <div className="flex items-center gap-2">
+                          <Calendar className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          <span className="text-muted-foreground shrink-0">Date of Birth:</span>
+                          <span className="font-medium">{new Date(profile.dateOfBirth).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</span>
+                        </div>
+                      )}
+                      {occupation && (
+                        <div className="flex items-center gap-2">
+                          <Briefcase className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          <span className="text-muted-foreground shrink-0">Occupation:</span>
+                          <span className="font-medium capitalize">{formatLabel(occupation)}</span>
+                        </div>
+                      )}
+                      {profile.organisation && (
+                        <div className="flex items-center gap-2">
+                          <Building2 className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                          <span className="text-muted-foreground shrink-0">Organisation:</span>
+                          <span className="font-medium truncate">{profile.organisation}</span>
+                        </div>
+                      )}
+                      {profile.bio && (
+                        <div className="sm:col-span-2">
+                          <span className="text-muted-foreground">Bio:</span>
+                          <p className="mt-1 text-xs sm:text-sm bg-muted/30 p-2 rounded break-words">{profile.bio}</p>
+                        </div>
+                      )}
+                    </div>
+                    {!profile.dateOfBirth && !occupation && !profile.organisation && !profile.bio && (
+                      <p className="text-xs text-muted-foreground italic">No personal details provided</p>
+                    )}
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-semibold mb-2 sm:mb-3 flex items-center gap-2">
+                      <Clock className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      Account Timeline
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Joined:</span>
+                        <span className="font-medium">
+                          {new Date(u.createdAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                        </span>
+                      </div>
+                      {(u.lastLogin || u.lastLoginAt) && (
+                        <div className="flex items-center gap-2">
+                          <span className="text-muted-foreground shrink-0">Last Login:</span>
+                          <span className="font-medium">
+                            {new Date(u.lastLogin || u.lastLoginAt).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  <Separator />
+
+                  <div>
+                    <h4 className="text-xs sm:text-sm font-semibold mb-2 sm:mb-3 flex items-center gap-2">
+                      <Shield className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      Consent & Privacy
+                    </h4>
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-3 text-xs sm:text-sm">
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Terms Accepted:</span>
+                        <Badge variant="outline" className={`text-xs ${u.consent?.termsAccepted ? 'text-green-600 border-green-300' : 'text-amber-600 border-amber-300'}`}>
+                          {u.consent?.termsAccepted ? 'Yes' : 'No'}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Marketing Opt-in:</span>
+                        <Badge variant="outline" className="text-xs">
+                          {u.consent?.marketingOptIn ? 'Yes' : 'No'}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Data Sharing:</span>
+                        <Badge variant="outline" className="text-xs">
+                          {u.settings?.privacy?.shareDataWithProviders ? 'Enabled' : 'Disabled'}
+                        </Badge>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <span className="text-muted-foreground shrink-0">Analytics:</span>
+                        <Badge variant="outline" className="text-xs">
+                          {u.settings?.privacy?.anonymousAnalytics !== false ? 'Enabled' : 'Disabled'}
+                        </Badge>
+                      </div>
+                    </div>
+                  </div>
+
+                  {analyzeUserRisk(u).length > 0 && (
+                    <>
+                      <Separator />
+                      <div>
+                        <h4 className="text-xs sm:text-sm font-semibold mb-2 flex items-center gap-2">
+                          <Bot className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                          AI Risk Assessment
+                        </h4>
+                        <div className="flex flex-wrap gap-1.5 sm:gap-2">
+                          {analyzeUserRisk(u).map((risk, idx) => (
+                            <Badge key={idx} variant="outline" className={`text-xs ${getRiskBadgeStyles(risk.level)}`}>
+                              {risk.label}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    </>
+                  )}
+
                   <Separator />
                   <div>
-                    <h4 className="text-sm font-medium mb-2 flex items-center gap-2">
-                      <Bot className="h-4 w-4" />
-                      AI Risk Assessment
+                    <h4 className="text-xs sm:text-sm font-semibold mb-2 sm:mb-3 flex items-center gap-2">
+                      <CreditCard className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                      Subscription & Usage
                     </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {analyzeUserRisk(viewProfileDialog.user).map((risk, idx) => (
-                        <Badge
-                          key={idx}
-                          variant="outline"
-                          className={getRiskBadgeStyles(risk.level)}
-                        >
-                          {risk.label}
-                        </Badge>
-                      ))}
-                    </div>
-                  </div>
-                </>
-              )}
-
-              <Separator />
-              <div>
-                <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                  <CreditCard className="h-4 w-4" />
-                  Subscription & Usage
-                </h4>
-                {usageStatsLoading ? (
-                  <div className="flex items-center justify-center py-4">
-                    <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
-                  </div>
-                ) : usageStatsData?.data ? (
-                  <div className="space-y-4">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      {(() => {
-                        const plan = usageStatsData.data.plan;
-                        const badge = PLAN_BADGE[plan] || PLAN_BADGE.free;
-                        return (
-                          <Badge variant="outline" className={badge.className}>
-                            {badge.label} Plan
+                    {usageStatsLoading ? (
+                      <div className="flex items-center justify-center py-4">
+                        <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                      </div>
+                    ) : usageStatsData?.data ? (
+                      <div className="space-y-3 sm:space-y-4">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {(() => {
+                            const plan = usageStatsData.data.plan;
+                            const badge = PLAN_BADGE[plan] || PLAN_BADGE.free;
+                            return (
+                              <Badge variant="outline" className={badge.className}>
+                                {badge.label} Plan
+                              </Badge>
+                            );
+                          })()}
+                          <Badge variant="outline" className={
+                            usageStatsData.data.status === 'trial' ? 'bg-blue-50 text-blue-700 border-blue-200' :
+                            usageStatsData.data.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' :
+                            'bg-gray-50 text-gray-600 border-gray-200'
+                          }>
+                            {usageStatsData.data.status.charAt(0).toUpperCase() + usageStatsData.data.status.slice(1)}
                           </Badge>
-                        );
-                      })()}
-                      <Badge variant="outline" className={
-                        usageStatsData.data.status === 'trial' ? 'bg-blue-50 text-blue-700 border-blue-200' :
-                        usageStatsData.data.status === 'active' ? 'bg-green-50 text-green-700 border-green-200' :
-                        'bg-gray-50 text-gray-600 border-gray-200'
-                      }>
-                        {usageStatsData.data.status.charAt(0).toUpperCase() + usageStatsData.data.status.slice(1)}
-                      </Badge>
-                    </div>
+                        </div>
 
-                    <div className="space-y-2">
-                      <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Today's Usage</h5>
-                      <div className="grid grid-cols-1 gap-1.5">
-                        {USAGE_FEATURES.map(({ key, label, icon: Icon }) => {
-                          const val = usageStatsData.data.dailyUsage?.[key] || 0;
-                          return (
-                            <div key={key} className="flex items-center justify-between text-xs py-1">
-                              <span className="flex items-center gap-1.5 text-muted-foreground">
-                                <Icon className="h-3 w-3" />
-                                {label}
-                              </span>
-                              <span className="font-medium tabular-nums">{val}</span>
-                            </div>
-                          );
-                        })}
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
+                          <div className="space-y-1.5">
+                            <h5 className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wide">Today's Usage</h5>
+                            {USAGE_FEATURES.map(({ key, label, icon: Icon }) => {
+                              const val = usageStatsData.data.dailyUsage?.[key] || 0;
+                              return (
+                                <div key={key} className="flex items-center justify-between text-xs py-0.5">
+                                  <span className="flex items-center gap-1.5 text-muted-foreground">
+                                    <Icon className="h-3 w-3" />
+                                    {label}
+                                  </span>
+                                  <span className="font-medium tabular-nums">{val}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                          <div className="space-y-1.5">
+                            <h5 className="text-[10px] sm:text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+                              Monthly ({usageStatsData.data.monthLabel})
+                            </h5>
+                            {USAGE_FEATURES.map(({ key, label, icon: Icon }) => {
+                              const val = usageStatsData.data.monthlyUsage?.[key] || 0;
+                              return (
+                                <div key={key} className="flex items-center justify-between text-xs py-0.5">
+                                  <span className="flex items-center gap-1.5 text-muted-foreground">
+                                    <Icon className="h-3 w-3" />
+                                    {label}
+                                  </span>
+                                  <span className="font-medium tabular-nums">{val}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </div>
                       </div>
-                    </div>
-
-                    <div className="space-y-2">
-                      <h5 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">
-                        Monthly Usage ({usageStatsData.data.monthLabel})
-                      </h5>
-                      <div className="grid grid-cols-1 gap-1.5">
-                        {USAGE_FEATURES.map(({ key, label, icon: Icon }) => {
-                          const val = usageStatsData.data.monthlyUsage?.[key] || 0;
-                          return (
-                            <div key={key} className="flex items-center justify-between text-xs py-1">
-                              <span className="flex items-center gap-1.5 text-muted-foreground">
-                                <Icon className="h-3 w-3" />
-                                {label}
-                              </span>
-                              <span className="font-medium tabular-nums">{val}</span>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
+                    ) : (
+                      <p className="text-xs text-muted-foreground">No subscription data available</p>
+                    )}
                   </div>
-                ) : (
-                  <p className="text-xs text-muted-foreground">No subscription data available</p>
-                )}
-              </div>
-            </div>
-          )}
-          <DialogFooter>
+                </div>
+              </ScrollArea>
+            );
+          })()}
+          <DialogFooter className="px-4 sm:px-6 pb-4 sm:pb-6 pt-2">
             <Button
               variant="outline"
+              size="sm"
               onClick={() => setViewProfileDialog({ open: false, user: null })}
             >
               Close

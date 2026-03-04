@@ -6,7 +6,6 @@ import api from "@/lib/api";
 const FEATURE_LABELS: Record<string, string> = {
   activityLogs: "Activity Logs",
   moodLogs: "Mood Tracking",
-  reportDownloads: "Report Downloads",
   directoryAccess: "Directory Access",
   aiInteractions: "AI Interactions",
 };
@@ -24,42 +23,36 @@ export const CLIENT_PLAN_LIMITS: Record<string, Record<string, number>> = {
   free: {
     activityLogs: 2,
     moodLogs: 2,
-    reportDownloads: 1,
     directoryAccess: 2,
     aiInteractions: 2,
   },
   starter: {
     activityLogs: 10,
     moodLogs: 10,
-    reportDownloads: 3,
     directoryAccess: 10,
     aiInteractions: 10,
   },
   pro: {
     activityLogs: -1,
     moodLogs: -1,
-    reportDownloads: -1,
     directoryAccess: -1,
     aiInteractions: -1,
   },
   premium: {
     activityLogs: -1,
     moodLogs: -1,
-    reportDownloads: -1,
     directoryAccess: -1,
     aiInteractions: -1,
   },
   team: {
     activityLogs: -1,
     moodLogs: -1,
-    reportDownloads: -1,
     directoryAccess: -1,
     aiInteractions: -1,
   },
   franchise: {
     activityLogs: -1,
     moodLogs: -1,
-    reportDownloads: -1,
     directoryAccess: -1,
     aiInteractions: -1,
   },
@@ -119,7 +112,6 @@ export function useSubscription() {
   const usage = usageData?.data?.usage || {
     activityLogs: 0,
     moodLogs: 0,
-    reportDownloads: 0,
     directoryAccess: 0,
     aiInteractions: 0,
   };
@@ -127,7 +119,6 @@ export function useSubscription() {
   const monthlyUsage = usageData?.data?.monthlyUsage || {
     activityLogs: 0,
     moodLogs: 0,
-    reportDownloads: 0,
     directoryAccess: 0,
     aiInteractions: 0,
   };
