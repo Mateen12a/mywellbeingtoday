@@ -89,6 +89,19 @@ export const getUnreadCount = async (req, res, next) => {
   }
 };
 
+export const deleteAllNotifications = async (req, res, next) => {
+  try {
+    await Notification.deleteMany({ userId: req.user._id });
+
+    res.json({
+      success: true,
+      message: 'All notifications deleted'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 export const deleteNotification = async (req, res, next) => {
   try {
     const { id } = req.params;

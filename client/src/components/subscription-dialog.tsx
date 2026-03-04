@@ -8,7 +8,11 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
+  DialogFooter,
 } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -17,24 +21,24 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { useToast } from "@/hooks/use-toast";
 import {
-  Check, Clock, Crown, AlertCircle, Loader2, LogIn,
-  Activity, Brain, FileText, Search, Bot, Users, Building2, Star, Zap, Mail,
-  CheckCircle2, ArrowUp, CreditCard, Plus, Trash2, ExternalLink, ShieldCheck, RotateCcw, CalendarDays,
+  Check, Clock, Crown, CircleAlert, Loader, LogIn,
+  Activity, Brain, Search, Bot, Users, Building2, Star, Bolt, Mail,
+  CircleCheckBig, ArrowUp, CreditCard, Plus, Trash2, ExternalLink, ShieldCheck, RotateCcw, CalendarDays,
 } from "lucide-react";
 import { CLIENT_PLAN_LIMITS } from "@/hooks/useSubscription";
 
 const PLAN_DETAILS = {
   free: {
-    name: "Free Trial",
+    name: "Free",
     price: "$0",
-    period: "7-day trial",
+    period: "/month",
     color: "text-gray-600",
     bgColor: "bg-gray-50",
     borderColor: "border-gray-200",
     features: [
       "2 basic activity logs",
       "2 basic mood track & insight",
-      "1 report download",
+      "Free report downloads",
       "2 directory access",
       "2 AI interactions",
     ],
@@ -43,7 +47,7 @@ const PLAN_DETAILS = {
     name: "Starter",
     price: "$5",
     period: "/month",
-    icon: Zap,
+    icon: Bolt,
     color: "text-blue-600",
     bgColor: "bg-blue-50",
     borderColor: "border-blue-200",
@@ -130,19 +134,9 @@ const PLAN_RANK: Record<string, number> = { free: 0, starter: 1, pro: 2, premium
 const USAGE_LABELS: Record<string, { label: string; icon: typeof Activity }> = {
   activityLogs: { label: "Activity Logs", icon: Activity },
   moodLogs: { label: "Mood Tracking", icon: Brain },
-  reportDownloads: { label: "Report Downloads", icon: FileText },
+  reportDownloads: { label: "Report Downloads", icon: Activity },
   directoryAccess: { label: "Directory Access", icon: Search },
   aiInteractions: { label: "AI Interactions", icon: Bot },
-};
-
-const CARD_BRAND_ICONS: Record<string, string> = {
-  visa: "💳",
-  mastercard: "💳",
-  amex: "💳",
-  discover: "💳",
-  diners: "💳",
-  jcb: "💳",
-  unionpay: "💳",
 };
 
 interface SubscriptionDialogProps {
@@ -157,6 +151,10 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
   const [upgradingPlan, setUpgradingPlan] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"plans" | "cards">("plans");
   const [usageView, setUsageView] = useState<"daily" | "monthly">("daily");
+  const [contactDialogOpen, setContactDialogOpen] = useState(false);
+  const [contactPlan, setContactPlan] = useState("");
+  const [contactSubject, setContactSubject] = useState("");
+  const [contactMessage, setContactMessage] = useState("");
   const isAuthenticated = api.isAuthenticated();
 
   const { data, isLoading, refetch: refetchSubscription } = useQuery({
@@ -212,15 +210,17 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
     queryClient.invalidateQueries({ queryKey: ["payment-methods"] });
   };
 
-  const startTrialMutation = useMutation({
-    mutationFn: async () => {
-      const response = await api.startTrial();
+  const contactMutation = useMutation({
+    mutationFn: async ({ subject, message }: { subject: string; message: string }) => {
+      const response = await api.createSupportTicket(subject, message, { category: "billing", priority: "medium" });
       if (!response.success) throw new Error(response.message);
       return response.data;
     },
     onSuccess: () => {
-      refreshAll();
-      toast({ title: "Trial Started!", description: "Your 7-day free trial has begun. Explore all features!" });
+      setContactDialogOpen(false);
+      setContactSubject("");
+      setContactMessage("");
+      toast({ title: "Inquiry Sent!", description: "We'll get back to you shortly about your subscription inquiry." });
     },
     onError: (error: Error) => {
       toast({ title: "Error", description: error.message, variant: "destructive" });
@@ -256,6 +256,7 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
           setUpgradingPlan(null);
           refreshAll();
           toast({ title: "Plan Updated!", description: "Your subscription has been activated after authentication." });
+          setTimeout(() => window.location.reload(), 1500);
         } catch (err: any) {
           setUpgradingPlan(null);
           toast({ title: "Error", description: err.message || "Payment authentication failed.", variant: "destructive" });
@@ -264,14 +265,17 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
         setUpgradingPlan(null);
         refreshAll();
         toast({ title: "Plan Reactivated!", description: "Your subscription has been reactivated successfully." });
+        setTimeout(() => window.location.reload(), 1500);
       } else if (data?.upgraded) {
         setUpgradingPlan(null);
         refreshAll();
         toast({ title: "Plan Updated!", description: "Your subscription has been updated using your saved card." });
+        setTimeout(() => window.location.reload(), 1500);
       } else {
         setUpgradingPlan(null);
         refreshAll();
         toast({ title: "Plan Updated", description: "Your subscription has been updated." });
+        setTimeout(() => window.location.reload(), 1500);
       }
     },
     onError: (error: Error) => {
@@ -366,19 +370,18 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
 
   const subscription = data?.subscription;
   const stripeConfigured = data?.stripeConfigured ?? pricingData?.stripeConfigured ?? false;
-  const hasPaymentMethod = data?.hasPaymentMethod ?? false;
+  const hasPaymentMethod = (data as any)?.hasPaymentMethod ?? false;
   const planLimits = data?.planLimits ?? pricingData?.planLimits ?? {};
   const currentPlan = (subscription?.plan || "free") as PlanKey;
-  const previousPlan = subscription?.previousPlan as PlanKey | null;
+  const previousPlan = (subscription as any)?.previousPlan as PlanKey | null;
   const currentRank = PLAN_RANK[currentPlan] ?? 0;
   const isOnTrial = subscription?.status === "trial";
   const isActive = subscription?.isActive;
   const isPaid = currentPlan !== "free" && isActive;
   const isCancelled = subscription?.status === "cancelled";
   const isExpired = subscription?.status === "expired";
-  const isTrialEligible = isAuthenticated && subscription && currentPlan === "free" && subscription.status !== "trial" && !subscription.trialEndsAt;
   const canCancel = isAuthenticated && (isOnTrial || isPaid) && !isCancelled;
-  const billingPeriod = subscription?.billingPeriod;
+  const billingPeriod = (subscription as any)?.billingPeriod;
   const hasBillingTimeLeft = isPaid && isActive && billingPeriod && billingPeriod.daysRemaining > 0;
 
   function getButtonConfig(planKey: PlanKey): { label: string; disabled: boolean; variant: "default" | "secondary" | "outline" | "ghost"; icon?: typeof Check } {
@@ -390,13 +393,13 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
     if (detail.contact) return { label: "Contact Us", disabled: false, variant: "outline" };
 
     if (planKey === "free") {
-      if (isTrialEligible) return { label: "Start Free Trial", disabled: false, variant: "outline" };
-      if (isOnTrial) return { label: "Active Trial", disabled: true, variant: "secondary", icon: CheckCircle2 };
+      if (currentPlan === "free" && !isOnTrial) return { label: "Current Plan", disabled: true, variant: "secondary", icon: CircleCheckBig };
+      if (isOnTrial) return { label: "Active Trial", disabled: true, variant: "secondary", icon: CircleCheckBig };
       return { label: "Free Plan", disabled: true, variant: "ghost" };
     }
 
     if (currentPlan === planKey && isActive) {
-      return { label: "Current Plan", disabled: true, variant: "secondary", icon: CheckCircle2 };
+      return { label: "Current Plan", disabled: true, variant: "secondary", icon: CircleCheckBig };
     }
 
     if (isCancelled || isExpired) {
@@ -409,7 +412,7 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
       if (previousPlan && hasBillingTimeOnPrevious && targetRank > previousRank) {
         return { label: hasPaymentMethod ? "Upgrade Instantly" : "Upgrade", disabled: false, variant: "default", icon: ArrowUp };
       }
-      if (previousPlan && hasBillingTimeOnPrevious && targetRank < previousRank && planKey !== "free") {
+      if (previousPlan && hasBillingTimeOnPrevious && targetRank < previousRank && (planKey as string) !== "free") {
         return { label: `Available after ${new Date(billingPeriod.end).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}`, disabled: true, variant: "ghost", icon: Clock };
       }
       return { label: "Subscribe", disabled: false, variant: "default" };
@@ -437,11 +440,14 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
     }
     const detail = PLAN_DETAILS[planKey] as any;
     if (detail.contact) {
-      toast({ title: "Contact Us", description: "Please reach out to discuss Team and Franchise plans." });
+      const planName = detail.name || planKey;
+      setContactPlan(planName);
+      setContactSubject(`${planName} Subscription Inquiry`);
+      setContactMessage(`Hi, I'm interested in the ${planName} plan. Please provide more information about pricing, features, and setup.`);
+      setContactDialogOpen(true);
       return;
     }
     if (planKey === "free") {
-      if (isTrialEligible) startTrialMutation.mutate();
       return;
     }
     if (currentPlan === planKey && isActive) return;
@@ -462,12 +468,13 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
   }
 
   const isButtonLoading = (planKey: PlanKey) => {
-    return (upgradeMutation.isPending && upgradingPlan === planKey) || (startTrialMutation.isPending && planKey === "free");
+    return (upgradeMutation.isPending && upgradingPlan === planKey);
   };
 
   const cards = cardsData?.paymentMethods || [];
 
   return (
+    <>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-5xl max-h-[90vh] overflow-y-auto p-0 w-[calc(100vw-16px)] sm:w-auto">
         <DialogHeader className="px-4 sm:px-6 pt-4 sm:pt-6 pb-2">
@@ -513,7 +520,7 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
         <div className="px-3 sm:px-6 pb-4 sm:pb-6 space-y-4">
           {isLoading && isAuthenticated && (
             <div className="flex items-center justify-center py-8">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <Loader className="h-8 w-8 animate-spin text-primary" />
             </div>
           )}
 
@@ -531,24 +538,15 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
                     <Button variant="link" className="text-blue-700 underline text-xs sm:text-sm p-0 h-auto" onClick={() => { onOpenChange(false); navigate("/auth/register"); }}>
                       create an account
                     </Button>
-                    {" "}to start your free trial and access all features.
+                    {" "}to access all features.
                   </AlertDescription>
                 </Alert>
               )}
 
-              {isOnTrial && subscription?.trialDaysRemaining != null && subscription.trialDaysRemaining > 0 && (
-                <Alert className="border-blue-200 bg-blue-50">
-                  <Clock className="h-3 w-3 sm:h-4 sm:w-4 text-blue-600" />
-                  <AlertTitle className="text-blue-800 text-sm">Trial Active</AlertTitle>
-                  <AlertDescription className="text-blue-700 text-xs sm:text-sm">
-                    You have <span className="font-semibold">{subscription.trialDaysRemaining} days</span> remaining in your free trial. Upgrade now to keep all your features!
-                  </AlertDescription>
-                </Alert>
-              )}
 
               {isCancelled && (
                 <Alert className="border-yellow-200 bg-yellow-50">
-                  <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600" />
+                  <CircleAlert className="h-3 w-3 sm:h-4 sm:w-4 text-yellow-600" />
                   <AlertTitle className="text-yellow-800 text-sm">Subscription Cancelled</AlertTitle>
                   <AlertDescription className="text-yellow-700 text-xs sm:text-sm space-y-1">
                     <p>
@@ -569,7 +567,7 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
 
               {isExpired && (
                 <Alert className="border-red-200 bg-red-50">
-                  <AlertCircle className="h-3 w-3 sm:h-4 sm:w-4 text-red-600" />
+                  <CircleAlert className="h-3 w-3 sm:h-4 sm:w-4 text-red-600" />
                   <AlertTitle className="text-red-800 text-sm">Subscription Expired</AlertTitle>
                   <AlertDescription className="text-red-700 text-xs sm:text-sm space-y-1">
                     <p>
@@ -605,7 +603,7 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
                       )}
                       {isPaid && isActive && (
                         <Badge variant="secondary" className="bg-green-50 text-green-700 text-xs">
-                          <CheckCircle2 className="h-3 w-3 mr-1" />
+                          <CircleCheckBig className="h-3 w-3 mr-1" />
                           Active
                         </Badge>
                       )}
@@ -625,7 +623,7 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
                           disabled={cancelMutation.isPending}
                           className="text-xs text-red-600 hover:text-red-700 min-h-[36px]"
                         >
-                          {cancelMutation.isPending && <Loader2 className="h-3 w-3 animate-spin mr-1" />}
+                          {cancelMutation.isPending && <Loader className="h-3 w-3 animate-spin mr-1" />}
                           Cancel Subscription
                         </Button>
                       )}
@@ -680,10 +678,16 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
                   </div>
                   <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sub-dialog-usage-grid">
                     {Object.entries(USAGE_LABELS).map(([key, { label, icon: Icon }]) => {
+                      const isDirectoryAccess = key === "directoryAccess";
                       const dailyUsed = usageData.usage?.[key] ?? 0;
                       const monthlyUsed = usageData.monthlyUsage?.[key] ?? 0;
-                      const used = usageView === "daily" ? dailyUsed : monthlyUsed;
-                      const limit = usageData.limits?.[key] ?? planLimits?.[currentPlan]?.[key] ?? CLIENT_PLAN_LIMITS[currentPlan]?.[key] ?? CLIENT_PLAN_LIMITS.free[key];
+                      const used = isDirectoryAccess
+                        ? ((subscription as any)?.monthlyUsage?.directoryAccess ?? monthlyUsed)
+                        : usageView === "daily" ? dailyUsed : monthlyUsed;
+                      const monthlyPlanLimits = (data as any)?.monthlyPlanLimits;
+                      const limit = isDirectoryAccess
+                        ? (monthlyPlanLimits?.directoryAccess ?? usageData.limits?.[key] ?? planLimits?.[currentPlan]?.[key] ?? CLIENT_PLAN_LIMITS[currentPlan]?.[key] ?? CLIENT_PLAN_LIMITS.free[key])
+                        : (usageData.limits?.[key] ?? planLimits?.[currentPlan]?.[key] ?? CLIENT_PLAN_LIMITS[currentPlan]?.[key] ?? CLIENT_PLAN_LIMITS.free[key]);
                       const isUnlimited = limit === -1;
                       const percentage = isUnlimited ? 0 : limit > 0 ? Math.min(100, (used / limit) * 100) : 0;
 
@@ -697,18 +701,20 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
                             <span className="text-muted-foreground font-medium">
                               {isUnlimited
                                 ? `${used} used`
+                                : isDirectoryAccess
+                                ? `${used} / ${limit} this month`
                                 : usageView === "daily"
                                 ? `${used} / ${limit}`
                                 : `${used} this month`}
                             </span>
                           </div>
-                          {!isUnlimited && usageView === "daily" && (
+                          {!isUnlimited && (usageView === "daily" || isDirectoryAccess) && (
                             <Progress
                               value={percentage}
                               className={`h-1.5 ${percentage >= 100 ? '[&>div]:bg-red-500' : percentage >= 75 ? '[&>div]:bg-amber-500' : ''}`}
                             />
                           )}
-                          {!isUnlimited && usageView === "monthly" && (
+                          {!isUnlimited && usageView === "monthly" && !isDirectoryAccess && (
                             <div className="h-1.5 rounded-full bg-muted overflow-hidden">
                               <div
                                 className="h-full rounded-full bg-primary/60 transition-all"
@@ -718,7 +724,7 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
                           )}
                           {isUnlimited && (
                             <div className="flex items-center gap-1 text-xs text-green-600">
-                              <CheckCircle2 className="h-3 w-3" />
+                              <CircleCheckBig className="h-3 w-3" />
                               <span>{usageView === "daily" ? "Unlimited" : `${used} total this month`}</span>
                             </div>
                           )}
@@ -761,7 +767,7 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
                       {isCurrent && (
                         <div className="absolute -top-2 left-1/2 transform -translate-x-1/2 z-10">
                           <Badge className="bg-primary text-xs">
-                            <CheckCircle2 className="h-3 w-3 mr-1" />
+                            <CircleCheckBig className="h-3 w-3 mr-1" />
                             Your Plan
                           </Badge>
                         </div>
@@ -805,7 +811,7 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
                           size="sm"
                         >
                           {isButtonLoading(planKey) && (
-                            <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                            <Loader className="h-3 w-3 animate-spin mr-1" />
                           )}
                           {!isButtonLoading(planKey) && BtnIcon && (
                             <BtnIcon className="h-3 w-3 mr-1" />
@@ -842,7 +848,7 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
                     className="text-xs min-h-[36px]"
                   >
                     {addCardMutation.isPending ? (
-                      <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                      <Loader className="h-3 w-3 animate-spin mr-1" />
                     ) : (
                       <Plus className="h-3 w-3 mr-1" />
                     )}
@@ -857,7 +863,7 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
                       className="text-xs min-h-[36px]"
                     >
                       {billingPortalMutation.isPending ? (
-                        <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                        <Loader className="h-3 w-3 animate-spin mr-1" />
                       ) : (
                         <ExternalLink className="h-3 w-3 mr-1" />
                       )}
@@ -869,7 +875,7 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
 
               {!stripeConfigured && (
                 <Alert className="border-amber-200 bg-amber-50">
-                  <AlertCircle className="h-4 w-4 text-amber-600" />
+                  <CircleAlert className="h-4 w-4 text-amber-600" />
                   <AlertTitle className="text-amber-800 text-sm">Payment Not Configured</AlertTitle>
                   <AlertDescription className="text-amber-700 text-xs sm:text-sm">
                     Payment processing is not yet set up. Card management will be available once Stripe is configured.
@@ -879,7 +885,7 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
 
               {cardsLoading && (
                 <div className="flex items-center justify-center py-8">
-                  <Loader2 className="h-6 w-6 animate-spin text-primary" />
+                  <Loader className="h-6 w-6 animate-spin text-primary" />
                 </div>
               )}
 
@@ -898,7 +904,7 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
                     className="text-xs"
                   >
                     {addCardMutation.isPending ? (
-                      <Loader2 className="h-3 w-3 animate-spin mr-1" />
+                      <Loader className="h-3 w-3 animate-spin mr-1" />
                     ) : (
                       <Plus className="h-3 w-3 mr-1" />
                     )}
@@ -1001,6 +1007,62 @@ export function SubscriptionDialog({ open, onOpenChange }: SubscriptionDialogPro
           )}
         </div>
       </DialogContent>
+
     </Dialog>
+
+      {contactDialogOpen && (
+        <Dialog open={contactDialogOpen} onOpenChange={setContactDialogOpen}>
+          <DialogContent className="max-w-md w-[calc(100vw-16px)] sm:w-auto">
+            <DialogHeader>
+              <DialogTitle className="text-base sm:text-lg">{contactPlan} Inquiry</DialogTitle>
+              <DialogDescription className="text-xs sm:text-sm">
+                Submit your inquiry and our team will get back to you shortly.
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-3 py-2">
+              <div className="space-y-1.5">
+                <Label htmlFor="contact-subject" className="text-xs sm:text-sm">Subject</Label>
+                <Input
+                  id="contact-subject"
+                  value={contactSubject}
+                  onChange={(e) => setContactSubject(e.target.value)}
+                  className="text-xs sm:text-sm"
+                />
+              </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="contact-message" className="text-xs sm:text-sm">Message</Label>
+                <Textarea
+                  id="contact-message"
+                  value={contactMessage}
+                  onChange={(e) => setContactMessage(e.target.value)}
+                  rows={4}
+                  className="text-xs sm:text-sm"
+                />
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setContactDialogOpen(false)}
+                className="text-xs"
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => contactMutation.mutate({ subject: contactSubject, message: contactMessage })}
+                disabled={contactMutation.isPending || !contactSubject.trim() || !contactMessage.trim()}
+                className="text-xs"
+              >
+                {contactMutation.isPending && <Loader className="h-3 w-3 animate-spin mr-1" />}
+                <Mail className="h-3 w-3 mr-1" />
+                Send Inquiry
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
+    </>
   );
 }

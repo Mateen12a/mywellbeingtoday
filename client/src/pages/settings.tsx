@@ -6,7 +6,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { User, Bell, Lock, LockOpen, CreditCard, Globe, Shield, Upload, Loader2, Key, Clock, Headphones, MessageSquare, CircleCheck, AlertCircle, Send, ArrowUpRight } from "lucide-react";
+import { User, Bell, Lock, LockOpen, CreditCard, Globe, Shield, Upload, Loader2, Key, Clock, Headphones, MessageSquare, CircleCheck, AlertCircle, Send, ArrowUpRight, BadgeCheck, ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Textarea } from "@/components/ui/textarea";
@@ -20,6 +20,7 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import { PhoneInput } from "@/components/ui/phone-input";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useSubscriptionDialog } from "@/contexts/SubscriptionDialogContext";
+import { PasswordStrengthIndicator } from "@/components/ui/password-strength-indicator";
 
 const UNLOCK_DURATION_MS = 5 * 60 * 1000;
 
@@ -27,6 +28,8 @@ const ContactSupportSection = () => {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [supportForm, setSupportForm] = useState({ subject: '', message: '' });
+  const [expandedTicketId, setExpandedTicketId] = useState<string | null>(null);
+  const [replyTexts, setReplyTexts] = useState<Record<string, string>>({});
 
   const { data: ticketsData, isLoading: ticketsLoading } = useQuery({
     queryKey: ['support-tickets'],
@@ -62,6 +65,29 @@ const ContactSupportSection = () => {
     },
   });
 
+  const replyMutation = useMutation({
+    mutationFn: async ({ ticketId, message }: { ticketId: string; message: string }) => {
+      const response = await api.userRespondToTicket(ticketId, message);
+      if (!response.success) throw new Error(response.message);
+      return response;
+    },
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({ queryKey: ['support-tickets'] });
+      setReplyTexts(prev => ({ ...prev, [variables.ticketId]: '' }));
+      toast({
+        title: "Reply sent",
+        description: "Your reply has been sent to the support team.",
+      });
+    },
+    onError: (error: Error) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send reply",
+        variant: "destructive",
+      });
+    },
+  });
+
   const handleSubmitTicket = () => {
     if (!supportForm.subject.trim() || !supportForm.message.trim()) {
       toast({
@@ -77,61 +103,85 @@ const ContactSupportSection = () => {
     });
   };
 
+  const handleReply = (ticketId: string) => {
+    const text = replyTexts[ticketId]?.trim();
+    if (!text) return;
+    replyMutation.mutate({ ticketId, message: text });
+  };
+
   const getStatusBadge = (status: string) => {
     switch (status) {
       case 'open':
-        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800"><AlertCircle className="h-3 w-3 mr-1" />Open</Badge>;
+        return <Badge variant="secondary" className="bg-yellow-100 text-yellow-800 text-[10px] sm:text-xs"><AlertCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />Open</Badge>;
       case 'in_progress':
-        return <Badge variant="secondary" className="bg-blue-100 text-blue-800"><MessageSquare className="h-3 w-3 mr-1" />In Progress</Badge>;
+        return <Badge variant="secondary" className="bg-blue-100 text-blue-800 text-[10px] sm:text-xs"><MessageSquare className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />In Progress</Badge>;
       case 'resolved':
-        return <Badge variant="secondary" className="bg-green-100 text-green-800"><CircleCheck className="h-3 w-3 mr-1" />Resolved</Badge>;
+        return <Badge variant="secondary" className="bg-green-100 text-green-800 text-[10px] sm:text-xs"><CircleCheck className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-1" />Resolved</Badge>;
       default:
-        return <Badge variant="secondary">{status}</Badge>;
+        return <Badge variant="secondary" className="text-[10px] sm:text-xs">{status}</Badge>;
     }
   };
 
+  const buildConversationThread = (ticket: any) => {
+    const thread: Array<{ type: 'user' | 'support'; message: string; timestamp: string }> = [];
+    thread.push({ type: 'user', message: ticket.message, timestamp: ticket.createdAt });
+    if (ticket.responses?.length > 0) {
+      ticket.responses.forEach((resp: any) => {
+        const isAdmin = resp.respondedBy?.role === 'admin' || resp.respondedBy?.role === 'superadmin' || resp.role === 'admin' || resp.role === 'superadmin';
+        thread.push({
+          type: isAdmin ? 'support' : 'user',
+          message: resp.message,
+          timestamp: resp.timestamp || resp.createdAt,
+        });
+      });
+    }
+    return thread;
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Headphones className="h-5 w-5" />
+        <CardHeader className="p-3 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+            <Headphones className="h-4 w-4 sm:h-5 sm:w-5" />
             Contact Support
           </CardTitle>
-          <CardDescription>Need help? Send us a message and we'll get back to you as soon as possible.</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">Need help? Send us a message and we'll get back to you as soon as possible.</CardDescription>
         </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="ticketSubject">Subject</Label>
+        <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-6 pt-0 sm:pt-0">
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="ticketSubject" className="text-xs sm:text-sm">Subject</Label>
             <Input
               id="ticketSubject"
               placeholder="Brief summary of your issue"
               value={supportForm.subject}
               onChange={(e) => setSupportForm(prev => ({ ...prev, subject: e.target.value }))}
               maxLength={200}
+              className="text-xs sm:text-sm h-8 sm:h-9"
             />
           </div>
-          <div className="space-y-2">
-            <Label htmlFor="ticketMessage">Message</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="ticketMessage" className="text-xs sm:text-sm">Message</Label>
             <Textarea
               id="ticketMessage"
               placeholder="Describe your issue or question in detail..."
-              className="min-h-[120px]"
+              className="min-h-[80px] sm:min-h-[120px] text-xs sm:text-sm"
               value={supportForm.message}
               onChange={(e) => setSupportForm(prev => ({ ...prev, message: e.target.value }))}
               maxLength={5000}
             />
-            <p className="text-xs text-muted-foreground text-right">{supportForm.message.length}/5000</p>
+            <p className="text-[10px] sm:text-xs text-muted-foreground text-right">{supportForm.message.length}/5000</p>
           </div>
-          <div className="pt-2 flex justify-end">
+          <div className="pt-1 sm:pt-2 flex justify-end">
             <Button 
+              size="sm"
               onClick={handleSubmitTicket} 
               disabled={createTicketMutation.isPending || !supportForm.subject.trim() || !supportForm.message.trim()}
             >
               {createTicketMutation.isPending ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Submitting...</>
+                <><Loader2 className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4 animate-spin" />Submitting...</>
               ) : (
-                <><Send className="mr-2 h-4 w-4" />Submit Ticket</>
+                <><Send className="mr-1.5 sm:mr-2 h-3 w-3 sm:h-4 sm:w-4" />Submit Ticket</>
               )}
             </Button>
           </div>
@@ -139,56 +189,112 @@ const ContactSupportSection = () => {
       </Card>
 
       <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <MessageSquare className="h-5 w-5" />
+        <CardHeader className="p-3 sm:p-6">
+          <CardTitle className="flex items-center gap-2 text-sm sm:text-base">
+            <MessageSquare className="h-4 w-4 sm:h-5 sm:w-5" />
             Your Support Tickets
           </CardTitle>
-          <CardDescription>View the status of your previous support requests.</CardDescription>
+          <CardDescription className="text-xs sm:text-sm">View the status of your previous support requests.</CardDescription>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-3 sm:p-6 pt-0 sm:pt-0">
           {ticketsLoading ? (
             <div className="flex items-center justify-center py-8">
               <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
             </div>
           ) : ticketsData && ticketsData.length > 0 ? (
-            <div className="space-y-4">
-              {ticketsData.map((ticket: any) => (
-                <div key={ticket._id} className="border rounded-lg p-3 sm:p-4 space-y-2">
-                  <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 sm:gap-4">
-                    <div className="flex-1 min-w-0">
-                      <h4 className="font-medium truncate text-sm sm:text-base">{ticket.subject}</h4>
-                      <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">{ticket.message}</p>
-                    </div>
-                    <div className="flex-shrink-0">
-                      {getStatusBadge(ticket.status)}
-                    </div>
-                  </div>
-                  <div className="flex flex-col sm:flex-row items-start sm:items-center gap-1 sm:gap-4 text-xs text-muted-foreground">
-                    <span className="whitespace-nowrap">Created: {new Date(ticket.createdAt).toLocaleDateString()}</span>
-                    {ticket.responses?.length > 0 && (
-                      <span className="whitespace-nowrap">{ticket.responses.length} response(s)</span>
+            <div className="space-y-3 sm:space-y-4">
+              {ticketsData.map((ticket: any) => {
+                const isExpanded = expandedTicketId === ticket._id;
+                const thread = buildConversationThread(ticket);
+                return (
+                  <div key={ticket._id} className="border rounded-lg overflow-hidden">
+                    <button
+                      className="w-full text-left p-2.5 sm:p-4 hover:bg-muted/30 transition-colors"
+                      onClick={() => setExpandedTicketId(isExpanded ? null : ticket._id)}
+                    >
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-1.5 sm:gap-4">
+                        <div className="flex-1 min-w-0">
+                          <h4 className="font-medium truncate text-xs sm:text-sm">{ticket.subject}</h4>
+                          <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5">
+                            {new Date(ticket.createdAt).toLocaleDateString()}
+                            {ticket.responses?.length > 0 && ` · ${ticket.responses.length} response(s)`}
+                          </p>
+                        </div>
+                        <div className="flex items-center gap-2 flex-shrink-0">
+                          {getStatusBadge(ticket.status)}
+                          {isExpanded ? <ChevronUp className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" /> : <ChevronDown className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />}
+                        </div>
+                      </div>
+                    </button>
+
+                    {isExpanded && (
+                      <div className="border-t bg-slate-50/50">
+                        <div className="p-2.5 sm:p-4 space-y-2 sm:space-y-3 max-h-[400px] overflow-y-auto">
+                          {thread.map((item, idx) => (
+                            <div key={idx} className={`flex w-full ${item.type === 'user' ? 'justify-end' : 'justify-start'}`}>
+                              <div className={`flex flex-col gap-0.5 max-w-[90%] sm:max-w-[80%] ${item.type === 'user' ? 'items-end' : 'items-start'}`}>
+                                {item.type === 'support' && (
+                                  <div className="flex items-center gap-1 mb-0.5">
+                                    <span className="text-[10px] sm:text-xs font-semibold text-foreground">mywellbeingtoday Support</span>
+                                    <BadgeCheck className="h-3 w-3 sm:h-3.5 sm:w-3.5 text-blue-500 flex-shrink-0" />
+                                  </div>
+                                )}
+                                <div className={`px-2.5 sm:px-3 py-1.5 sm:py-2 text-[11px] sm:text-sm leading-relaxed break-words ${
+                                  item.type === 'user'
+                                    ? 'bg-primary text-primary-foreground rounded-2xl rounded-tr-sm'
+                                    : 'bg-white border text-foreground rounded-2xl rounded-tl-sm'
+                                }`}>
+                                  {item.message}
+                                </div>
+                                <span className="text-[8px] sm:text-[10px] text-muted-foreground px-1">
+                                  {new Date(item.timestamp).toLocaleString([], { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                </span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        {ticket.status !== 'resolved' && (
+                          <div className="p-2 sm:p-3 border-t bg-background">
+                            <div className="flex items-end gap-1.5 sm:gap-2">
+                              <Textarea
+                                placeholder="Type a reply..."
+                                className="flex-1 min-h-[32px] sm:min-h-[36px] max-h-[80px] text-[11px] sm:text-sm resize-none py-1.5 sm:py-2"
+                                rows={1}
+                                value={replyTexts[ticket._id] || ''}
+                                onChange={(e) => setReplyTexts(prev => ({ ...prev, [ticket._id]: e.target.value }))}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter' && !e.shiftKey) {
+                                    e.preventDefault();
+                                    handleReply(ticket._id);
+                                  }
+                                }}
+                              />
+                              <Button
+                                size="icon"
+                                className="rounded-xl shrink-0 h-7 w-7 sm:h-9 sm:w-9"
+                                onClick={() => handleReply(ticket._id)}
+                                disabled={!replyTexts[ticket._id]?.trim() || replyMutation.isPending}
+                              >
+                                {replyMutation.isPending ? (
+                                  <Loader2 className="w-3 h-3 sm:w-4 sm:h-4 animate-spin" />
+                                ) : (
+                                  <Send className="w-3 h-3 sm:w-4 sm:h-4" />
+                                )}
+                              </Button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
                     )}
                   </div>
-                  {ticket.responses?.length > 0 && (
-                    <div className="mt-3 pt-3 border-t space-y-2">
-                      <p className="text-xs font-medium text-muted-foreground">Latest Response:</p>
-                      <div className="bg-muted/50 rounded p-3">
-                        <p className="text-sm">{ticket.responses[ticket.responses.length - 1].message}</p>
-                        <p className="text-xs text-muted-foreground mt-1">
-                          {new Date(ticket.responses[ticket.responses.length - 1].timestamp).toLocaleString()}
-                        </p>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           ) : (
             <div className="text-center py-8 text-muted-foreground">
-              <MessageSquare className="h-12 w-12 mx-auto mb-3 opacity-50" />
-              <p>No support tickets yet</p>
-              <p className="text-sm">Submit a ticket above if you need help.</p>
+              <MessageSquare className="h-10 w-10 sm:h-12 sm:w-12 mx-auto mb-3 opacity-50" />
+              <p className="text-sm">No support tickets yet</p>
+              <p className="text-xs sm:text-sm">Submit a ticket above if you need help.</p>
             </div>
           )}
         </CardContent>
@@ -371,7 +477,6 @@ export default function Settings() {
   const [notificationSettings, setNotificationSettings] = useState({
     email: true,
     push: true,
-    sms: false,
   });
 
   const [privacySettings, setPrivacySettings] = useState({
@@ -381,7 +486,6 @@ export default function Settings() {
 
   const [preferences, setPreferences] = useState({
     language: 'en',
-    theme: 'light',
     timezone: 'Europe/London',
   });
 
@@ -492,7 +596,6 @@ export default function Settings() {
       setNotificationSettings({
         email: profileData.settings?.notifications?.email ?? true,
         push: profileData.settings?.notifications?.push ?? true,
-        sms: profileData.settings?.notifications?.sms ?? false,
       });
 
       setPrivacySettings({
@@ -501,8 +604,7 @@ export default function Settings() {
       });
 
       setPreferences({
-        language: profileData.settings?.preferences?.language || 'en',
-        theme: profileData.settings?.preferences?.theme || 'light',
+        language: 'en',
         timezone: profileData.settings?.preferences?.timezone || 'Europe/London',
       });
     }
@@ -1041,7 +1143,7 @@ export default function Settings() {
                   onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, email: checked }))}
                 />
               </div>
-              <div className="flex items-center justify-between pb-4 border-b">
+              <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
                   <Label className="text-base">Push Notifications</Label>
                   <p className="text-sm text-muted-foreground">Get push notifications on your device.</p>
@@ -1049,16 +1151,6 @@ export default function Settings() {
                 <Switch 
                   checked={notificationSettings.push}
                   onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, push: checked }))}
-                />
-              </div>
-              <div className="flex items-center justify-between">
-                <div className="space-y-0.5">
-                  <Label className="text-base">SMS Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive important updates via text message.</p>
-                </div>
-                <Switch 
-                  checked={notificationSettings.sms}
-                  onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, sms: checked }))}
                 />
               </div>
               <div className="pt-4 flex justify-end">
@@ -1133,6 +1225,9 @@ export default function Settings() {
                   onChange={(e) => setPasswordForm(prev => ({ ...prev, newPassword: e.target.value }))}
                 />
               </div>
+              {passwordForm.newPassword && (
+                <PasswordStrengthIndicator password={passwordForm.newPassword} showRequirements={true} />
+              )}
               <div className="space-y-2">
                 <Label htmlFor="confirmPassword">Confirm New Password</Label>
                 <Input 
@@ -1142,7 +1237,6 @@ export default function Settings() {
                   onChange={(e) => setPasswordForm(prev => ({ ...prev, confirmPassword: e.target.value }))}
                 />
               </div>
-              <p className="text-xs text-muted-foreground">Password must be at least 8 characters long.</p>
               <div className="pt-4 flex justify-end">
                 <Button 
                   onClick={handleChangePassword} 
@@ -1163,37 +1257,18 @@ export default function Settings() {
               <CardDescription>Customize your experience.</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-sm">Language</Label>
                   <Select 
-                    value={preferences.language}
-                    onValueChange={(value) => setPreferences(prev => ({ ...prev, language: value }))}
+                    value="en"
+                    disabled
                   >
                     <SelectTrigger className="text-sm">
                       <SelectValue placeholder="Select Language" />
                     </SelectTrigger>
                     <SelectContent>
                       <SelectItem value="en">English</SelectItem>
-                      <SelectItem value="es">Spanish</SelectItem>
-                      <SelectItem value="fr">French</SelectItem>
-                      <SelectItem value="de">German</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-sm">Theme</Label>
-                  <Select 
-                    value={preferences.theme}
-                    onValueChange={(value) => setPreferences(prev => ({ ...prev, theme: value }))}
-                  >
-                    <SelectTrigger className="text-sm">
-                      <SelectValue placeholder="Select Theme" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="light">Light</SelectItem>
-                      <SelectItem value="dark">Dark</SelectItem>
-                      <SelectItem value="system">System</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>

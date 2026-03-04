@@ -23,7 +23,10 @@ export function SubscriptionDialogProvider({ children }: { children: ReactNode }
   return (
     <SubscriptionDialogContext.Provider
       value={{
-        openSubscriptionDialog: () => setIsOpen(true),
+        openSubscriptionDialog: () => {
+          localStorage.setItem("explored_plans", "true");
+          setIsOpen(true);
+        },
         closeSubscriptionDialog: () => setIsOpen(false),
         isOpen,
       }}

@@ -19,7 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Mic, Calendar as CalendarIcon, Save, CheckCircle, Dumbbell, Brain, Briefcase, Stethoscope, Loader2, Trash2, Edit2, Bed, Users, Sparkles, Apple, Flower2, Gamepad2, HeartPulse, MoreHorizontal, Smile, Bot, Lightbulb, ArrowRight, Frown, Meh, Zap, AlertCircle, Heart, FileText, HelpCircle } from "lucide-react";
+import { Mic, Calendar as CalendarIcon, Save, CheckCircle, Dumbbell, Brain, Briefcase, Stethoscope, Loader2, Trash2, Edit2, Bed, Users, Sparkles, Apple, Flower2, Gamepad2, HeartPulse, MoreHorizontal, Smile, Bot, Lightbulb, ArrowRight, Frown, Meh, Zap, AlertCircle, Heart, FileText, HelpCircle, X, Info } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -186,11 +186,33 @@ export default function ActivityLog() {
   const editRecognitionRef = useRef<any>(null);
   const recentActivityRef = useRef<HTMLDivElement>(null);
 
+  const [aiPrefilled, setAiPrefilled] = useState(false);
+
   useEffect(() => {
     if (window.location.hash === '#recent' && recentActivityRef.current) {
       setTimeout(() => {
         recentActivityRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 100);
+    }
+
+    try {
+      const aiPrefill = sessionStorage.getItem('ai_prefill_activity');
+      if (aiPrefill) {
+        const data = JSON.parse(aiPrefill);
+        if (data.title) setTitle(data.title);
+        if (data.category) {
+          const validCat = ACTIVITY_CATEGORIES.find(c => c.value === data.category);
+          if (validCat) setCategory(data.category);
+        }
+        if (data.notes || data.description) setDescription(data.notes || data.description);
+        if (data.duration) {
+          // duration support if form field exists
+        }
+        setAiPrefilled(true);
+        sessionStorage.removeItem('ai_prefill_activity');
+      }
+    } catch (e) {
+      console.error('Failed to parse AI prefill data:', e);
     }
   }, []);
 
@@ -223,6 +245,8 @@ export default function ActivityLog() {
     onSuccess: async (data: any) => {
       queryClient.invalidateQueries({ queryKey: ['activities'] });
       queryClient.invalidateQueries({ queryKey: ["subscription-usage"] });
+      sessionStorage.setItem('ai_action_completed_activity', 'true');
+      setAiPrefilled(false);
       const savedCat = category;
       const savedTitle = title;
       const savedDesc = description;
@@ -513,6 +537,16 @@ export default function ActivityLog() {
 
   return (
     <div className="max-w-2xl mx-auto space-y-4 xs:space-y-6 sm:space-y-8 animate-in slide-in-from-bottom-4 duration-500 px-2 xs:px-4 sm:px-6">
+      {aiPrefilled && (
+        <div className="flex items-center gap-2 p-2.5 xs:p-3 bg-blue-50 border border-blue-200 rounded-lg animate-in fade-in slide-in-from-top-2 duration-300">
+          <Info className="h-4 w-4 text-blue-600 shrink-0" />
+          <p className="text-xs xs:text-sm text-blue-700 flex-1">Pre-filled from AI Assistant — adjust as needed</p>
+          <button onClick={() => setAiPrefilled(false)} className="text-blue-400 hover:text-blue-600 shrink-0">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       <div className="space-y-1 sm:space-y-2">
         <h1 className="text-xl xs:text-2xl sm:text-3xl font-serif font-bold text-foreground">Log in activity</h1>
       </div>

@@ -21,7 +21,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Select,
@@ -31,6 +30,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Label } from "@/components/ui/label";
+
 import { 
   Search, 
   Send, 
@@ -40,7 +40,7 @@ import {
   MessageSquare,
   Menu,
   Loader2,
-  Plus,
+  Headphones,
   Trash2,
   Ban,
   Flag,
@@ -138,14 +138,10 @@ export default function Messages() {
   const [inputText, setInputText] = useState("");
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [isNewConversationOpen, setIsNewConversationOpen] = useState(false);
-  const [selectedTopic, setSelectedTopic] = useState("");
-  const [customTopic, setCustomTopic] = useState("");
   const [isReportDialogOpen, setIsReportDialogOpen] = useState(false);
   const [reportReason, setReportReason] = useState("");
   const [reportDescription, setReportDescription] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
   const { toast } = useToast();
   
@@ -389,72 +385,17 @@ export default function Messages() {
             Chat with your healthcare providers and support team.
           </p>
         </div>
-        <Dialog open={isNewConversationOpen} onOpenChange={setIsNewConversationOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm">
-              <Plus className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
-              <span className="hidden sm:inline">New Conversation</span>
-              <span className="sm:hidden">New Chat</span>
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-[90vw] sm:max-w-md w-full">
-            <DialogHeader>
-              <DialogTitle>Start New Conversation</DialogTitle>
-              <DialogDescription>
-                Select a topic to begin a new conversation with our support team.
-              </DialogDescription>
-            </DialogHeader>
-            <div className="space-y-4 py-4">
-              <div className="space-y-2">
-                <Label htmlFor="topic">Topic</Label>
-                <Select value={selectedTopic} onValueChange={setSelectedTopic}>
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select a topic" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="general">General Inquiry</SelectItem>
-                    <SelectItem value="appointment">Appointment Help</SelectItem>
-                    <SelectItem value="prescription">Prescription Refill</SelectItem>
-                    <SelectItem value="billing">Billing Question</SelectItem>
-                    <SelectItem value="technical">Technical Support</SelectItem>
-                    <SelectItem value="feedback">Feedback</SelectItem>
-                    <SelectItem value="other">Other</SelectItem>
-                  </SelectContent>
-                </Select>
-              </div>
-              {selectedTopic === "other" && (
-                <div className="space-y-2">
-                  <Label htmlFor="customTopic">Describe your topic</Label>
-                  <Input
-                    id="customTopic"
-                    placeholder="Enter your topic..."
-                    value={customTopic}
-                    onChange={(e) => setCustomTopic(e.target.value)}
-                  />
-                </div>
-              )}
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={() => setIsNewConversationOpen(false)}>
-                Cancel
-              </Button>
-              <Button 
-                onClick={() => {
-                  toast({
-                    title: "Coming Soon",
-                    description: "Starting new conversations will be available in a future update.",
-                  });
-                  setIsNewConversationOpen(false);
-                  setSelectedTopic("");
-                  setCustomTopic("");
-                }}
-                disabled={!selectedTopic || (selectedTopic === "other" && !customTopic.trim())}
-              >
-                Start Conversation
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
+        <Button 
+          size="sm" 
+          variant="outline"
+          onClick={() => {
+            window.location.href = '/settings?tab=support';
+          }}
+        >
+          <Headphones className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
+          <span className="hidden sm:inline">Contact Support</span>
+          <span className="sm:hidden text-xs">Support</span>
+        </Button>
       </div>
 
       <div className="h-[calc(100vh-240px)] xs:h-[calc(100vh-280px)] sm:h-[calc(100vh-250px)] min-h-[350px] xs:min-h-[400px] sm:min-h-[500px] mt-0">
@@ -468,10 +409,21 @@ export default function Messages() {
               <div className="flex-1 flex items-center justify-center text-center p-4 sm:p-6">
                 <div>
                   <MessageSquare className="h-12 w-12 sm:h-16 sm:w-16 mx-auto mb-3 sm:mb-4 text-muted-foreground/30" />
-                  <h3 className="font-semibold text-base sm:text-lg mb-1">Select a conversation</h3>
-                  <p className="text-xs sm:text-sm text-muted-foreground px-2">
-                    Choose a conversation from the list to start messaging
-                  </p>
+                  {conversations.length === 0 ? (
+                    <>
+                      <h3 className="font-semibold text-sm sm:text-base mb-1">No conversations yet</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground px-2">
+                        Conversations with providers or support team will appear here
+                      </p>
+                    </>
+                  ) : (
+                    <>
+                      <h3 className="font-semibold text-sm sm:text-base mb-1">Select a conversation</h3>
+                      <p className="text-xs sm:text-sm text-muted-foreground px-2">
+                        Select a conversation to start messaging
+                      </p>
+                    </>
+                  )}
                   <Sheet open={isMobileSidebarOpen} onOpenChange={setIsMobileSidebarOpen}>
                     <SheetTrigger asChild>
                       <Button variant="outline" size="sm" className="mt-3 sm:mt-4 md:hidden">

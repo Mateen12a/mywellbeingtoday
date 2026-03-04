@@ -24,7 +24,11 @@ import {
   Smile,
   Footprints,
   XCircle,
-  CheckCircle
+  CheckCircle,
+  ClipboardList,
+  FileCheck,
+  X,
+  Trash2
 } from "lucide-react";
 import { useState, useEffect, useCallback } from "react";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
@@ -72,6 +76,19 @@ function NotificationBell() {
 
   const handleMarkAllRead = async () => {
     await api.markAllNotificationsAsRead();
+    queryClient.invalidateQueries({ queryKey: ['unreadNotificationCount'] });
+    queryClient.invalidateQueries({ queryKey: ['notifications'] });
+  };
+
+  const handleClearAll = async () => {
+    await api.deleteAllNotifications();
+    queryClient.invalidateQueries({ queryKey: ['unreadNotificationCount'] });
+    queryClient.invalidateQueries({ queryKey: ['notifications'] });
+  };
+
+  const handleDeleteNotification = async (e: React.MouseEvent, notificationId: string) => {
+    e.stopPropagation();
+    await api.deleteNotification(notificationId);
     queryClient.invalidateQueries({ queryKey: ['unreadNotificationCount'] });
     queryClient.invalidateQueries({ queryKey: ['notifications'] });
   };
@@ -130,13 +147,21 @@ function NotificationBell() {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-80 sm:w-96 p-0" align="end">
-        <div className="flex items-center justify-between p-3 border-b">
+        <div className="flex items-center justify-between p-3 border-b gap-1">
           <h3 className="font-semibold text-sm">Notifications</h3>
-          {unreadCount > 0 && (
-            <Button variant="ghost" size="sm" className="text-xs h-7" onClick={handleMarkAllRead}>
-              Mark all read
-            </Button>
-          )}
+          <div className="flex items-center gap-1">
+            {unreadCount > 0 && (
+              <Button variant="ghost" size="sm" className="text-xs h-7" onClick={handleMarkAllRead}>
+                Mark all read
+              </Button>
+            )}
+            {notifications.length > 0 && (
+              <Button variant="ghost" size="sm" className="text-xs h-7 text-destructive hover:text-destructive" onClick={handleClearAll}>
+                <Trash2 className="h-3 w-3 mr-1" />
+                Clear All
+              </Button>
+            )}
+          </div>
         </div>
         <ScrollArea className="max-h-[400px]">
           {notifications.length === 0 ? (
@@ -148,7 +173,7 @@ function NotificationBell() {
               {notifications.map((notification: any) => (
                 <button
                   key={notification._id}
-                  className={`w-full text-left p-3 hover:bg-muted/50 transition-colors flex gap-3 ${
+                  className={`group w-full text-left p-3 hover:bg-muted/50 transition-colors flex gap-3 ${
                     !notification.read ? 'bg-primary/5' : ''
                   }`}
                   onClick={() => handleNotificationClick(notification)}
@@ -166,6 +191,13 @@ function NotificationBell() {
                     <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{notification.message}</p>
                     <p className="text-[10px] text-muted-foreground mt-1">{getTimeAgo(notification.createdAt)}</p>
                   </div>
+                  <button
+                    className="shrink-0 p-1 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                    onClick={(e) => handleDeleteNotification(e, notification._id)}
+                    title="Delete notification"
+                  >
+                    <X className="h-3.5 w-3.5" />
+                  </button>
                 </button>
               ))}
             </div>
@@ -350,6 +382,25 @@ export default function Layout({ children }: { children: React.ReactNode }) {
                     <DropdownMenuLabel className="font-semibold">
                       {user?.profile?.firstName} {user?.profile?.lastName}
                     </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <Link href="/appointments">
+                      <DropdownMenuItem className="cursor-pointer">
+                        <Calendar className="mr-2 h-4 w-4" />
+                        <span>My Appointments</span>
+                      </DropdownMenuItem>
+                    </Link>
+                    <Link href="/history">
+                      <DropdownMenuItem className="cursor-pointer">
+                        <ClipboardList className="mr-2 h-4 w-4" />
+                        <span>History & Records</span>
+                      </DropdownMenuItem>
+                    </Link>
+                    <Link href="/certificates">
+                      <DropdownMenuItem className="cursor-pointer">
+                        <FileCheck className="mr-2 h-4 w-4" />
+                        <span>Medicals & Certificates</span>
+                      </DropdownMenuItem>
+                    </Link>
                     <DropdownMenuSeparator />
                     <Link href="/settings">
                       <DropdownMenuItem className="cursor-pointer">

@@ -3,13 +3,11 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useLocation } from "wouter";
 import ReactMarkdown from "react-markdown";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription, CardFooter } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Slider } from "@/components/ui/slider";
-import { Label } from "@/components/ui/label";
-import { Sparkles, Send, Bot, User, BookOpen, ShieldAlert, BarChart2, RefreshCw, TrendingUp, TrendingDown, Minus, AlertCircle, Loader2, Cpu, Calculator, WifiOff, X, Plus, MessageSquare, Trash2, Edit2, Check, Menu, Smile, Activity, MapPin, Calendar, Clock, FileText, Navigation, Heart, Dumbbell, Mic, Paperclip, Image, File } from "lucide-react";
-import { AIService, WellbeingReport, generateClientSideInsights, ClientSideInsights, ConversationData, ChatMessageData, AIAction } from "@/services/ai";
+import { Sparkles, Send, Bot, BookOpen, ShieldAlert, BarChart2, RefreshCw, TrendingUp, TrendingDown, Minus, AlertCircle, Loader2, Cpu, Calculator, WifiOff, X, Plus, MessageSquare, Trash2, Edit2, Check, Menu, Smile, MapPin, Calendar, Clock, FileText, Navigation, Dumbbell, Mic, Paperclip, File, AlertTriangle, ArrowRight, CheckCircle } from "lucide-react";
+import { AIService, generateClientSideInsights, ConversationData, AIAction } from "@/services/ai";
 import { cn, formatLabel } from "@/lib/utils";
 import aiAssistantImage from "@assets/generated_images/serene_abstract_ai_wellbeing_assistant_visualization.png";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -17,7 +15,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Badge } from "@/components/ui/badge";
 import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { useToast } from "@/hooks/use-toast";
 import api from "@/lib/api";
 import {
@@ -40,7 +37,7 @@ import {
 import { useAuth } from "@/contexts/AuthContext";
 import { ReportDownloadButton } from "@/components/report-download-button";
 import { useSubscription } from "@/hooks/useSubscription";
-import { UpgradePrompt } from "@/components/upgrade-prompt";
+import { useSubscriptionDialog } from "@/contexts/SubscriptionDialogContext";
 
 interface SpeechRecognitionEvent extends Event {
   results: SpeechRecognitionResultList;
@@ -218,329 +215,72 @@ function getActionIcon(type: AIAction['type']) {
 
 function ActionButtons({ 
   actions, 
-  onAction 
+  onAction,
+  messageTimestamp 
 }: { 
   actions: AIAction[]; 
   onAction: (action: AIAction) => void;
+  messageTimestamp?: string;
 }) {
+  const [completedActions, setCompletedActions] = useState<Set<string>>(new Set());
+  const [, forceUpdate] = useState(0);
+
+  useEffect(() => {
+    const completed = new Set<string>();
+    actions.forEach((action, index) => {
+      const actionId = `${action.type}_${index}`;
+      const simpleKey = action.type === 'log_activity' ? 'activity' : action.type === 'log_mood' ? 'mood' : null;
+      if (sessionStorage.getItem(`ai_action_completed_${actionId}`) || (simpleKey && sessionStorage.getItem(`ai_action_completed_${simpleKey}`))) {
+        completed.add(actionId);
+        if (simpleKey) sessionStorage.removeItem(`ai_action_completed_${simpleKey}`);
+      }
+    });
+    if (completed.size > 0) setCompletedActions(completed);
+  }, [actions]);
+
+  useEffect(() => {
+    if (!messageTimestamp) return;
+    const interval = setInterval(() => forceUpdate(n => n + 1), 60000);
+    return () => clearInterval(interval);
+  }, [messageTimestamp]);
+
+  const isExpired = messageTimestamp && (Date.now() - parseInt(messageTimestamp, 10) > 30 * 60 * 1000);
+
   return (
     <div className="flex flex-wrap gap-1.5 xs:gap-3 mt-2 xs:mt-4 pt-2 xs:pt-4 border-t border-gray-100">
       {actions.map((action, index) => {
+        const actionId = `${action.type}_${index}`;
+        const isCompleted = completedActions.has(actionId);
         const Icon = getActionIcon(action.type);
+        const isLoggingAction = action.type === 'log_mood' || action.type === 'log_activity';
+        const completedLabel = action.type === 'log_mood' ? 'Mood Logged!' : action.type === 'log_activity' ? 'Activity Logged!' : action.label;
+
+        if (isLoggingAction && !isCompleted && isExpired) return null;
+
         return (
           <Button
             key={index}
             variant="outline"
             size="default"
-            onClick={() => onAction(action)}
-            className="gap-1 xs:gap-2 text-[11px] xs:text-sm md:text-base h-8 xs:h-10 md:h-11 px-2 xs:px-4 bg-white hover:bg-primary/5 hover:border-primary/30 transition-colors"
+            onClick={() => !isCompleted && onAction(action)}
+            disabled={isCompleted}
+            className={cn(
+              "gap-1 xs:gap-2 text-[11px] xs:text-sm md:text-base h-8 xs:h-10 md:h-11 px-2 xs:px-4 transition-colors",
+              isCompleted 
+                ? "bg-green-50 border-green-200 text-green-700 cursor-default" 
+                : "bg-white hover:bg-primary/5 hover:border-primary/30"
+            )}
           >
-            <Icon className="h-3 w-3 xs:h-4 xs:w-4 md:h-5 md:w-5" />
-            <span className="truncate max-w-[80px] xs:max-w-none">{action.label}</span>
+            {isCompleted ? (
+              <CheckCircle className="h-3 w-3 xs:h-4 xs:w-4 md:h-5 md:w-5 text-green-600" />
+            ) : (
+              <Icon className="h-3 w-3 xs:h-4 xs:w-4 md:h-5 md:w-5" />
+            )}
+            <span className="truncate max-w-[80px] xs:max-w-none">{isCompleted ? completedLabel : action.label}</span>
           </Button>
         );
       })}
     </div>
-  );
-}
-
-function QuickMoodDialog({
-  open,
-  onOpenChange,
-  initialData,
-  onSuccess,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  initialData?: any;
-  onSuccess: () => void;
-}) {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [mood, setMood] = useState(initialData?.mood || 'calm');
-  const [moodScore, setMoodScore] = useState([initialData?.moodScore || 7]);
-  const [stressLevel, setStressLevel] = useState([initialData?.stressLevel || 5]);
-  const [energyLevel, setEnergyLevel] = useState([initialData?.energyLevel || 5]);
-  const [notes, setNotes] = useState(initialData?.notes || '');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const handleVoiceTranscript = (text: string) => {
-    setNotes(prev => prev ? `${prev} ${text}` : text);
-  };
-  
-  const { isListening, isSupported, toggleListening } = useVoiceInput(handleVoiceTranscript);
-
-  // Update state when initialData changes
-  useEffect(() => {
-    if (initialData) {
-      if (initialData.mood) setMood(initialData.mood);
-      if (initialData.moodScore) setMoodScore([initialData.moodScore]);
-      if (initialData.stressLevel) setStressLevel([initialData.stressLevel]);
-      if (initialData.energyLevel) setEnergyLevel([initialData.energyLevel]);
-      if (initialData.notes) setNotes(initialData.notes);
-    }
-  }, [initialData]);
-
-  const moodOptions = ['happy', 'calm', 'anxious', 'sad', 'excited', 'stressed', 'tired', 'grateful', 'frustrated', 'hopeful', 'other'];
-
-  const handleSubmit = async () => {
-    setIsSubmitting(true);
-    try {
-      await api.createMood({
-        mood,
-        moodScore: moodScore[0],
-        stressLevel: stressLevel[0],
-        energyLevel: energyLevel[0],
-        notes: notes || undefined,
-        date: new Date().toISOString(),
-      });
-      queryClient.invalidateQueries({ queryKey: ['moodLogs'] });
-      queryClient.invalidateQueries({ queryKey: ['moods'] });
-      toast({ title: "Mood logged successfully!" });
-      onSuccess();
-      onOpenChange(false);
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Smile className="h-5 w-5 text-primary" />
-            Quick Mood Log
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label>Mood</Label>
-            <Select value={mood} onValueChange={setMood}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {moodOptions.map(m => (
-                  <SelectItem key={m} value={m}>{m.charAt(0).toUpperCase() + m.slice(1)}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Mood Score ({moodScore[0]}/10)</Label>
-            <Slider value={moodScore} onValueChange={setMoodScore} min={1} max={10} step={1} />
-            <div className="flex justify-between text-xs text-muted-foreground">
-              <span>Not great</span>
-              <span>Amazing</span>
-            </div>
-          </div>
-          <div className="space-y-2">
-            <Label>Stress Level ({stressLevel[0]}/10)</Label>
-            <Slider value={stressLevel} onValueChange={setStressLevel} min={1} max={10} step={1} />
-          </div>
-          <div className="space-y-2">
-            <Label>Energy Level ({energyLevel[0]}/10)</Label>
-            <Slider value={energyLevel} onValueChange={setEnergyLevel} min={1} max={10} step={1} />
-          </div>
-          <div className="space-y-2">
-            <Label>Notes (optional)</Label>
-            <div className="flex gap-2">
-              <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="How are you feeling today?" className="flex-1" />
-              {isSupported && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant={isListening ? "destructive" : "outline"}
-                        size="icon"
-                        onClick={toggleListening}
-                        className={cn(
-                          "shrink-0 transition-all",
-                          isListening && "animate-pulse"
-                        )}
-                      >
-                        <Mic className={cn("h-4 w-4", isListening && "text-white")} />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {isListening ? "Stop recording" : "Voice input"}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-            </div>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Log Mood
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
-  );
-}
-
-function QuickActivityDialog({
-  open,
-  onOpenChange,
-  initialData,
-  onSuccess,
-}: {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-  initialData?: any;
-  onSuccess: () => void;
-}) {
-  const { toast } = useToast();
-  const queryClient = useQueryClient();
-  const [title, setTitle] = useState(initialData?.title || '');
-  const [category, setCategory] = useState(initialData?.category || 'exercise');
-  const [duration, setDuration] = useState([initialData?.duration || 30]);
-  const [intensity, setIntensity] = useState(initialData?.intensity || 'moderate');
-  const [notes, setNotes] = useState(initialData?.notes || '');
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  const handleVoiceTranscript = (text: string) => {
-    setNotes(prev => prev ? `${prev} ${text}` : text);
-  };
-  
-  const { isListening, isSupported, toggleListening } = useVoiceInput(handleVoiceTranscript);
-
-  // Update state when initialData changes
-  useEffect(() => {
-    if (initialData) {
-      if (initialData.title) setTitle(initialData.title);
-      if (initialData.category) setCategory(initialData.category);
-      if (initialData.duration) setDuration([initialData.duration]);
-      if (initialData.intensity) setIntensity(initialData.intensity);
-      if (initialData.notes) setNotes(initialData.notes);
-    }
-  }, [initialData]);
-
-  const handleSubmit = async () => {
-    if (!title.trim()) {
-      toast({ title: "Please enter an activity title", variant: "destructive" });
-      return;
-    }
-    setIsSubmitting(true);
-    try {
-      await api.createActivity({
-        title,
-        category,
-        duration: duration[0],
-        intensity,
-        notes: notes || undefined,
-        date: new Date().toISOString(),
-      });
-      queryClient.invalidateQueries({ queryKey: ['activities'] });
-      toast({ title: "Activity logged successfully!" });
-      onSuccess();
-      onOpenChange(false);
-    } catch (error: any) {
-      toast({ title: "Error", description: error.message, variant: "destructive" });
-    } finally {
-      setIsSubmitting(false);
-    }
-  };
-
-  return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Dumbbell className="h-5 w-5 text-primary" />
-            Quick Activity Log
-          </DialogTitle>
-        </DialogHeader>
-        <div className="space-y-4 py-4">
-          <div className="space-y-2">
-            <Label>Activity Title</Label>
-            <Input
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              placeholder="e.g., Morning walk, Yoga session"
-            />
-          </div>
-          <div className="space-y-2">
-            <Label>Category</Label>
-            <Select value={category} onValueChange={setCategory}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="exercise">Exercise</SelectItem>
-                <SelectItem value="meditation">Meditation</SelectItem>
-                <SelectItem value="relaxation">Relaxation</SelectItem>
-                <SelectItem value="social">Social</SelectItem>
-                <SelectItem value="work">Work</SelectItem>
-                <SelectItem value="hobby">Hobby</SelectItem>
-                <SelectItem value="other">Other</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Duration: {duration[0]} minutes</Label>
-            <Slider value={duration} onValueChange={setDuration} min={5} max={180} step={5} />
-          </div>
-          <div className="space-y-2">
-            <Label>Intensity</Label>
-            <Select value={intensity} onValueChange={setIntensity}>
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="low">Low</SelectItem>
-                <SelectItem value="moderate">Moderate</SelectItem>
-                <SelectItem value="high">High</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-          <div className="space-y-2">
-            <Label>Notes (optional)</Label>
-            <div className="flex gap-2">
-              <Input value={notes} onChange={(e) => setNotes(e.target.value)} placeholder="Any notes about this activity?" className="flex-1" />
-              {isSupported && (
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant={isListening ? "destructive" : "outline"}
-                        size="icon"
-                        onClick={toggleListening}
-                        className={cn(
-                          "shrink-0 transition-all",
-                          isListening && "animate-pulse"
-                        )}
-                      >
-                        <Mic className={cn("h-4 w-4", isListening && "text-white")} />
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      {isListening ? "Stop recording" : "Voice input"}
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-              )}
-            </div>
-          </div>
-        </div>
-        <DialogFooter>
-          <Button variant="outline" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button onClick={handleSubmit} disabled={isSubmitting}>
-            {isSubmitting ? <Loader2 className="h-4 w-4 animate-spin mr-2" /> : null}
-            Log
-          </Button>
-        </DialogFooter>
-      </DialogContent>
-    </Dialog>
   );
 }
 
@@ -671,7 +411,8 @@ export default function AIKnowledgeAssistant() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const { user } = useAuth();
-  const { plan, isNearLimit, isAtLimit, getRemaining, getLimit } = useSubscription();
+  const { plan, isNearLimit, isAtLimit, getRemaining, getLimit, getUsed } = useSubscription();
+  const { openSubscriptionDialog } = useSubscriptionDialog();
   const [query, setQuery] = useState("");
   const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
   const [messages, setMessages] = useState<Message[]>([]);
@@ -679,9 +420,6 @@ export default function AIKnowledgeAssistant() {
   const [reportDays, setReportDays] = useState("7");
   const [showClientInsights, setShowClientInsights] = useState(false);
   const [sidebarOpen, setSidebarOpen] = useState(false);
-  const [showQuickMoodDialog, setShowQuickMoodDialog] = useState(false);
-  const [showQuickActivityDialog, setShowQuickActivityDialog] = useState(false);
-  const [quickDialogData, setQuickDialogData] = useState<any>(null);
   const [attachment, setAttachment] = useState<Attachment | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const queryClient = useQueryClient();
@@ -893,15 +631,21 @@ export default function AIKnowledgeAssistant() {
   const handleAction = (action: AIAction) => {
     switch (action.type) {
       case 'navigate':
-        if (action.path) setLocation(action.path);
+        if (action.path) {
+          if (action.path.includes('/subscription') || action.path.includes('/settings') && action.label?.toLowerCase().includes('plan')) {
+            openSubscriptionDialog();
+          } else {
+            setLocation(action.path);
+          }
+        }
         break;
       case 'log_mood':
-        setQuickDialogData(action.data || {});
-        setShowQuickMoodDialog(true);
+        sessionStorage.setItem('ai_prefill_mood', JSON.stringify(action.data || {}));
+        setLocation('/mood');
         break;
       case 'log_activity':
-        setQuickDialogData(action.data || {});
-        setShowQuickActivityDialog(true);
+        sessionStorage.setItem('ai_prefill_activity', JSON.stringify(action.data || {}));
+        setLocation('/activity');
         break;
       case 'find_providers':
         const searchParams = action.data?.specialty 
@@ -921,7 +665,13 @@ export default function AIKnowledgeAssistant() {
         setLocation('/history');
         break;
       default:
-        if (action.path) setLocation(action.path);
+        if (action.path) {
+          if (action.label?.toLowerCase().includes('plan') || action.label?.toLowerCase().includes('upgrade')) {
+            openSubscriptionDialog();
+          } else {
+            setLocation(action.path);
+          }
+        }
     }
   };
 
@@ -989,7 +739,7 @@ export default function AIKnowledgeAssistant() {
         id: (Date.now() + 1).toString(),
         role: 'assistant',
         content: isLimitError
-          ? "You've reached your AI interaction limit for today. Please upgrade your plan to continue using the AI Assistant. Visit the [Subscription page](/subscription) to view available plans."
+          ? "You've reached your AI interaction limit for today. Please upgrade your plan to continue using the AI Assistant."
           : "I'm sorry, I encountered an issue processing your request. Please try again."
       };
       setMessages(prev => [...prev, errorMsg]);
@@ -1099,7 +849,7 @@ export default function AIKnowledgeAssistant() {
                             </div>
                           )}
                           {msg.role === 'assistant' && msg.actions && msg.actions.length > 0 && (
-                            <ActionButtons actions={msg.actions} onAction={handleAction} />
+                            <ActionButtons actions={msg.actions} onAction={handleAction} messageTimestamp={msg.id} />
                           )}
                         </div>
                       </div>
@@ -1120,12 +870,24 @@ export default function AIKnowledgeAssistant() {
 
               <div className="p-2 xs:p-3 sm:p-4 bg-secondary/10 border-t">
                 {isAtLimit("aiInteractions") && (
-                  <UpgradePrompt
-                    feature="aiInteractions"
-                    currentPlan={plan}
-                    limit={getLimit("aiInteractions")}
-                    className="mb-3"
-                  />
+                  <div className="mb-3 p-3 xs:p-4 rounded-xl bg-gradient-to-r from-red-500 to-orange-500 text-white shadow-lg">
+                    <div className="flex items-start gap-2 xs:gap-3">
+                      <AlertTriangle className="h-5 w-5 xs:h-6 xs:w-6 shrink-0 mt-0.5" />
+                      <div className="flex-1 min-w-0">
+                        <p className="font-bold text-sm xs:text-base md:text-lg">Limit Reached</p>
+                        <p className="text-xs xs:text-sm mt-1 opacity-90">
+                          You've used all {getLimit("aiInteractions")} AI interactions for today. Upgrade for more.
+                        </p>
+                        <Button 
+                          size="sm" 
+                          onClick={openSubscriptionDialog}
+                          className="mt-2 bg-white text-red-600 hover:bg-white/90 gap-1 text-xs xs:text-sm font-semibold"
+                        >
+                          Upgrade Plan <ArrowRight className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
+                  </div>
                 )}
                 {!isAtLimit("aiInteractions") && isNearLimit("aiInteractions") && (
                   <p className="text-xs text-amber-600 font-medium mb-2 flex items-center gap-1">
@@ -1133,7 +895,7 @@ export default function AIKnowledgeAssistant() {
                     {getRemaining("aiInteractions")} of {getLimit("aiInteractions")} AI interactions remaining today
                   </p>
                 )}
-                {!isAtLimit("aiInteractions") && !isNearLimit("aiInteractions") && getRemaining("aiInteractions") !== Infinity && (
+                {!isAtLimit("aiInteractions") && !isNearLimit("aiInteractions") && getRemaining("aiInteractions") !== Infinity && getUsed("aiInteractions") <= getLimit("aiInteractions") && (
                   <p className="text-xs text-muted-foreground mb-2">
                     {getRemaining("aiInteractions")} of {getLimit("aiInteractions")} AI interactions remaining
                   </p>
@@ -1457,31 +1219,6 @@ export default function AIKnowledgeAssistant() {
         </TabsContent>
       </Tabs>
 
-      <QuickMoodDialog
-        open={showQuickMoodDialog}
-        onOpenChange={setShowQuickMoodDialog}
-        initialData={quickDialogData}
-        onSuccess={() => {
-          setMessages(prev => [...prev, {
-            id: Date.now().toString(),
-            role: 'assistant',
-            content: "Great job logging your mood! Keep tracking to see patterns over time. 😊"
-          }]);
-        }}
-      />
-
-      <QuickActivityDialog
-        open={showQuickActivityDialog}
-        onOpenChange={setShowQuickActivityDialog}
-        initialData={quickDialogData}
-        onSuccess={() => {
-          setMessages(prev => [...prev, {
-            id: Date.now().toString(),
-            role: 'assistant',
-            content: "Activity logged successfully! Stay active and keep up the great work! 💪"
-          }]);
-        }}
-      />
     </div>
   );
 }

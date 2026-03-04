@@ -145,6 +145,57 @@ router.get('/admin/tickets', authenticate, isAdmin, async (req, res) => {
   }
 });
 
+router.post('/tickets/:id/respond', authenticate, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { message } = req.body;
+
+    if (!message || message.trim().length === 0) {
+      return res.status(400).json({
+        success: false,
+        message: 'Response message is required'
+      });
+    }
+
+    const ticket = await SupportTicket.findOne({ _id: id, userId: req.userId });
+
+    if (!ticket) {
+      return res.status(404).json({
+        success: false,
+        message: 'Support ticket not found'
+      });
+    }
+
+    if (ticket.status === 'resolved') {
+      ticket.status = 'open';
+    }
+
+    ticket.responses.push({
+      userId: req.userId,
+      message: message.trim(),
+      timestamp: new Date()
+    });
+
+    await ticket.save();
+
+    const updatedTicket = await SupportTicket.findById(id)
+      .populate('assignedAdmin', 'email profile.firstName profile.lastName')
+      .populate('responses.userId', 'email profile.firstName profile.lastName role');
+
+    res.json({
+      success: true,
+      message: 'Response added successfully',
+      data: { ticket: updatedTicket }
+    });
+  } catch (error) {
+    console.error('User respond to ticket error:', error);
+    res.status(500).json({
+      success: false,
+      message: 'Failed to add response'
+    });
+  }
+});
+
 router.put('/admin/tickets/:id', authenticate, isAdmin, async (req, res) => {
   try {
     const { id } = req.params;

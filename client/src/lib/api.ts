@@ -919,6 +919,13 @@ class ApiClient {
     });
   }
 
+  async userRespondToTicket(id: string, message: string) {
+    return this.request<{ ticket: any }>(`/support/tickets/${id}/respond`, {
+      method: 'POST',
+      body: JSON.stringify({ message }),
+    });
+  }
+
   async getAdmins() {
     return this.request<{ admins: any[] }>('/admin/admins');
   }
@@ -1122,6 +1129,10 @@ class ApiClient {
 
   async deleteNotification(id: string): Promise<ApiResponse> {
     return this.request(`/notifications/${id}`, { method: 'DELETE' });
+  }
+
+  async deleteAllNotifications(): Promise<ApiResponse> {
+    return this.request('/notifications/all', { method: 'DELETE' });
   }
 
   async getVapidPublicKey(): Promise<ApiResponse> {

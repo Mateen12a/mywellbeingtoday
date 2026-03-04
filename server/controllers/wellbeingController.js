@@ -85,9 +85,8 @@ export const generateReport = async (req, res, next) => {
       aiModel: wellbeingAnalysis.aiModel || ''
     });
 
+    await incrementUsage(req.user._id, 'reportDownloads');
     await logAction(req.user._id, 'GENERATE_REPORT', 'wellbeingReport', report._id, null, req);
-    incrementUsage(req.user._id, 'reportDownloads').catch(err => console.error('[USAGE]', err));
-
     res.status(201).json({
       success: true,
       message: 'Wellbeing report generated successfully',

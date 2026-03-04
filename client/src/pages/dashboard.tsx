@@ -49,6 +49,7 @@ import api from "@/lib/api";
 import { ReportDownloadButton } from "@/components/report-download-button";
 import { useSubscription } from "@/hooks/useSubscription";
 import { useSubscriptionDialog } from "@/contexts/SubscriptionDialogContext";
+import { OnboardingChecklist } from "@/components/onboarding-checklist";
 
 function isValidDate(date: any): boolean {
   if (!date) return false;
@@ -1111,6 +1112,7 @@ export default function Dashboard() {
           </CardContent>
         </Card>
       </div>
+      <OnboardingChecklist />
     </div>
   );
 }

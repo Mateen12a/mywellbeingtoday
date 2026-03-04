@@ -163,6 +163,50 @@ async function checkAndResetUsage(subscription) {
   return subscription;
 }
 
+const MONTHLY_FEATURES = ['directoryAccess'];
+
+const MONTHLY_PLAN_LIMITS = {
+  free: { directoryAccess: 10 },
+  starter: { directoryAccess: 50 },
+  pro: { directoryAccess: -1 },
+  premium: { directoryAccess: -1 },
+  team: { directoryAccess: -1 },
+  franchise: { directoryAccess: -1 }
+};
+
+export async function checkMonthlyUsageLimit(userId, feature) {
+  let subscription = await Subscription.findOne({ userId });
+  if (!subscription) {
+    subscription = await Subscription.create({
+      userId,
+      plan: 'free',
+      status: 'active'
+    });
+  }
+
+  await checkAndResetUsage(subscription);
+
+  const plan = subscription.plan;
+  const limits = MONTHLY_PLAN_LIMITS[plan];
+  if (!limits) return { allowed: false, reason: 'Invalid plan' };
+
+  const limit = limits[feature];
+  if (limit === undefined) return { allowed: true };
+  if (limit === -1) return { allowed: true };
+
+  const currentUsage = subscription.monthlyUsage?.[feature] || 0;
+  if (currentUsage >= limit) {
+    return {
+      allowed: false,
+      reason: `You have reached your ${plan} plan limit of ${limit} ${feature.replace(/([A-Z])/g, ' $1').toLowerCase()} this month. Please upgrade your plan.`,
+      currentUsage,
+      limit
+    };
+  }
+
+  return { allowed: true, currentUsage, limit };
+}
+
 export async function checkUsageLimit(userId, feature) {
   let subscription = await Subscription.findOne({ userId });
   if (!subscription) {
@@ -299,6 +343,8 @@ router.get('/', authenticate, async (req, res) => {
         subscription: subJson,
         pricing: PRICING,
         planLimits: PLAN_LIMITS,
+        monthlyPlanLimits: MONTHLY_PLAN_LIMITS,
+        monthlyFeatures: MONTHLY_FEATURES,
         stripeConfigured: isStripeConfigured(),
         hasPaymentMethod,
       }
@@ -1028,6 +1074,19 @@ router.post('/webhook', async (req, res) => {
         const { userId, plan } = session.metadata || {};
 
         if (session.mode === 'setup') {
+          if (session.setup_intent && session.customer) {
+            try {
+              const stripe = await getStripe();
+              const setupIntent = await stripe.setupIntents.retrieve(session.setup_intent);
+              if (setupIntent.payment_method) {
+                await stripe.customers.update(session.customer, {
+                  invoice_settings: { default_payment_method: setupIntent.payment_method }
+                });
+              }
+            } catch (e) {
+              console.error('Auto-set default payment method error:', e.message);
+            }
+          }
           break;
         }
 

@@ -12,7 +12,7 @@ const providerSchema = new mongoose.Schema({
     qualifications: [{ type: String }],
     certificationType: { type: String, default: '' },
     registrationNumber: { type: String },
-    yearsOfExperience: { type: Number, default: 0 },
+    yearsOfExperience: { type: String, default: '0' },
     specialties: [{
       type: String,
       enum: PROVIDER_SPECIALTIES

@@ -1,0 +1,47 @@
+mywellbeingtoday user side reviews, fixes, and updates
+
+registration successful but once loggedin as  user for the first time show pop up of payment plan and account setup completeion should ow on the bottom left just like a new stripe dashboard so users know they can skip for now or complete all the data needed on their account
+
+once they create their account they should automatically be on a free trail no need to click setup free trial because they are already on a free plan unless they have upgraded make sure the logic is applied to subscription pop up and other relevant areas.
+
+directory searches on free plan or subscribe should be only reflected monthly not daily other features are daily like mood log of 2 and activity, even AI interactions are for free plans
+
+on messages remove new conversation button for users only leave an chat icon which will be there for chatting with support but new conversation is uncessary then Select a conversation, Choose a conversation from the list to start messaging should only show if any conversation exists what should show if no conversation exist yet is conversation with providers or support team will appear here.
+
+ai assistant log activity and mood should not show a popup but direct users to the activity or mood screen with prefilled data based on the conversation with the user which makes it look automated and users can then adjust it and once done can go back to the ai with the buttos on that message still showing if it was more than one the one clicked on can be done the mood or activity was logged successfully if not the button can stay for a bit longer like 30 mins max then disappear finally it was most likely not needed.
+
+make the red text "Limit Reached
+You've reached your Free plan limit of 2 AI interactions today.
+Upgrade to Starter for 10 AI interactions per day." more visible as it looks dull
+
+After clicking upgrade do not confuse users by putting 2 of 2 on the ai when it has been exhausted on free plan or others alike make it smooth and clear
+
+Simplify the wellbeing history by making it more easy to understand it looks like nice thou more easy to understand for overview mood trends and activities
+
+
+report download do not get detected as part of data tracked on usage
+
+delete utton and clear all for notifications should exist in the notification side
+
+after a card is added to the app make it default payment method
+
+after upgrading plan refresh the page so it gets reflected on the frontend
+
+i noticed desktop users do not get to see medicals & certificates, my appointments and history and medical records as well, when the profile pic is clicked on dashboard header of desktop where profile, settings and logout sit make them appear there on desktop so desktop users can see them as well
+
+on the ai assistant when users click view plans from the ai they go to setting which is good but take them to the subscription section or just open the pop up for viewing plans instead
+
+in settings for notification preferences remove sms notifications and make sure toggle for email and push notifications work smoothly
+
+make sure privacy setting work as well make sure the ux for creating passwords on sign up work the same on security section on settings
+
+for app preferences in setting leave language as only English option but time zone can be changed and should work effectively, remove theme from the options since the system is only in light mode
+
+have a look at the support ticket system and make sure it works very smoothly and effectively as i noticed admin response didn't get sent to users and didn't feel like a chat or appear in the message section of the user and is there no way to make it easy for tickets to show a verified badge as if the user is chatting with mywellbeingtoday support directly not the admins name but on the admins side they can know admin or manager responded to that user or was incharge of that ticket just like a proper support system for big brands like godaddy, namecheap and so on.
+
+on the subscription pop up where we have team/enterprise and franchise make the contact us work as well where it flow just like the support ticket but the title or subject of the message is for team or fracbhise subscription so admins or manager who will respond understands fast.
+
+
+for testing you can using the following credentials and i can provide the code for otp
+ajidagbamateen12@gmail.com
+password: Welcome123!

@@ -3,7 +3,7 @@ import { AppError } from '../middlewares/errorHandler.js';
 import { logAction } from '../middlewares/auditLog.js';
 import { USER_ROLES, PROVIDER_SPECIALTIES, MAIN_PROVIDER_SPECIALTIES } from '../config/constants.js';
 import { suggestProviders, generateProviderInsights, chatWithProviderAssistant, generateProviderChatTitle } from '../services/aiService.js';
-import { incrementUsage, checkUsageLimit } from '../routes/subscriptionRoutes.js';
+import { incrementUsage, checkUsageLimit, checkMonthlyUsageLimit } from '../routes/subscriptionRoutes.js';
 
 export const createProviderProfile = async (req, res, next) => {
   try {
@@ -139,7 +139,7 @@ export const updateProviderProfile = async (req, res, next) => {
 export const searchProviders = async (req, res, next) => {
   try {
     if (req.user?._id) {
-      const usageCheck = await checkUsageLimit(req.user._id, 'directoryAccess');
+      const usageCheck = await checkMonthlyUsageLimit(req.user._id, 'directoryAccess');
       if (!usageCheck.allowed) {
         return res.status(403).json({ success: false, message: usageCheck.reason });
       }

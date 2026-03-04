@@ -34,6 +34,8 @@ import {
   Lightbulb,
   MessageCircle,
   ArrowLeft,
+  X,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Link, useLocation, useSearch } from "wouter";
@@ -194,6 +196,7 @@ export default function MoodTracker() {
 
   const [fromActivity, setFromActivity] = useState(false);
   const [aiRationale, setAiRationale] = useState<string | null>(null);
+  const [aiPrefilled, setAiPrefilled] = useState(false);
 
   useEffect(() => {
     const params = new URLSearchParams(searchString);
@@ -219,6 +222,37 @@ export default function MoodTracker() {
     }
     if (rationale) {
       setAiRationale(rationale);
+    }
+
+    try {
+      const aiPrefill = sessionStorage.getItem('ai_prefill_mood');
+      if (aiPrefill) {
+        const data = JSON.parse(aiPrefill);
+        if (data.mood) {
+          const validMood = MOOD_TYPES.find((m) => m.id === data.mood);
+          if (validMood) setSelectedMood(data.mood);
+        }
+        if (data.moodScore || data.score) {
+          const raw = data.moodScore || data.score;
+          const score = typeof raw === 'number' ? raw : parseInt(raw, 10);
+          if (!isNaN(score) && score >= 1 && score <= 10) setMoodScore([score]);
+        }
+        if (data.stressLevel || data.stress) {
+          const raw = data.stressLevel || data.stress;
+          const stress = typeof raw === 'number' ? raw : parseInt(raw, 10);
+          if (!isNaN(stress) && stress >= 1 && stress <= 10) setStressLevel([stress]);
+        }
+        if (data.energyLevel || data.energy) {
+          const raw = data.energyLevel || data.energy;
+          const energy = typeof raw === 'number' ? raw : parseInt(raw, 10);
+          if (!isNaN(energy) && energy >= 1 && energy <= 10) setEnergyLevel([energy]);
+        }
+        if (data.notes) setNotes(data.notes);
+        setAiPrefilled(true);
+        sessionStorage.removeItem('ai_prefill_mood');
+      }
+    } catch (e) {
+      console.error('Failed to parse AI prefill mood data:', e);
     }
   }, [searchString]);
 
@@ -304,6 +338,8 @@ export default function MoodTracker() {
     onSuccess: (data: any) => {
       queryClient.invalidateQueries({ queryKey: ["moodLogs"] });
       queryClient.invalidateQueries({ queryKey: ["subscription-usage"] });
+      sessionStorage.setItem('ai_action_completed_mood', 'true');
+      setAiPrefilled(false);
       const aiData = data?.aiFeedback || data?.moodLog?.aiFeedback;
       if (aiData) {
         setAiFeedback(aiData);
@@ -450,6 +486,16 @@ export default function MoodTracker() {
 
   return (
     <div className="max-w-4xl mx-auto space-y-5 xs:space-y-8 sm:space-y-10 md:space-y-12 animate-in fade-in duration-500 pb-20 relative px-2 xs:px-4 sm:px-6">
+      {aiPrefilled && (
+        <div className="flex items-center gap-2 p-2.5 xs:p-3 bg-blue-50 border border-blue-200 rounded-lg animate-in fade-in slide-in-from-top-2 duration-300">
+          <Info className="h-4 w-4 text-blue-600 shrink-0" />
+          <p className="text-xs xs:text-sm text-blue-700 flex-1">Pre-filled from AI Assistant — adjust as needed</p>
+          <button onClick={() => setAiPrefilled(false)} className="text-blue-400 hover:text-blue-600 shrink-0">
+            <X className="h-4 w-4" />
+          </button>
+        </div>
+      )}
+
       <div className="text-center space-y-1.5 xs:space-y-2 sm:space-y-3 max-w-2xl mx-auto pt-2 md:pt-0">
         <h1 className="text-xl xs:text-2xl sm:text-3xl md:text-4xl font-serif font-bold text-foreground leading-tight">
           How are you feeling today?
