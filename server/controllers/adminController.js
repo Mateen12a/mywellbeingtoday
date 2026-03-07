@@ -3,6 +3,7 @@ import { AppError } from '../middlewares/errorHandler.js';
 import { logAction } from '../middlewares/auditLog.js';
 import { USER_ROLES } from '../config/constants.js';
 import { generateAdminInsights } from '../services/aiService.js';
+import { sendProviderApprovalEmail } from '../services/emailService.js';
 
 export const getUsers = async (req, res, next) => {
   try {
@@ -347,6 +348,15 @@ export const verifyProvider = async (req, res, next) => {
       approverEmail: req.user.email,
       approvedAt: verifiedAt.toISOString()
     }, req);
+
+    if (provider.userId?.email) {
+      const providerName = provider.userId.profile?.firstName
+        ? `${provider.userId.profile.firstName} ${provider.userId.profile.lastName || ''}`.trim()
+        : provider.userId.email;
+      sendProviderApprovalEmail(provider.userId.email, providerName).catch(err =>
+        console.error('[EMAIL] Failed to send provider approval email:', err.message)
+      );
+    }
 
     res.json({
       success: true,

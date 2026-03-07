@@ -80,7 +80,6 @@ export default function ProviderSettings() {
   const [notificationSettings, setNotificationSettings] = useState({
     email: true,
     push: true,
-    sms: false,
     appointmentReminders: true,
     patientMessages: true,
   });
@@ -204,7 +203,6 @@ export default function ProviderSettings() {
       setNotificationSettings({
         email: profileData.settings?.notifications?.email ?? true,
         push: profileData.settings?.notifications?.push ?? true,
-        sms: profileData.settings?.notifications?.sms ?? false,
         appointmentReminders: profileData.settings?.notifications?.appointmentReminders ?? true,
         patientMessages: profileData.settings?.notifications?.patientMessages ?? true,
       });
@@ -904,16 +902,6 @@ export default function ProviderSettings() {
                 <Switch 
                   checked={notificationSettings.push}
                   onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, push: checked }))}
-                />
-              </div>
-              <div className="flex items-center justify-between pb-4 border-b">
-                <div className="space-y-0.5">
-                  <Label className="text-base">SMS Notifications</Label>
-                  <p className="text-sm text-muted-foreground">Receive important updates via text message.</p>
-                </div>
-                <Switch 
-                  checked={notificationSettings.sms}
-                  onCheckedChange={(checked) => setNotificationSettings(prev => ({ ...prev, sms: checked }))}
                 />
               </div>
               <div className="flex items-center justify-between pb-4 border-b">

@@ -219,6 +219,7 @@ export default function ProviderDashboard() {
   const [showTicketDetailsDialog, setShowTicketDetailsDialog] = useState(false);
   const [selectedTicket, setSelectedTicket] = useState<any>(null);
   const [ticketFilter, setTicketFilter] = useState("all");
+  const [ticketReplyText, setTicketReplyText] = useState("");
   const [newTicketForm, setNewTicketForm] = useState({
     subject: '',
     category: '' as string,
@@ -409,6 +410,30 @@ export default function ProviderDashboard() {
       toast({
         title: "Error",
         description: error.message || "Failed to create support ticket",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const replyToTicketMutation = useMutation({
+    mutationFn: async ({ ticketId, message }: { ticketId: string; message: string }) => {
+      const response = await api.userRespondToTicket(ticketId, message);
+      if (!response.success) throw new Error((response as any).message);
+      return response;
+    },
+    onSuccess: (data) => {
+      queryClient.invalidateQueries({ queryKey: ['providerSupportTickets'] });
+      setSelectedTicket(data.data?.ticket || null);
+      setTicketReplyText("");
+      toast({
+        title: "Reply sent",
+        description: "Your reply has been sent to the support team.",
+      });
+    },
+    onError: (error: any) => {
+      toast({
+        title: "Error",
+        description: error.message || "Failed to send reply",
         variant: "destructive",
       });
     },
@@ -2268,7 +2293,10 @@ export default function ProviderDashboard() {
 
       <Dialog open={showTicketDetailsDialog} onOpenChange={(open) => {
         setShowTicketDetailsDialog(open);
-        if (!open) setSelectedTicket(null);
+        if (!open) {
+          setSelectedTicket(null);
+          setTicketReplyText("");
+        }
       }}>
         <DialogContent className="sm:max-w-2xl max-h-[90vh] overflow-y-auto">
           {selectedTicket && (
@@ -2278,7 +2306,7 @@ export default function ProviderDashboard() {
                   <div className="flex-1">
                     <DialogTitle className="text-lg">{selectedTicket.subject}</DialogTitle>
                     <DialogDescription className="mt-1">
-                      Ticket #{selectedTicket.id} · Created {formatTicketDate(selectedTicket.createdAt)}
+                      Ticket #{selectedTicket._id || selectedTicket.id} · Created {formatTicketDate(selectedTicket.createdAt)}
                     </DialogDescription>
                   </div>
                   <div className="flex items-center gap-2 shrink-0">
@@ -2312,59 +2340,48 @@ export default function ProviderDashboard() {
                   <p className="text-sm text-muted-foreground whitespace-pre-wrap">{selectedTicket.message}</p>
                 </div>
 
-                {selectedTicket.responses.length > 0 && (
+                {selectedTicket.responses && selectedTicket.responses.length > 0 && (
                   <div className="space-y-4">
                     <h4 className="font-semibold flex items-center gap-2">
                       <MessageSquare className="h-4 w-4" />
                       Conversation History
                     </h4>
                     <div className="space-y-3">
-                      {selectedTicket.responses.map((response: any) => (
-                        <div 
-                          key={response.id} 
-                          className={`p-4 rounded-lg ${
-                            response.from === 'support' 
-                              ? 'bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900' 
-                              : 'bg-muted/50 border border-border'
-                          }`}
-                        >
-                          <div className="flex items-center justify-between mb-2">
-                            <div className="flex items-center gap-2">
-                              <Avatar className="h-6 w-6">
-                                <AvatarFallback className={`text-xs ${response.from === 'support' ? 'bg-blue-200' : 'bg-gray-200'}`}>
-                                  {response.from === 'support' ? 'S' : 'P'}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-sm font-medium">
-                                {response.from === 'support' ? 'Support Team' : 'You'}
+                      {selectedTicket.responses.map((response: any, idx: number) => {
+                        const isSupport = response.userId?.role === 'admin' || response.userId?.role === 'superadmin';
+                        return (
+                          <div 
+                            key={response._id || idx} 
+                            className={`p-4 rounded-lg ${
+                              isSupport
+                                ? 'bg-blue-50 dark:bg-blue-950/30 border border-blue-100 dark:border-blue-900' 
+                                : 'bg-muted/50 border border-border'
+                            }`}
+                          >
+                            <div className="flex items-center justify-between mb-2">
+                              <div className="flex items-center gap-2">
+                                <Avatar className="h-6 w-6">
+                                  <AvatarFallback className={`text-xs ${isSupport ? 'bg-blue-200' : 'bg-gray-200'}`}>
+                                    {isSupport ? 'S' : 'P'}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-sm font-medium">
+                                  {isSupport ? 'Support Team' : 'You'}
+                                </span>
+                              </div>
+                              <span className="text-xs text-muted-foreground">
+                                {formatTicketDate(response.timestamp)}
                               </span>
                             </div>
-                            <span className="text-xs text-muted-foreground">
-                              {formatTicketDate(response.timestamp)}
-                            </span>
+                            <p className="text-sm text-muted-foreground">{response.message}</p>
                           </div>
-                          <p className="text-sm text-muted-foreground">{response.message}</p>
-                        </div>
-                      ))}
+                        );
+                      })}
                     </div>
                   </div>
                 )}
 
-                {selectedTicket.status !== 'resolved' && (
-                  <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-                    <div className="flex items-start gap-3">
-                      <Clock className="h-5 w-5 text-amber-600 mt-0.5" />
-                      <div className="text-sm">
-                        <p className="font-medium text-amber-900 dark:text-amber-100">Awaiting Response</p>
-                        <p className="text-amber-700 dark:text-amber-300">
-                          Our support team typically responds within 24-48 hours.
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {selectedTicket.status === 'resolved' && (
+                {selectedTicket.status === 'resolved' ? (
                   <div className="bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 rounded-lg p-4">
                     <div className="flex items-start gap-3">
                       <CheckCircle2 className="h-5 w-5 text-green-600 mt-0.5" />
@@ -2374,6 +2391,37 @@ export default function ProviderDashboard() {
                           This ticket has been resolved. If you need further assistance, please create a new ticket.
                         </p>
                       </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    <h4 className="font-semibold text-sm">Add a Reply</h4>
+                    <Textarea
+                      placeholder="Type your reply to the support team..."
+                      value={ticketReplyText}
+                      onChange={(e) => setTicketReplyText(e.target.value)}
+                      className="min-h-[80px]"
+                    />
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          const text = ticketReplyText.trim();
+                          if (!text) return;
+                          replyToTicketMutation.mutate({
+                            ticketId: selectedTicket._id || selectedTicket.id,
+                            message: text,
+                          });
+                        }}
+                        disabled={!ticketReplyText.trim() || replyToTicketMutation.isPending}
+                      >
+                        {replyToTicketMutation.isPending ? (
+                          <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sending...</>
+                        ) : (
+                          <><Send className="mr-2 h-4 w-4" />Send Reply</>
+                        )}
+                      </Button>
+                      <p className="text-xs text-muted-foreground">Support team typically responds within 24-48 hours.</p>
                     </div>
                   </div>
                 )}

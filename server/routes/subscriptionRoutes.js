@@ -97,12 +97,25 @@ async function getOrCreateStripeCustomer(userId) {
   if (!user) throw new Error('User not found');
 
   let subscription = await Subscription.findOne({ userId });
+  const stripe = await getStripe();
 
   if (subscription?.stripeCustomerId) {
-    return { customerId: subscription.stripeCustomerId, user, subscription };
+    try {
+      const existing = await stripe.customers.retrieve(subscription.stripeCustomerId);
+      if (!existing.deleted) {
+        return { customerId: subscription.stripeCustomerId, user, subscription };
+      }
+    } catch (err) {
+      if (err?.code === 'resource_missing' || err?.raw?.code === 'resource_missing') {
+        console.warn('[Stripe] Stored customer ID not found in current Stripe account, creating new customer:', subscription.stripeCustomerId);
+        subscription.stripeCustomerId = null;
+        subscription.stripeSubscriptionId = null;
+        await subscription.save();
+      } else {
+        throw err;
+      }
+    }
   }
-
-  const stripe = await getStripe();
 
   const existingCustomers = await stripe.customers.list({
     email: user.email,

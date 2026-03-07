@@ -641,6 +641,125 @@ const createNotificationEmailTemplate = (userName, subject, content, actionUrl =
   return createEmailWrapper(htmlContent);
 };
 
+const createProviderApprovalEmailTemplate = (providerName, dashboardLink) => {
+  const content = `
+    <tr>
+      <td>
+        ${createEmailHeader()}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:36px 30px 40px 30px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+          <tr>
+            <td style="font-family:${FONT_STACK}; font-size:20px; font-weight:700; color:${COLORS.text}; line-height:1.4; padding-bottom:16px;">
+              Your Provider Account Has Been Approved!
+            </td>
+          </tr>
+          <tr>
+            <td style="font-family:${FONT_STACK}; font-size:16px; color:${COLORS.text}; line-height:1.6; padding-bottom:20px;">
+              Hello ${providerName},
+            </td>
+          </tr>
+          <tr>
+            <td style="font-family:${FONT_STACK}; font-size:16px; color:${COLORS.text}; line-height:1.6; padding-bottom:24px;">
+              Great news! Your provider profile on <strong>mywellbeingtoday</strong> has been reviewed and approved by our team. You are now a verified provider on our platform.
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-bottom:24px;">
+              <!--[if !mso]><!-->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; background-color:${COLORS.lightBg}; border-radius:8px; overflow:hidden;">
+              <!--<![endif]-->
+                <tr>
+                  <td style="padding:14px 20px; border-bottom:1px solid ${COLORS.border};">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                      <tr>
+                        <td style="font-family:${FONT_STACK}; font-size:14px; font-weight:600; color:${COLORS.text}; line-height:1.6; padding-bottom:4px;">
+                          &#10003;&nbsp; Your profile is now visible in the provider directory
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:14px 20px; border-bottom:1px solid ${COLORS.border};">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                      <tr>
+                        <td style="font-family:${FONT_STACK}; font-size:14px; font-weight:600; color:${COLORS.text}; line-height:1.6; padding-bottom:4px;">
+                          &#10003;&nbsp; Patients can now book appointments with you
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:14px 20px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                      <tr>
+                        <td style="font-family:${FONT_STACK}; font-size:14px; font-weight:600; color:${COLORS.text}; line-height:1.6; padding-bottom:4px;">
+                          &#10003;&nbsp; You now have full access to your provider dashboard
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              ${createCTAButton(dashboardLink, 'Go to Provider Dashboard')}
+            </td>
+          </tr>
+          <tr>
+            <td style="font-family:${FONT_STACK}; font-size:14px; color:${COLORS.lightText}; line-height:1.6; padding-top:8px;">
+              If you have any questions or need assistance setting up your profile, please don't hesitate to reach out to our support team. We look forward to working with you to support patient wellbeing.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        ${createEmailFooter()}
+      </td>
+    </tr>
+  `;
+  return createEmailWrapper(content);
+};
+
+export async function sendProviderApprovalEmail(email, providerName) {
+  try {
+    const baseUrl = getBaseUrl();
+    const dashboardLink = `${baseUrl}/provider-dashboard`;
+
+    if (!resend) {
+      console.log('[EMAIL SERVICE] RESEND_API_KEY not configured. Provider approval email would be sent to:', {
+        to: email,
+        providerName,
+        dashboardLink,
+        timestamp: new Date().toISOString()
+      });
+      return { success: true, fallback: true, message: 'Email logged (API key not configured)' };
+    }
+
+    const html = createProviderApprovalEmailTemplate(providerName, dashboardLink);
+    const response = await resend.emails.send({
+      from: SENDER_EMAIL,
+      to: email,
+      subject: 'Your Provider Account Has Been Approved - mywellbeingtoday',
+      html,
+    });
+
+    console.log('[EMAIL SERVICE] Provider approval email sent to:', email);
+    return response;
+  } catch (error) {
+    console.error('[EMAIL SERVICE] Error sending provider approval email:', error);
+    throw error;
+  }
+}
+
 export async function sendVerificationEmail(email, userName, verificationLink) {
   try {
     if (!resend) {
