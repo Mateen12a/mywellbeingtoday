@@ -10,7 +10,12 @@ export const getUsers = async (req, res, next) => {
     const { role, search, isActive, page = 1, limit = 20 } = req.query;
     const query = {};
 
-    if (role) query.role = role;
+    if (role) {
+      query.role = role;
+    } else {
+      query.role = { $ne: USER_ROLES.PROVIDER };
+    }
+
     if (isActive !== undefined) query.isActive = isActive === 'true';
     
     if (search) {
@@ -22,7 +27,7 @@ export const getUsers = async (req, res, next) => {
     }
 
     if (req.user.role === USER_ROLES.MANAGER) {
-      query.role = { $nin: [USER_ROLES.MANAGER, USER_ROLES.ADMIN] };
+      query.role = { $nin: [USER_ROLES.MANAGER, USER_ROLES.ADMIN, USER_ROLES.PROVIDER] };
     }
 
     const skip = (parseInt(page) - 1) * parseInt(limit);

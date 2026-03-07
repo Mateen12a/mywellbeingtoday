@@ -667,6 +667,8 @@ router.post('/upgrade', authenticate, async (req, res) => {
       const periodEnd = new Date(subscription.currentPeriodEnd);
       if (now < periodEnd) {
         let stripeReactivated = false;
+        let newStripeSubId = null;
+
         if (isStripeConfigured() && subscription.stripeSubscriptionId) {
           try {
             const stripeSub = await stripe.subscriptions.retrieve(subscription.stripeSubscriptionId);
@@ -683,30 +685,67 @@ router.post('/upgrade', authenticate, async (req, res) => {
               stripeReactivated = true;
             }
           } catch (err) {
-            console.log('Stripe sub not resumable, will create new:', err.message);
+            console.log('Stripe sub not directly resumable, will create deferred subscription:', err.message);
           }
         }
 
-        if (stripeReactivated || !isStripeConfigured()) {
-          subscription.plan = plan;
-          subscription.status = 'active';
-          subscription.cancelledAt = null;
-          subscription.previousPlan = null;
-          await subscription.save();
+        if (!stripeReactivated && isStripeConfigured()) {
+          try {
+            const pmList = await stripe.paymentMethods.list({ customer: customerId, type: 'card', limit: 1 });
+            if (pmList.data.length > 0) {
+              const customer = await stripe.customers.retrieve(customerId);
+              const defaultPm = customer.invoice_settings?.default_payment_method || pmList.data[0].id;
 
-          const User = (await import('../models/User.js')).default;
-          await User.findByIdAndUpdate(req.userId, {
-            'subscription.plan': plan,
-            'subscription.status': 'active',
-            'subscription.expiresAt': subscription.currentPeriodEnd,
-          });
+              const productName = `MyWellbeingToday ${PRICING[plan].name} Plan`;
+              const existingProducts = await stripe.products.list({ limit: 100, active: true });
+              let product = existingProducts.data.find(p => p.name === productName);
+              if (!product) {
+                product = await stripe.products.create({ name: productName, description: `${PRICING[plan].name} subscription plan` });
+              }
 
-          return res.json({
-            success: true,
-            data: { subscription: subscription.toJSON(), reactivated: true },
-            message: `Your ${PRICING[plan].name} plan has been reactivated`,
-          });
+              const unitAmount = Math.round(PRICING[plan].price * 100);
+              const existingPrices = await stripe.prices.list({ product: product.id, active: true, limit: 10 });
+              let price = existingPrices.data.find(p =>
+                p.unit_amount === unitAmount && p.currency === 'usd' && p.recurring?.interval === 'month'
+              );
+              if (!price) {
+                price = await stripe.prices.create({ product: product.id, unit_amount: unitAmount, currency: 'usd', recurring: { interval: 'month' } });
+              }
+
+              const deferredSub = await stripe.subscriptions.create({
+                customer: customerId,
+                default_payment_method: defaultPm,
+                items: [{ price: price.id }],
+                trial_end: Math.floor(periodEnd.getTime() / 1000),
+                metadata: { userId: req.userId.toString(), plan },
+              });
+              newStripeSubId = deferredSub.id;
+              stripeReactivated = true;
+            }
+          } catch (deferErr) {
+            console.log('Could not create deferred subscription, restoring local access only:', deferErr.message);
+          }
         }
+
+        subscription.plan = plan;
+        subscription.status = 'active';
+        subscription.cancelledAt = null;
+        subscription.previousPlan = null;
+        if (newStripeSubId) subscription.stripeSubscriptionId = newStripeSubId;
+        await subscription.save();
+
+        const User = (await import('../models/User.js')).default;
+        await User.findByIdAndUpdate(req.userId, {
+          'subscription.plan': plan,
+          'subscription.status': 'active',
+          'subscription.expiresAt': subscription.currentPeriodEnd,
+        });
+
+        return res.json({
+          success: true,
+          data: { subscription: subscription.toJSON(), reactivated: true },
+          message: `Your ${PRICING[plan].name} plan has been reactivated`,
+        });
       }
     }
 
