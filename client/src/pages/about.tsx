@@ -46,8 +46,8 @@ export default function About() {
             transition={{ duration: 0.5 }}
             className="text-xl max-[300px]:text-lg sm:text-4xl md:text-5xl font-serif font-bold text-slate-900 leading-tight"
           >
-            Empowering your{" "}
-            <span className="text-primary">wellbeing</span>
+            About{/* Empowering your{" "}
+            <span className="text-primary">wellbeing</span> */}
           </motion.h1>
 
           <motion.p
@@ -55,7 +55,9 @@ export default function About() {
             transition={{ duration: 0.5, delay: 0.1 }}
             className="text-lg md:text-xl text-slate-600 max-w-xl mx-auto leading-relaxed"
           >
-            Simply.
+           Losing loved ones to sickness can cause intense emotions of guilt. To encourage regular self-care practices, the author founded wellbeing@fingertip in 2017 following personal losses. By tracking their activities and health, users of the mywellbeingtoday online app may manage and spot health problems early. The software makes it easier to locate local medical assistance, acting as a companion on one's health journey and is not a replacement place for medical counsel. {/* mywellbeingtoday is a self-care platform that helps you log activities,
+            understand your mood, access wellbeing reports, and connect with health
+            and social care providers — all in one place. */}
           </motion.p>
         </div>
       </section>
