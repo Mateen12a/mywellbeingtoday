@@ -134,12 +134,15 @@ export default function AdminRegister() {
           </CardHeader>
           <CardContent className="text-center space-y-4 pt-4">
             <p className="text-slate-600 text-sm">
-              You can now log in with your credentials at <strong>{formData.email}</strong>.
+              Your account has been created for <strong>{formData.email}</strong>.
             </p>
+            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-left text-sm text-blue-800">
+              <strong>Check your email.</strong> Your login credentials (email and password) have been sent to <strong>{formData.email}</strong>. Please log in and change your password immediately.
+            </div>
             <div className="bg-slate-50 p-4 rounded-lg border text-left text-sm space-y-2">
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Role:</span>
-                <span className="font-medium capitalize">{formData.role.replace('_', ' ')}</span>
+                <span className="font-medium capitalize">{formData.role === 'admin' ? 'Administrator' : 'Manager'}</span>
               </div>
               <div className="flex justify-between">
                 <span className="text-muted-foreground">Status:</span>
@@ -286,12 +289,12 @@ export default function AdminRegister() {
                     <SelectValue placeholder="Select role" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="admin">Admin</SelectItem>
-                    <SelectItem value="super_admin">Super Admin</SelectItem>
+                    <SelectItem value="admin">Administrator</SelectItem>
+                    <SelectItem value="manager">Manager</SelectItem>
                   </SelectContent>
                 </Select>
                 <p className="text-[11px] text-muted-foreground">
-                  Super Admins have full system access including user management.
+                  Administrators have full system access. Managers have limited admin access.
                 </p>
               </div>
 

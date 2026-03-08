@@ -963,11 +963,121 @@ export async function sendOTPEmail(email, userName, otpCode) {
   }
 }
 
+const createAdminCreationEmailTemplate = (name, email, password, role) => {
+  const roleLabel = role === 'admin' ? 'Administrator' : 'Manager';
+  const content = `
+    <tr>
+      <td style="padding:40px 48px 32px;">
+        <table cellpadding="0" cellspacing="0" border="0" width="100%">
+          <tr>
+            <td style="font-family:${FONT_STACK}; font-size:22px; font-weight:700; color:${COLORS.text}; padding-bottom:8px;">
+              Your ${roleLabel} Account Has Been Created
+            </td>
+          </tr>
+          <tr>
+            <td style="font-family:${FONT_STACK}; font-size:15px; color:${COLORS.lightText}; line-height:1.6; padding-bottom:24px;">
+              Hello ${name},<br/><br/>
+              An administrator account has been created for you on <strong>mywellbeingtoday</strong>. 
+              Below are your login credentials. Please log in and change your password as soon as possible.
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-bottom:24px;">
+              <table cellpadding="0" cellspacing="0" border="0" width="100%" style="background-color:#f8fafc; border:1px solid #e2e8f0; border-radius:8px;">
+                <tr>
+                  <td style="padding:24px;">
+                    <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                      <tr>
+                        <td style="font-family:${FONT_STACK}; font-size:12px; font-weight:700; color:${COLORS.primary}; text-transform:uppercase; letter-spacing:1px; padding-bottom:16px;">
+                          Your Login Credentials
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding-bottom:12px;">
+                          <table cellpadding="0" cellspacing="0" border="0" width="100%">
+                            <tr>
+                              <td width="40%" style="font-family:${FONT_STACK}; font-size:13px; color:${COLORS.lightText}; padding-bottom:4px;">Role</td>
+                              <td style="font-family:${FONT_STACK}; font-size:13px; font-weight:600; color:${COLORS.text}; padding-bottom:4px;">${roleLabel}</td>
+                            </tr>
+                            <tr>
+                              <td width="40%" style="font-family:${FONT_STACK}; font-size:13px; color:${COLORS.lightText}; padding-bottom:4px;">Email</td>
+                              <td style="font-family:${FONT_STACK}; font-size:13px; font-weight:600; color:${COLORS.text}; padding-bottom:4px;">${email}</td>
+                            </tr>
+                            <tr>
+                              <td width="40%" style="font-family:${FONT_STACK}; font-size:13px; color:${COLORS.lightText};">Temporary Password</td>
+                              <td style="font-family:${FONT_STACK}; font-size:13px; font-weight:700; color:${COLORS.primary}; background-color:#fff; padding:4px 8px; border:1px dashed ${COLORS.primary}; border-radius:4px; letter-spacing:1px;">${password}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-family:${FONT_STACK}; font-size:13px; color:#dc2626; background-color:#fef2f2; border:1px solid #fecaca; border-radius:6px; padding:12px 16px; line-height:1.5; padding-bottom:24px;">
+              &#9888;&nbsp; <strong>Important:</strong> For security, please change your password immediately after your first login. Do not share these credentials with anyone.
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-top:8px;">
+              ${createCTAButton(getBaseUrl() + '/auth/admin-login', 'Log In to Your Account')}
+            </td>
+          </tr>
+          <tr>
+            <td style="font-family:${FONT_STACK}; font-size:13px; color:${COLORS.lightText}; line-height:1.6; padding-top:24px;">
+              If you did not expect this email or have any concerns, please contact your system administrator immediately.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        ${createEmailFooter()}
+      </td>
+    </tr>
+  `;
+  return createEmailWrapper(content);
+};
+
+export async function sendAdminCreationEmail(email, name, password, role) {
+  try {
+    const roleLabel = role === 'admin' ? 'Administrator' : 'Manager';
+    if (!resend) {
+      console.log('[EMAIL SERVICE] RESEND_API_KEY not configured. Admin creation email would be sent to:', {
+        to: email,
+        name,
+        role: roleLabel,
+        timestamp: new Date().toISOString()
+      });
+      return { success: true, fallback: true, message: 'Email logged (API key not configured)' };
+    }
+
+    const html = createAdminCreationEmailTemplate(name, email, password, role);
+    const response = await resend.emails.send({
+      from: SENDER_EMAIL,
+      to: email,
+      subject: `Your ${roleLabel} Account on mywellbeingtoday`,
+      html,
+    });
+
+    console.log('[EMAIL SERVICE] Admin creation email sent to:', email);
+    return response;
+  } catch (error) {
+    console.error('[EMAIL SERVICE] Error sending admin creation email:', error);
+    throw error;
+  }
+}
+
 export default {
   sendVerificationEmail,
   sendPasswordResetEmail,
   sendWelcomeEmail,
   sendAppointmentConfirmation,
   sendNotification,
-  sendOTPEmail
+  sendOTPEmail,
+  sendAdminCreationEmail
 };

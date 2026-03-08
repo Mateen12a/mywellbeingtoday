@@ -3,7 +3,7 @@ import { AppError } from '../middlewares/errorHandler.js';
 import { logAction } from '../middlewares/auditLog.js';
 import { USER_ROLES } from '../config/constants.js';
 import { generateAdminInsights } from '../services/aiService.js';
-import { sendProviderApprovalEmail } from '../services/emailService.js';
+import { sendProviderApprovalEmail, sendAdminCreationEmail } from '../services/emailService.js';
 
 export const getUsers = async (req, res, next) => {
   try {
@@ -809,9 +809,15 @@ export const createAdmin = async (req, res, next) => {
 
     await logAction(req.user._id, 'CREATE_ADMIN', 'user', admin._id, { email, role: adminRole }, req);
 
+    try {
+      await sendAdminCreationEmail(admin.email, `${firstName} ${lastName}`, password, adminRole);
+    } catch (emailErr) {
+      console.error('[ADMIN] Failed to send admin creation email:', emailErr.message);
+    }
+
     res.status(201).json({
       success: true,
-      message: 'Admin created',
+      message: 'Admin account created. Login credentials have been sent to the provided email address.',
       data: { user: admin.toJSON() }
     });
   } catch (error) {

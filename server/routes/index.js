@@ -18,6 +18,7 @@ const router = Router();
 
 router.get('/health', (req, res) => {
   res.json({
+    status: 'healthy',
     success: true,
     message: 'mywellbeingtoday API is running',
     timestamp: new Date().toISOString(),

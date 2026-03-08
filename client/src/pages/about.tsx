@@ -46,18 +46,16 @@ export default function About() {
             transition={{ duration: 0.5 }}
             className="text-xl max-[300px]:text-lg sm:text-4xl md:text-5xl font-serif font-bold text-slate-900 leading-tight"
           >
-            Empowering you to take charge of your{" "}
+            Empowering your{" "}
             <span className="text-primary">wellbeing</span>
           </motion.h1>
 
           <motion.p
             {...fadeInUp}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed"
+            className="text-lg md:text-xl text-slate-600 max-w-xl mx-auto leading-relaxed"
           >
-            mywellbeingtoday is a self-care platform that helps you log activities,
-            understand your mood, access wellbeing reports, and connect with health
-            and social care providers — all in one place.
+            Simply.
           </motion.p>
         </div>
       </section>
@@ -75,11 +73,7 @@ export default function About() {
           <Card className="bg-primary/5 border-primary/20">
             <CardContent className="p-6 md:p-8">
               <p className="text-foreground/90 leading-relaxed text-lg">
-                We believe everyone deserves the tools to understand and improve their
-                wellbeing. Our mission is to empower individuals with accessible,
-                AI-powered insights that make self-care simple, personal, and
-                actionable — while connecting them with trusted professionals when
-                they need extra support.
+                To promote holistic wellbeing, self-care, and personal growth.
               </p>
             </CardContent>
           </Card>
@@ -92,7 +86,7 @@ export default function About() {
             What We Offer
           </h2>
           <p className="text-slate-600 max-w-2xl mx-auto">
-            A comprehensive suite of tools designed to support every aspect of your
+            A comprehensive set of tools designed to support every aspect of your
             wellbeing journey.
           </p>
         </motion.div>
@@ -101,7 +95,7 @@ export default function About() {
           {[
             {
               icon: Activity,
-              title: "Activity Tracking",
+              title: "Activity Logging",
               description:
                 "Log daily activities including exercise, meals, sleep, and social interactions. Build healthy habits by monitoring your routines and spotting patterns over time.",
               color: "text-blue-600",
@@ -163,7 +157,7 @@ export default function About() {
             Our Values
           </h2>
           <p className="text-slate-600 max-w-2xl mx-auto">
-            The principles that guide everything we build.
+            Supporting People to live a Healthier, Fitter and Happier Lives.
           </p>
         </motion.div>
 

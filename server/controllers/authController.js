@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { User, Provider } from '../models/index.js';
 import { generateToken, generateRefreshToken, verifyToken } from '../middlewares/auth.js';
-import { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail, sendOTPEmail, sendNotification } from '../services/emailService.js';
+import { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail, sendOTPEmail, sendNotification, sendAdminCreationEmail } from '../services/emailService.js';
 import { createLoginNotification, createRegistrationNotification } from '../services/notificationService.js';
 import { logAction } from '../middlewares/auditLog.js';
 import { AppError } from '../middlewares/errorHandler.js';
@@ -751,19 +751,24 @@ export const registerAdmin = async (req, res, next) => {
   try {
     const { email, password, firstName, lastName, role, secretKey } = req.body;
 
-    const ADMIN_SECRET = process.env.ADMIN_REGISTRATION_SECRET || 'ADMIN_SECRET_2026';
-    
-    if (!secretKey || secretKey !== ADMIN_SECRET) {
-      throw new AppError('Invalid secret key', 403, 'INVALID_SECRET_KEY');
+    const ADMIN_SECRET = process.env.ADMIN_REGISTRATION_SECRET;
+    if (!ADMIN_SECRET) {
+      throw new AppError('Admin registration is not configured on this server', 503, 'NOT_CONFIGURED');
+    }
+
+    if (!secretKey || secretKey.trim() !== ADMIN_SECRET.trim()) {
+      throw new AppError('Invalid secret key. Please check the key and try again.', 403, 'INVALID_SECRET_KEY');
     }
 
     if (!email || !password || !firstName || !lastName) {
       throw new AppError('All fields are required', 400, 'MISSING_FIELDS');
     }
 
-    if (![USER_ROLES.ADMIN, USER_ROLES.SUPER_ADMIN].includes(role)) {
-      throw new AppError('Invalid admin role', 400, 'INVALID_ROLE');
+    if (password.length < 8) {
+      throw new AppError('Password must be at least 8 characters', 400, 'VALIDATION_ERROR');
     }
+
+    const adminRole = role === 'manager' ? USER_ROLES.MANAGER : USER_ROLES.ADMIN;
 
     const existingUser = await User.findOne({ email: email.toLowerCase() });
     if (existingUser) {
@@ -773,7 +778,7 @@ export const registerAdmin = async (req, res, next) => {
     const user = await User.create({
       email: email.toLowerCase(),
       password,
-      role,
+      role: adminRole,
       profile: {
         firstName,
         lastName,
@@ -790,11 +795,17 @@ export const registerAdmin = async (req, res, next) => {
       }
     });
 
-    await logAction(user._id, 'REGISTER_ADMIN', 'user', user._id, { email: user.email, role }, req);
+    await logAction(user._id, 'REGISTER_ADMIN', 'user', user._id, { email: user.email, role: adminRole }, req);
+
+    try {
+      await sendAdminCreationEmail(user.email, `${firstName} ${lastName}`, password, adminRole);
+    } catch (emailErr) {
+      console.error('[AUTH] Failed to send admin creation email:', emailErr.message);
+    }
 
     res.status(201).json({
       success: true,
-      message: 'Admin account created successfully.',
+      message: 'Admin account created successfully. Login credentials have been sent to the provided email address.',
       data: {
         user: user.toJSON()
       }
