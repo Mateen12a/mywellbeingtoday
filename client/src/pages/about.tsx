@@ -46,18 +46,23 @@ export default function About() {
             transition={{ duration: 0.5 }}
             className="text-xl max-[300px]:text-lg sm:text-4xl md:text-5xl font-serif font-bold text-slate-900 leading-tight"
           >
-            About{/* Empowering your{" "}
-            <span className="text-primary">wellbeing</span> */}
+            Our Story
           </motion.h1>
 
           <motion.p
             {...fadeInUp}
             transition={{ duration: 0.5, delay: 0.1 }}
-            className="text-lg md:text-xl text-slate-600 max-w-xl mx-auto leading-relaxed"
+            className="text-lg md:text-xl text-slate-600 max-w-2xl mx-auto leading-relaxed"
           >
-           Losing loved ones to sickness can cause intense emotions of guilt. To encourage regular self-care practices, the author founded wellbeing@fingertip in 2017 following personal losses. By tracking their activities and health, users of the mywellbeingtoday online app may manage and spot health problems early. The software makes it easier to locate local medical assistance, acting as a companion on one's health journey and is not a replacement place for medical counsel. {/* mywellbeingtoday is a self-care platform that helps you log activities,
-            understand your mood, access wellbeing reports, and connect with health
-            and social care providers — all in one place. */}
+            Losing a loved one to illness leaves a grief that rarely goes quietly. For many, it also brings guilt — the feeling that more could have been done, earlier. That personal experience is what led the founder to create wellbeing@fingertip in 2017.
+          </motion.p>
+
+          <motion.p
+            {...fadeInUp}
+            transition={{ duration: 0.5, delay: 0.2 }}
+            className="text-base md:text-lg text-slate-500 max-w-2xl mx-auto leading-relaxed"
+          >
+            mywellbeingtoday grew from that foundation — a place where anyone can track their daily activities and health, spot patterns early, and find local care when they need it. It is a companion for your health journey, not a substitute for professional medical advice.
           </motion.p>
         </div>
       </section>
@@ -159,7 +164,7 @@ export default function About() {
             Our Values
           </h2>
           <p className="text-slate-600 max-w-2xl mx-auto">
-            Supporting People to live a Healthier, Fitter and Happier Lives.
+            Supporting people to live healthier, fitter, and happier lives.
           </p>
         </motion.div>
 
