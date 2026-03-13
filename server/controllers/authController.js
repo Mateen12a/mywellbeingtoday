@@ -1,7 +1,7 @@
 import crypto from 'crypto';
 import { User, Provider } from '../models/index.js';
 import { generateToken, generateRefreshToken, verifyToken } from '../middlewares/auth.js';
-import { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail, sendOTPEmail, sendNotification, sendAdminCreationEmail } from '../services/emailService.js';
+import { sendVerificationEmail, sendPasswordResetEmail, sendWelcomeEmail, sendOTPEmail, sendNotification, sendAdminSelfRegistrationEmail } from '../services/emailService.js';
 import { createLoginNotification, createRegistrationNotification } from '../services/notificationService.js';
 import { logAction } from '../middlewares/auditLog.js';
 import { AppError } from '../middlewares/errorHandler.js';
@@ -798,14 +798,14 @@ export const registerAdmin = async (req, res, next) => {
     await logAction(user._id, 'REGISTER_ADMIN', 'user', user._id, { email: user.email, role: adminRole }, req);
 
     try {
-      await sendAdminCreationEmail(user.email, `${firstName} ${lastName}`, password, adminRole);
+      await sendAdminSelfRegistrationEmail(user.email, `${firstName} ${lastName}`, adminRole);
     } catch (emailErr) {
-      console.error('[AUTH] Failed to send admin creation email:', emailErr.message);
+      console.error('[AUTH] Failed to send admin self-registration email:', emailErr.message);
     }
 
     res.status(201).json({
       success: true,
-      message: 'Admin account created successfully. Login credentials have been sent to the provided email address.',
+      message: 'Your admin account has been created. A confirmation has been sent to your email address. You can now log in.',
       data: {
         user: user.toJSON()
       }

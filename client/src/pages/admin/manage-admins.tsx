@@ -59,8 +59,8 @@ export default function ManageAdminsPage() {
       setIsDialogOpen(false);
       resetForm();
       toast({
-        title: "Admin Created",
-        description: "The new administrator account has been created successfully.",
+        title: "Account Created",
+        description: "The account has been created and login credentials have been sent to their email address.",
       });
     },
     onError: (error: Error) => {

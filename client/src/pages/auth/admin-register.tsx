@@ -104,8 +104,8 @@ export default function AdminRegister() {
       if (response.success) {
         setIsSuccess(true);
         toast({
-          title: "Admin Account Created",
-          description: "Your admin account has been created successfully.",
+          title: "Registration Successful",
+          description: "Your admin account is ready. A confirmation has been sent to your email.",
         });
       }
     } catch (error: any) {
@@ -127,17 +127,17 @@ export default function AdminRegister() {
             <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
               <CheckCircle2 className="w-8 h-8" />
             </div>
-            <CardTitle className="text-2xl text-green-800">Account Created</CardTitle>
+            <CardTitle className="text-2xl text-green-800">Registration Successful</CardTitle>
             <CardDescription className="text-green-700">
-              Your admin account has been successfully created.
+              Welcome! Your admin account is ready to use.
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center space-y-4 pt-4">
             <p className="text-slate-600 text-sm">
-              Your account has been created for <strong>{formData.email}</strong>.
+              You have successfully registered as <strong>{formData.role === 'admin' ? 'an Administrator' : 'a Manager'}</strong> at <strong>{formData.email}</strong>.
             </p>
-            <div className="bg-blue-50 border border-blue-200 rounded-lg p-3 text-left text-sm text-blue-800">
-              <strong>Check your email.</strong> Your login credentials (email and password) have been sent to <strong>{formData.email}</strong>. Please log in and change your password immediately.
+            <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-left text-sm text-green-800">
+              <strong>Confirmation sent.</strong> A welcome email has been sent to <strong>{formData.email}</strong> with your account details. You can log in immediately using the credentials you just set.
             </div>
             <div className="bg-slate-50 p-4 rounded-lg border text-left text-sm space-y-2">
               <div className="flex justify-between">

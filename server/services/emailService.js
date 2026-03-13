@@ -963,6 +963,129 @@ export async function sendOTPEmail(email, userName, otpCode) {
   }
 }
 
+const createAdminSelfRegistrationEmailTemplate = (name, email, role) => {
+  const roleLabel = role === 'admin' ? 'Administrator' : 'Manager';
+  const content = `
+    <tr>
+      <td>
+        ${createEmailHeader()}
+      </td>
+    </tr>
+    <tr>
+      <td style="padding:36px 30px 40px 30px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+          <tr>
+            <td style="font-family:${FONT_STACK}; font-size:20px; font-weight:700; color:${COLORS.text}; line-height:1.4; padding-bottom:16px;">
+              Welcome to Your ${roleLabel} Account!
+            </td>
+          </tr>
+          <tr>
+            <td style="font-family:${FONT_STACK}; font-size:16px; color:${COLORS.text}; line-height:1.6; padding-bottom:20px;">
+              Hello ${name},
+            </td>
+          </tr>
+          <tr>
+            <td style="font-family:${FONT_STACK}; font-size:16px; color:${COLORS.text}; line-height:1.6; padding-bottom:24px;">
+              Your <strong>${roleLabel}</strong> account on <strong>mywellbeingtoday</strong> has been successfully created. 
+              You can now log in using the credentials you registered with.
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-bottom:24px;">
+              <!--[if mso]>
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:${COLORS.lightBg};">
+              <![endif]-->
+              <!--[if !mso]><!-->
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; background-color:${COLORS.lightBg}; border-radius:8px; overflow:hidden;">
+              <!--<![endif]-->
+                <tr>
+                  <td style="padding:14px 20px; border-bottom:1px solid ${COLORS.border};">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                      <tr>
+                        <td style="font-family:${FONT_STACK}; font-size:12px; font-weight:600; color:${COLORS.lightText}; text-transform:uppercase; letter-spacing:0.5px; line-height:1.4; padding-bottom:4px;">
+                          Role
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="font-family:${FONT_STACK}; font-size:16px; font-weight:600; color:${COLORS.text}; line-height:1.4;">
+                          ${roleLabel}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:14px 20px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                      <tr>
+                        <td style="font-family:${FONT_STACK}; font-size:12px; font-weight:600; color:${COLORS.lightText}; text-transform:uppercase; letter-spacing:0.5px; line-height:1.4; padding-bottom:4px;">
+                          Email
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="font-family:${FONT_STACK}; font-size:16px; font-weight:600; color:${COLORS.text}; line-height:1.4;">
+                          ${email}
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td style="font-family:${FONT_STACK}; font-size:16px; color:${COLORS.text}; line-height:1.6; font-weight:600; padding-bottom:12px;">
+              As a ${roleLabel}, you can:
+            </td>
+          </tr>
+          <tr>
+            <td style="padding-bottom:24px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                <tr>
+                  <td style="padding:6px 0; font-family:${FONT_STACK}; font-size:15px; color:${COLORS.text}; line-height:1.6;">
+                    &#8226;&nbsp;&nbsp;Manage users and their wellbeing data
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0; font-family:${FONT_STACK}; font-size:15px; color:${COLORS.text}; line-height:1.6;">
+                    &#8226;&nbsp;&nbsp;Review and approve healthcare providers
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0; font-family:${FONT_STACK}; font-size:15px; color:${COLORS.text}; line-height:1.6;">
+                    &#8226;&nbsp;&nbsp;Monitor platform activity and audit logs
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding:6px 0; font-family:${FONT_STACK}; font-size:15px; color:${COLORS.text}; line-height:1.6;">
+                    &#8226;&nbsp;&nbsp;Configure system settings and notifications
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+          <tr>
+            <td>
+              ${createCTAButton(getBaseUrl() + '/auth/admin-login', 'Log In to Your Account')}
+            </td>
+          </tr>
+          <tr>
+            <td style="font-family:${FONT_STACK}; font-size:14px; color:${COLORS.lightText}; line-height:1.6; padding-top:16px;">
+              If you did not create this account or believe this was done in error, please contact your system administrator immediately.
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+    <tr>
+      <td>
+        ${createEmailFooter()}
+      </td>
+    </tr>
+  `;
+  return createEmailWrapper(content);
+};
+
 const createAdminCreationEmailTemplate = (name, email, password, role) => {
   const roleLabel = role === 'admin' ? 'Administrator' : 'Manager';
   const content = `
@@ -971,14 +1094,14 @@ const createAdminCreationEmailTemplate = (name, email, password, role) => {
         <table cellpadding="0" cellspacing="0" border="0" width="100%">
           <tr>
             <td style="font-family:${FONT_STACK}; font-size:22px; font-weight:700; color:${COLORS.text}; padding-bottom:8px;">
-              Your ${roleLabel} Account Has Been Created
+              Your ${roleLabel} Account Has Been Set Up
             </td>
           </tr>
           <tr>
             <td style="font-family:${FONT_STACK}; font-size:15px; color:${COLORS.lightText}; line-height:1.6; padding-bottom:24px;">
               Hello ${name},<br/><br/>
-              An administrator account has been created for you on <strong>mywellbeingtoday</strong>. 
-              Below are your login credentials. Please log in and change your password as soon as possible.
+              A <strong>${roleLabel}</strong> account has been created for you on <strong>mywellbeingtoday</strong> by a system administrator. 
+              Your login credentials are listed below. Please log in and update your password at your earliest convenience.
             </td>
           </tr>
           <tr>
@@ -1043,6 +1166,35 @@ const createAdminCreationEmailTemplate = (name, email, password, role) => {
   return createEmailWrapper(content);
 };
 
+export async function sendAdminSelfRegistrationEmail(email, name, role) {
+  try {
+    const roleLabel = role === 'admin' ? 'Administrator' : 'Manager';
+    if (!resend) {
+      console.log('[EMAIL SERVICE] RESEND_API_KEY not configured. Admin self-registration email would be sent to:', {
+        to: email,
+        name,
+        role: roleLabel,
+        timestamp: new Date().toISOString()
+      });
+      return { success: true, fallback: true, message: 'Email logged (API key not configured)' };
+    }
+
+    const html = createAdminSelfRegistrationEmailTemplate(name, email, role);
+    const response = await resend.emails.send({
+      from: SENDER_EMAIL,
+      to: email,
+      subject: `Welcome — Your ${roleLabel} Account is Ready`,
+      html,
+    });
+
+    console.log('[EMAIL SERVICE] Admin self-registration email sent to:', email);
+    return response;
+  } catch (error) {
+    console.error('[EMAIL SERVICE] Error sending admin self-registration email:', error);
+    throw error;
+  }
+}
+
 export async function sendAdminCreationEmail(email, name, password, role) {
   try {
     const roleLabel = role === 'admin' ? 'Administrator' : 'Manager';
@@ -1060,7 +1212,7 @@ export async function sendAdminCreationEmail(email, name, password, role) {
     const response = await resend.emails.send({
       from: SENDER_EMAIL,
       to: email,
-      subject: `Your ${roleLabel} Account on mywellbeingtoday`,
+      subject: `Your ${roleLabel} Account Has Been Created — mywellbeingtoday`,
       html,
     });
 
@@ -1079,5 +1231,6 @@ export default {
   sendAppointmentConfirmation,
   sendNotification,
   sendOTPEmail,
+  sendAdminSelfRegistrationEmail,
   sendAdminCreationEmail
 };

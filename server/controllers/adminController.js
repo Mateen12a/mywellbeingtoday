@@ -817,7 +817,7 @@ export const createAdmin = async (req, res, next) => {
 
     res.status(201).json({
       success: true,
-      message: 'Admin account created. Login credentials have been sent to the provided email address.',
+      message: `${adminRole === USER_ROLES.ADMIN ? 'Administrator' : 'Manager'} account created. Login credentials have been sent to ${email}.`,
       data: { user: admin.toJSON() }
     });
   } catch (error) {
