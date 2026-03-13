@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ShieldAlert, ArrowLeft, CheckCircle2, Eye, EyeOff, Lock, AlertCircle, Shield, Headphones } from "lucide-react";
+import { Loader2, ShieldAlert, ArrowLeft, CheckCircle2, Eye, EyeOff, Lock, AlertCircle, Shield, Headphones, Phone, User } from "lucide-react";
 import { PageLoader } from "@/components/ui/page-loader";
 import { PasswordStrengthIndicator } from "@/components/ui/password-strength-indicator";
 import { validatePassword, validateName } from "@/lib/validation";
@@ -23,7 +23,7 @@ export default function AdminRegister() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [inviteError, setInviteError] = useState<string | null>(null);
-  const [inviteInfo, setInviteInfo] = useState<{ firstName: string; email: string; role: string; isExistingUser?: boolean } | null>(null);
+  const [inviteInfo, setInviteInfo] = useState<{ firstName: string; email: string; role: string; isExistingUser?: boolean; displayName?: string } | null>(null);
   const [inviteLoading, setInviteLoading] = useState(isInviteFlow);
 
   const [formData, setFormData] = useState({
@@ -34,6 +34,8 @@ export default function AdminRegister() {
     email: "",
     role: "admin",
     secretKey: "",
+    phone: "",
+    displayName: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -50,7 +52,7 @@ export default function AdminRegister() {
             firstName: res.data!.firstName,
             email: res.data!.email,
             role: res.data!.role,
-            isExistingUser: res.data!.isExistingUser,
+            displayName: res.data!.displayName || res.data!.firstName,
           } as any));
         } else {
           setInviteError("This invitation link is invalid or has expired.");
@@ -76,6 +78,13 @@ export default function AdminRegister() {
     return Object.keys(newErrors).length === 0;
   };
 
+  const validateExistingUserForm = () => {
+    const newErrors: Record<string, string> = {};
+    if (!formData.displayName.trim()) newErrors.displayName = "Display name is required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
   const validateDirectForm = () => {
     const newErrors: Record<string, string> = {};
     const firstNameValidation = validateName(formData.firstName, 'First name');
@@ -96,7 +105,12 @@ export default function AdminRegister() {
     if (!validateInviteForm()) return;
     setIsLoading(true);
     try {
-      const response = await api.acceptAdminInvite({ token: token!, lastName: formData.lastName, password: formData.password });
+      const response = await api.acceptAdminInvite({
+        token: token!,
+        lastName: formData.lastName,
+        password: formData.password,
+        phone: formData.phone.trim() || undefined,
+      });
       if (response.success) {
         setIsSuccess(true);
         toast({ title: "Account Setup Complete", description: "Your account is ready. You can now log in." });
@@ -108,10 +122,16 @@ export default function AdminRegister() {
     }
   };
 
-  const handleExistingUserAccept = async () => {
+  const handleExistingUserAccept = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateExistingUserForm()) return;
     setIsLoading(true);
     try {
-      const response = await api.acceptAdminInvite({ token: token! });
+      const response = await api.acceptAdminInvite({
+        token: token!,
+        displayName: formData.displayName.trim(),
+        phone: formData.phone.trim() || undefined,
+      });
       if (response.success) {
         setIsSuccess(true);
         toast({ title: "Invitation Accepted", description: "Your account has been upgraded. You can now log in to the admin panel." });
@@ -184,7 +204,7 @@ export default function AdminRegister() {
           <CardContent className="text-center space-y-4 pt-4">
             {inviteInfo?.email && (
               <p className="text-slate-600 text-sm">
-                Account created for <strong>{inviteInfo.email}</strong>.
+                Account configured for <strong>{inviteInfo.email}</strong>.
               </p>
             )}
           </CardContent>
@@ -228,38 +248,77 @@ export default function AdminRegister() {
       return (
         <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
           <div className="w-full max-w-md space-y-6">
+            <div className="flex items-center gap-3">
+              <div className={`p-2 ${roleColor.bg} text-white rounded-lg`}>
+                {getRoleIcon(inviteInfo.role)}
+              </div>
+              <div>
+                <h1 className="text-2xl font-serif font-bold text-slate-900">Admin Panel Invitation</h1>
+                <p className="text-slate-600 text-sm">Complete your admin profile to continue</p>
+              </div>
+            </div>
+
             <Card className={`border-2 ${roleColor.border} shadow-xl`}>
-              <CardHeader className="text-center pb-2">
-                <div className={`mx-auto w-16 h-16 ${inviteInfo.role === 'support' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-900'} rounded-full flex items-center justify-center mb-4`}>
-                  {getRoleIcon(inviteInfo.role)}
-                </div>
-                <CardTitle className="text-xl">Admin Panel Invitation</CardTitle>
+              <CardHeader className="pb-2">
+                <CardTitle className="text-lg">
+                  Welcome, <span className={roleColor.text}>{inviteInfo.firstName}</span>
+                </CardTitle>
                 <CardDescription>
-                  Hi <strong>{inviteInfo.firstName}</strong>, you have been invited to join the admin team as{' '}
-                  <strong>{getRoleLabel(inviteInfo.role)}</strong>.
+                  You've been invited as <strong>{getRoleLabel(inviteInfo.role)}</strong>. Confirm your details below to accept.
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <div className={`rounded-lg ${roleColor.light} border ${roleColor.border} p-4`}>
-                  <p className="text-sm font-medium mb-1">Account</p>
-                  <p className="text-sm text-muted-foreground">{inviteInfo.email}</p>
-                </div>
-                <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
-                  <p className="text-xs text-amber-800">
-                    Your existing account will get admin panel access. Your regular account login and data remain unchanged.
-                  </p>
-                </div>
+              <CardContent>
+                <form id="existing-user-form" onSubmit={handleExistingUserAccept} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label>Email</Label>
+                    <Input value={inviteInfo.email} disabled className="bg-slate-50" />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="displayName">
+                      <span className="flex items-center gap-1.5"><User className="h-3.5 w-3.5" />Display Name</span>
+                    </Label>
+                    <Input
+                      id="displayName"
+                      placeholder="How your name appears in the admin panel"
+                      value={formData.displayName}
+                      onChange={(e) => setFormData({ ...formData, displayName: e.target.value })}
+                      className={errors.displayName ? "border-red-500" : ""}
+                    />
+                    {errors.displayName && <p className="text-xs text-red-500">{errors.displayName}</p>}
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="phone">
+                      <span className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" />Phone Number <span className="text-muted-foreground font-normal">(optional)</span></span>
+                    </Label>
+                    <Input
+                      id="phone"
+                      type="tel"
+                      placeholder="+44 7700 900000"
+                      value={formData.phone}
+                      onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                    />
+                  </div>
+
+                  <div className="rounded-lg bg-amber-50 border border-amber-200 p-3">
+                    <p className="text-xs text-amber-800">
+                      Your existing account login and password remain unchanged. You'll use the same credentials to access the admin panel.
+                    </p>
+                  </div>
+                </form>
               </CardContent>
               <CardFooter className="flex flex-col gap-3">
                 <Button
+                  type="submit"
+                  form="existing-user-form"
                   className={`w-full ${inviteInfo.role === 'support' ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
-                  onClick={handleExistingUserAccept}
                   disabled={isLoading}
                 >
                   {isLoading ? (
-                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Accepting...</>
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Saving...</>
                   ) : (
-                    "Accept Invitation"
+                    "Accept & Complete Setup"
                   )}
                 </Button>
                 <Link href="/auth/admin-login">
@@ -302,7 +361,7 @@ export default function AdminRegister() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="lastName">Last Name</Label>
+                  <Label htmlFor="lastName">Last Name <span className="text-red-500">*</span></Label>
                   <Input
                     id="lastName"
                     placeholder="Doe"
@@ -314,7 +373,20 @@ export default function AdminRegister() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="password">Password</Label>
+                  <Label htmlFor="phone">
+                    <span className="flex items-center gap-1.5"><Phone className="h-3.5 w-3.5" />Phone Number <span className="text-muted-foreground font-normal">(optional)</span></span>
+                  </Label>
+                  <Input
+                    id="phone"
+                    type="tel"
+                    placeholder="+44 7700 900000"
+                    value={formData.phone}
+                    onChange={(e) => setFormData({ ...formData, phone: e.target.value })}
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password <span className="text-red-500">*</span></Label>
                   <div className="relative">
                     <Input
                       id="password"
@@ -333,7 +405,7 @@ export default function AdminRegister() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <Label htmlFor="confirmPassword">Confirm Password <span className="text-red-500">*</span></Label>
                   <div className="relative">
                     <Input
                       id="confirmPassword"

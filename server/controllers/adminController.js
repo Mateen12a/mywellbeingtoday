@@ -952,7 +952,8 @@ export const getAdminInvite = async (req, res, next) => {
         firstName: user.profile.firstName,
         email: user.email,
         role: user.adminInvite.role,
-        isExistingUser: !user.isPendingInvite
+        isExistingUser: !user.isPendingInvite,
+        displayName: user.profile.displayName || `${user.profile.firstName || ''} ${user.profile.lastName || ''}`.trim() || user.profile.firstName
       }
     });
   } catch (error) {
@@ -962,7 +963,7 @@ export const getAdminInvite = async (req, res, next) => {
 
 export const acceptAdminInvite = async (req, res, next) => {
   try {
-    const { token, lastName, password } = req.body;
+    const { token, lastName, password, phone, displayName } = req.body;
 
     if (!token) {
       throw new AppError('Token is required', 400, 'VALIDATION_ERROR');
@@ -982,6 +983,12 @@ export const acceptAdminInvite = async (req, res, next) => {
 
     if (!user.isPendingInvite) {
       user.role = newRole;
+      if (displayName && displayName.trim()) {
+        user.profile.displayName = displayName.trim();
+      }
+      if (phone && phone.trim()) {
+        user.phone = phone.trim();
+      }
     } else {
       if (!lastName || !password) {
         throw new AppError('Last name and password are required for new accounts', 400, 'VALIDATION_ERROR');
@@ -995,6 +1002,9 @@ export const acceptAdminInvite = async (req, res, next) => {
       user.verification.emailVerified = true;
       user.isActive = true;
       user.role = newRole;
+      if (phone && phone.trim()) {
+        user.phone = phone.trim();
+      }
     }
 
     user.isPendingInvite = false;

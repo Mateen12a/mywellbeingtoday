@@ -956,7 +956,7 @@ class ApiClient {
     return this.request<{ firstName: string; email: string; role: string }>(`/admin/admins/invite/${token}`);
   }
 
-  async acceptAdminInvite(data: { token: string; lastName: string; password: string }) {
+  async acceptAdminInvite(data: { token: string; lastName?: string; password?: string; phone?: string; displayName?: string }) {
     return this.request<{ email: string }>('/admin/admins/invite/accept', {
       method: 'POST',
       body: JSON.stringify(data),
