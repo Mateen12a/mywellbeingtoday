@@ -158,5 +158,7 @@ export const requireVerifiedEmail = (req, res, next) => {
 
 export const isAdmin = authorize(USER_ROLES.MANAGER, USER_ROLES.ADMIN);
 export const isSuperAdmin = authorize(USER_ROLES.ADMIN);
+export const isAdminOrSupport = authorize(USER_ROLES.SUPPORT, USER_ROLES.MANAGER, USER_ROLES.ADMIN);
+export const isSupport = authorize(USER_ROLES.SUPPORT, USER_ROLES.MANAGER, USER_ROLES.ADMIN);
 export const isProvider = authorize(USER_ROLES.PROVIDER, USER_ROLES.MANAGER, USER_ROLES.ADMIN);
-export const isUser = authorize(USER_ROLES.USER, USER_ROLES.PROVIDER, USER_ROLES.MANAGER, USER_ROLES.ADMIN);
+export const isUser = authorize(USER_ROLES.USER, USER_ROLES.PROVIDER, USER_ROLES.SUPPORT, USER_ROLES.MANAGER, USER_ROLES.ADMIN);

@@ -40,6 +40,8 @@ import AdminActivityPage from "@/pages/admin/activity";
 import AdminReportedChatsPage from "@/pages/admin/reported-chats";
 import AdminSupportPage from "@/pages/admin/support";
 import ManageAdminsPage from "@/pages/admin/manage-admins";
+import ManageManagersPage from "@/pages/admin/manage-managers";
+import ManageSupportPage from "@/pages/admin/manage-support";
 import SystemSettingsPage from "@/pages/admin/system-settings";
 import AdminContentPage from "@/pages/admin/content";
 import PrivacyPolicy from "@/pages/privacy-policy";
@@ -62,6 +64,7 @@ function Router() {
         <Route path="/auth/register" component={Register} />
         <Route path="/auth/register-provider" component={ProviderRegister} />
         <Route path="/auth/register-admin" component={AdminRegister} />
+        <Route path="/auth/admin-register" component={AdminRegister} />
         <Route path="/auth/admin-register-secret" component={AdminRegister} />
         <Route path="/auth/verify" component={Verify} />
         <Route path="/auth/reverify" component={Reverify} />
@@ -177,78 +180,92 @@ function Router() {
         {/* Admin Routes */}
         <Route path="/admin/dashboard">
           {() => (
-            <ProtectedRoute requiredRole={['admin', 'super_admin']} fallbackPath="/dashboard">
+            <ProtectedRoute requiredRole={['admin', 'manager', 'support']} fallbackPath="/dashboard">
               <AdminDashboardPage />
             </ProtectedRoute>
           )}
         </Route>
         <Route path="/admin/users">
           {() => (
-            <ProtectedRoute requiredRole={['admin', 'super_admin']} fallbackPath="/dashboard">
+            <ProtectedRoute requiredRole={['admin', 'manager', 'support']} fallbackPath="/dashboard">
               <AdminUsersPage />
             </ProtectedRoute>
           )}
         </Route>
         <Route path="/admin/providers">
           {() => (
-            <ProtectedRoute requiredRole={['admin', 'super_admin']} fallbackPath="/dashboard">
+            <ProtectedRoute requiredRole={['admin', 'manager', 'support']} fallbackPath="/dashboard">
               <AdminProvidersPage />
             </ProtectedRoute>
           )}
         </Route>
         <Route path="/admin/content">
           {() => (
-            <ProtectedRoute requiredRole={['admin', 'super_admin']} fallbackPath="/dashboard">
+            <ProtectedRoute requiredRole={['admin', 'manager', 'support']} fallbackPath="/dashboard">
               <AdminContentPage />
             </ProtectedRoute>
           )}
         </Route>
         <Route path="/admin/settings">
           {() => (
-            <ProtectedRoute requiredRole={['admin', 'super_admin']} fallbackPath="/dashboard">
+            <ProtectedRoute requiredRole={['admin', 'manager', 'support']} fallbackPath="/dashboard">
               <AdminSettingsPage />
             </ProtectedRoute>
           )}
         </Route>
         <Route path="/admin/profile">
           {() => (
-            <ProtectedRoute requiredRole={['admin', 'super_admin']} fallbackPath="/dashboard">
+            <ProtectedRoute requiredRole={['admin', 'manager', 'support']} fallbackPath="/dashboard">
               <AdminProfilePage />
             </ProtectedRoute>
           )}
         </Route>
         <Route path="/admin/audit-logs">
           {() => (
-            <ProtectedRoute requiredRole={['admin', 'super_admin']} fallbackPath="/dashboard">
+            <ProtectedRoute requiredRole={['admin', 'manager', 'support']} fallbackPath="/dashboard">
               <AdminAuditLogsPage />
             </ProtectedRoute>
           )}
         </Route>
         <Route path="/admin/activity">
           {() => (
-            <ProtectedRoute requiredRole={['admin', 'super_admin']} fallbackPath="/dashboard">
+            <ProtectedRoute requiredRole={['admin', 'manager', 'support']} fallbackPath="/dashboard">
               <AdminActivityPage />
             </ProtectedRoute>
           )}
         </Route>
         <Route path="/admin/reported-chats">
           {() => (
-            <ProtectedRoute requiredRole={['admin', 'super_admin']} fallbackPath="/dashboard">
+            <ProtectedRoute requiredRole={['admin', 'manager', 'support']} fallbackPath="/dashboard">
               <AdminReportedChatsPage />
             </ProtectedRoute>
           )}
         </Route>
         <Route path="/admin/support">
           {() => (
-            <ProtectedRoute requiredRole={['admin', 'super_admin']} fallbackPath="/dashboard">
+            <ProtectedRoute requiredRole={['admin', 'manager', 'support']} fallbackPath="/dashboard">
               <AdminSupportPage />
             </ProtectedRoute>
           )}
         </Route>
         <Route path="/admin/manage-admins">
           {() => (
-            <ProtectedRoute requiredRole={['admin', 'super_admin']} fallbackPath="/dashboard">
+            <ProtectedRoute requiredRole={['admin', 'manager', 'support']} fallbackPath="/dashboard">
               <ManageAdminsPage />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/admin/manage-managers">
+          {() => (
+            <ProtectedRoute requiredRole="admin" fallbackPath="/admin/dashboard">
+              <ManageManagersPage />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/admin/manage-support">
+          {() => (
+            <ProtectedRoute requiredRole="admin" fallbackPath="/admin/dashboard">
+              <ManageSupportPage />
             </ProtectedRoute>
           )}
         </Route>
@@ -256,7 +273,7 @@ function Router() {
         {/* Secret System Settings - Super Admin only */}
         <Route path="/admin/system-settings">
           {() => (
-            <ProtectedRoute requiredRole="super_admin" fallbackPath="/admin/dashboard">
+            <ProtectedRoute requiredRole="admin" fallbackPath="/admin/dashboard">
               <SystemSettingsPage />
             </ProtectedRoute>
           )}

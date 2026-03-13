@@ -19,7 +19,7 @@ import {
   TooltipContent,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { Search, Loader2, Bot, AlertTriangle, FileWarning, Eye, Ban, XCircle, CheckCircle, Mail, MapPin, Calendar, Briefcase, User, Filter, FileText, Clock, Globe, Languages, Award, ShieldCheck, ShieldOff, RotateCcw, ExternalLink } from "lucide-react";
+import { Search, Loader2, Bot, AlertTriangle, FileWarning, Eye, Ban, XCircle, CheckCircle, Mail, MapPin, Calendar, Briefcase, User, Filter, FileText, Clock, Globe, Languages, Award, ShieldCheck, ShieldOff, RotateCcw, ExternalLink, Trash2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import {
   Dialog,
@@ -34,6 +34,7 @@ import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import AdminLayout from "@/components/admin-layout";
 import api from "@/lib/api";
+import { useAuth } from "@/contexts/AuthContext";
 
 type RiskLevel = "high" | "warning" | "info" | "none";
 
@@ -138,6 +139,8 @@ function getRiskBadgeStyles(level: RiskLevel): string {
 }
 
 export default function AdminProvidersPage() {
+  const { user: currentUser } = useAuth();
+  const isSupport = currentUser?.role === 'support';
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [providerSearch, setProviderSearch] = useState("");
@@ -161,6 +164,7 @@ export default function AdminProvidersPage() {
     provider: null,
   });
   const [actionReason, setActionReason] = useState("");
+  const [deleteProviderDialog, setDeleteProviderDialog] = useState<any>(null);
 
   const { data: providersData, isLoading: providersLoading } = useQuery({
     queryKey: ["admin", "providers", providerPage, providerSearch, providerFilter],
@@ -299,6 +303,20 @@ export default function AdminProvidersPage() {
         description: error.message || "Failed to revoke verification",
         variant: "destructive",
       });
+    },
+  });
+
+  const deleteProviderMutation = useMutation({
+    mutationFn: (id: string) => api.deleteProvider(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["admin", "providers"] });
+      queryClient.invalidateQueries({ queryKey: ["admin", "dashboard"] });
+      setDeleteProviderDialog(null);
+      setViewProfileDialog({ open: false, provider: null });
+      toast({ title: "Provider Deleted", description: "The provider has been permanently removed." });
+    },
+    onError: (error: any) => {
+      toast({ title: "Error", description: error.message || "Failed to delete provider", variant: "destructive" });
     },
   });
 
@@ -537,7 +555,7 @@ export default function AdminProvidersPage() {
                                 </TooltipTrigger>
                                 <TooltipContent>View Profile</TooltipContent>
                               </Tooltip>
-                              {!isVerified && (
+                              {!isSupport && !isVerified && (
                                 <>
                                   <Tooltip>
                                     <TooltipTrigger asChild>
@@ -579,25 +597,27 @@ export default function AdminProvidersPage() {
                                   </Tooltip>
                                 </>
                               )}
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    variant="ghost"
-                                    size="icon"
-                                    className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
-                                    onClick={() => {
-                                      toast({
-                                        title: "Provider Suspended",
-                                        description: "The provider has been suspended.",
-                                      });
-                                    }}
-                                    data-testid={`button-suspend-provider-${provider._id}`}
-                                  >
-                                    <Ban className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Suspend</TooltipContent>
-                              </Tooltip>
+                              {!isSupport && (
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 text-amber-600 hover:text-amber-700 hover:bg-amber-50"
+                                      onClick={() => {
+                                        toast({
+                                          title: "Provider Suspended",
+                                          description: "The provider has been suspended.",
+                                        });
+                                      }}
+                                      data-testid={`button-suspend-provider-${provider._id}`}
+                                    >
+                                      <Ban className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Suspend</TooltipContent>
+                                </Tooltip>
+                              )}
                             </div>
                           </td>
                         </tr>
@@ -940,6 +960,7 @@ export default function AdminProvidersPage() {
           {/* Action Buttons */}
           {viewProfileDialog.provider && (
             <DialogFooter className="flex-col sm:flex-row gap-2 pt-4 border-t">
+              {!isSupport && (
               <div className="flex flex-wrap gap-2 flex-1">
                 {/* Verify button - show if not verified */}
                 {!viewProfileDialog.provider.verification?.isVerified && viewProfileDialog.provider.isActive !== false && (
@@ -1024,13 +1045,29 @@ export default function AdminProvidersPage() {
                   </Button>
                 )}
               </div>
+              )}
               
-              <Button
-                variant="outline"
-                onClick={() => setViewProfileDialog({ open: false, provider: null })}
-              >
-                Close
-              </Button>
+              <div className="flex gap-2 items-center">
+                {!isSupport && (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-destructive hover:text-destructive hover:bg-destructive/10 gap-1"
+                    onClick={() => {
+                      setDeleteProviderDialog(viewProfileDialog.provider);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4" />
+                    Delete
+                  </Button>
+                )}
+                <Button
+                  variant="outline"
+                  onClick={() => setViewProfileDialog({ open: false, provider: null })}
+                >
+                  Close
+                </Button>
+              </div>
             </DialogFooter>
           )}
         </DialogContent>
@@ -1091,6 +1128,42 @@ export default function AdminProvidersPage() {
                 <Loader2 className="h-4 w-4 animate-spin mr-2" />
               ) : null}
               Confirm
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      <Dialog open={!!deleteProviderDialog} onOpenChange={(open) => { if (!open) setDeleteProviderDialog(null); }}>
+        <DialogContent className="sm:max-w-[400px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-destructive">
+              <Trash2 className="h-5 w-5" />
+              Delete Provider
+            </DialogTitle>
+            <DialogDescription>
+              Are you sure you want to permanently delete{' '}
+              <strong>
+                {deleteProviderDialog?.practice?.name ||
+                  `${deleteProviderDialog?.userId?.profile?.firstName || ''} ${deleteProviderDialog?.userId?.profile?.lastName || ''}`.trim() ||
+                  'this provider'}
+              </strong>?
+              This action cannot be undone and will remove all associated data.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setDeleteProviderDialog(null)} disabled={deleteProviderMutation.isPending}>
+              Cancel
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => deleteProviderDialog && deleteProviderMutation.mutate(deleteProviderDialog._id)}
+              disabled={deleteProviderMutation.isPending}
+            >
+              {deleteProviderMutation.isPending ? (
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Deleting...</>
+              ) : (
+                "Delete Provider"
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

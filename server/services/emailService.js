@@ -1224,6 +1224,64 @@ export async function sendAdminCreationEmail(email, name, password, role) {
   }
 }
 
+export async function sendAdminInviteEmail(email, firstName, inviteLink, role, lastName = '') {
+  try {
+    const roleLabel = role === 'admin' ? 'Administrator' : 'Manager';
+    const html = `
+<!DOCTYPE html>
+<html>
+<head><meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1.0" /></head>
+<body style="margin:0;padding:0;background-color:#f9fafb;font-family:'Segoe UI',Tahoma,Geneva,Verdana,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="background-color:#f9fafb;padding:40px 16px;">
+    <tr><td align="center">
+      <table width="600" cellpadding="0" cellspacing="0" border="0" style="background-color:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+        <tr><td style="background:linear-gradient(135deg,#97b5cb 0%,#adccdb 100%);padding:32px 30px;text-align:center;">
+          <img src="${LOGO_IMG_SRC}" alt="mywellbeingtoday" width="48" height="48" style="border-radius:24px;margin-bottom:12px;display:block;margin-left:auto;margin-right:auto;" />
+          <div style="font-size:26px;font-weight:700;color:#ffffff;letter-spacing:-0.5px;">mywellbeingtoday</div>
+          <div style="font-size:13px;color:rgba(255,255,255,0.9);margin-top:6px;">Admin Invitation</div>
+        </td></tr>
+        <tr><td style="padding:36px 32px;">
+          <h2 style="font-size:22px;font-weight:700;color:#1F2937;margin:0 0 8px 0;">You've been invited, ${firstName} ${lastName}!</h2>
+          <p style="font-size:15px;color:#374151;margin:0 0 24px 0;">You have been invited to join <strong>mywellbeingtoday</strong> as a <strong>${roleLabel}</strong>.</p>
+          <p style="font-size:14px;color:#6B7280;margin:0 0 28px 0;">Click the button below to complete your account setup. This invitation link expires in 48 hours.</p>
+          <div style="text-align:center;margin:32px 0;">
+            <a href="${inviteLink}" style="display:inline-block;background:linear-gradient(135deg,#97b5cb,#adccdb);color:#ffffff;font-weight:700;font-size:15px;padding:14px 36px;border-radius:8px;text-decoration:none;letter-spacing:0.3px;">Complete Account Setup</a>
+          </div>
+          <div style="background:#f3f4f6;border-radius:8px;padding:16px;margin:24px 0;">
+            <p style="font-size:13px;color:#6B7280;margin:0 0 6px 0;font-weight:600;">Or copy this link:</p>
+            <p style="font-size:12px;color:#374151;margin:0;word-break:break-all;">${inviteLink}</p>
+          </div>
+          <p style="font-size:12px;color:#9CA3AF;margin:0;">If you did not expect this invitation, you can safely ignore this email.</p>
+        </td></tr>
+        <tr><td style="border-top:1px solid #E5E7EB;padding:20px 32px;text-align:center;">
+          <p style="font-size:12px;color:#9CA3AF;margin:0;">&copy; 2026 mywellbeingtoday. All rights reserved.</p>
+        </td></tr>
+      </table>
+    </td></tr>
+  </table>
+</body>
+</html>`;
+
+    if (!resend) {
+      console.log('[EMAIL SERVICE] Admin invite email would be sent to:', { to: email, firstName, role: roleLabel, inviteLink });
+      return { success: true, fallback: true };
+    }
+
+    const response = await resend.emails.send({
+      from: SENDER_EMAIL,
+      to: email,
+      subject: `You're invited to join mywellbeingtoday as ${roleLabel}`,
+      html,
+    });
+
+    console.log('[EMAIL SERVICE] Admin invite email sent to:', email);
+    return response;
+  } catch (error) {
+    console.error('[EMAIL SERVICE] Error sending admin invite email:', error);
+    throw error;
+  }
+}
+
 export default {
   sendVerificationEmail,
   sendPasswordResetEmail,

@@ -930,8 +930,34 @@ class ApiClient {
     return this.request<{ admins: any[] }>('/admin/admins');
   }
 
-  async createAdmin(data: { email: string; password: string; firstName: string; lastName: string; role: 'admin' | 'manager' }) {
-    return this.request<{ user: any }>('/admin/admins', {
+  async inviteAdmin(data: { email: string; firstName: string; role: 'admin' | 'manager' }) {
+    return this.request<{ inviteLink: string }>('/admin/admins/invite', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteAdmin(id: string) {
+    return this.request<{}>(`/admin/admins/${id}`, { method: 'DELETE' });
+  }
+
+  async updateAdminAccount(id: string, data: { isActive?: boolean; role?: string }) {
+    return this.request<{ user: any }>(`/admin/admins/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async deleteProvider(id: string) {
+    return this.request<{}>(`/admin/providers/${id}`, { method: 'DELETE' });
+  }
+
+  async getAdminInvite(token: string) {
+    return this.request<{ firstName: string; email: string; role: string }>(`/admin/admins/invite/${token}`);
+  }
+
+  async acceptAdminInvite(data: { token: string; lastName: string; password: string }) {
+    return this.request<{ email: string }>('/admin/admins/invite/accept', {
       method: 'POST',
       body: JSON.stringify(data),
     });

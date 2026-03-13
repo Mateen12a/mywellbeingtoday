@@ -18,14 +18,18 @@ import {
   Heart,
 } from "lucide-react";
 
-const STORAGE_KEY = "onboarding_dismissed";
+const STORAGE_KEY_PREFIX = "onboarding_dismissed";
 
 export function OnboardingChecklist() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
   const { openSubscriptionDialog, isOpen: subDialogOpen } = useSubscriptionDialog();
+  const storageKey = user?._id ? `${STORAGE_KEY_PREFIX}_${user._id}` : STORAGE_KEY_PREFIX;
   const [dismissed, setDismissed] = useState(() => {
-    return localStorage.getItem(STORAGE_KEY) === "true";
+    if (typeof window === 'undefined') return false;
+    const userId = localStorage.getItem('user') ? JSON.parse(localStorage.getItem('user') || '{}')._id : null;
+    const key = userId ? `${STORAGE_KEY_PREFIX}_${userId}` : STORAGE_KEY_PREFIX;
+    return localStorage.getItem(key) === "true";
   });
   const [minimized, setMinimized] = useState(false);
   const [visible, setVisible] = useState(false);
@@ -116,7 +120,7 @@ export function OnboardingChecklist() {
     setVisible(false);
     setTimeout(() => {
       setDismissed(true);
-      localStorage.setItem(STORAGE_KEY, "true");
+      localStorage.setItem(storageKey, "true");
     }, 300);
   }
 

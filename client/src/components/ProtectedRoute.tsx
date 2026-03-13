@@ -2,9 +2,11 @@ import { Redirect } from "wouter";
 import { useAuth } from "@/contexts/AuthContext";
 import { PageLoader } from "@/components/ui/page-loader";
 
+type Role = 'user' | 'provider' | 'support' | 'manager' | 'admin';
+
 interface ProtectedRouteProps {
   children: React.ReactNode;
-  requiredRole?: 'user' | 'provider' | 'admin' | 'super_admin' | ('user' | 'provider' | 'admin' | 'super_admin')[];
+  requiredRole?: Role | Role[];
   fallbackPath?: string;
 }
 
@@ -25,7 +27,7 @@ export function ProtectedRoute({
 
   if (requiredRole) {
     const allowedRoles = Array.isArray(requiredRole) ? requiredRole : [requiredRole];
-    if (!allowedRoles.includes(user.role)) {
+    if (!allowedRoles.includes(user.role as Role)) {
       return <Redirect to={fallbackPath} />;
     }
   }

@@ -553,6 +553,8 @@ export function Register() {
 
 export function Verify() {
   const { toast } = useToast();
+  const { refreshUser } = useAuth();
+  const [, setLocation] = useLocation();
 
   const params = new URLSearchParams(window.location.search);
   const email = params.get('email') || '';
@@ -617,7 +619,9 @@ export function Verify() {
         api.setUser(response.data.user);
         toast({ title: isLoginVerification ? "Identity verified!" : "Email verified!", description: isLoginVerification ? "Logged in successfully" : "Welcome to mywellbeingtoday" });
         const role = response.data.user.role;
-        window.location.href = (role === 'admin' || role === 'manager') ? '/admin/dashboard' : role === 'provider' ? '/provider-dashboard' : '/dashboard';
+        const dashboardPath = (role === 'admin' || role === 'manager' || role === 'support') ? '/admin/dashboard' : role === 'provider' ? '/provider-dashboard' : '/dashboard';
+        await refreshUser();
+        setLocation(dashboardPath);
       } else {
         toast({ title: "Verification failed", description: response.message || "Invalid code", variant: "destructive" });
         setOtp(['', '', '', '', '', '']);

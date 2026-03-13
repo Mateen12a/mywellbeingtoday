@@ -80,6 +80,15 @@ const userSchema = new mongoose.Schema({
     status: { type: String, default: 'active' },
     expiresAt: { type: Date }
   },
+  adminInvite: {
+    token: { type: String },
+    expiresAt: { type: Date },
+    role: { type: String },
+    invitedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+    invitedAt: { type: Date },
+    accepted: { type: Boolean, default: false }
+  },
+  isPendingInvite: { type: Boolean, default: false },
   lastLogin: { type: Date },
   lastOtpVerifiedAt: { type: Date },
   rememberMe: { type: Boolean, default: false },

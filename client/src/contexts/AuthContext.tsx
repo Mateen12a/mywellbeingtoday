@@ -6,7 +6,7 @@ import { invalidateAllQueries } from '@/lib/queryClient';
 interface User {
   _id: string;
   email: string;
-  role: 'user' | 'provider' | 'manager' | 'admin';
+  role: 'user' | 'provider' | 'support' | 'manager' | 'admin';
   profile: {
     firstName: string;
     lastName: string;
@@ -172,6 +172,7 @@ export function getDashboardPath(role: string) {
   switch (role) {
     case 'admin':
     case 'manager':
+    case 'support':
       return '/admin/dashboard';
     case 'provider':
       return '/provider-dashboard';

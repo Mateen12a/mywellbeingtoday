@@ -133,6 +133,36 @@ export default function AdminDashboardPage() {
   const superAdminStatsCards = isSuperAdmin && dashboardData
     ? [
         {
+          title: "Administrators",
+          value: dashboardData.staff?.admins?.toLocaleString() || "0",
+          change: "Active admin accounts",
+          icon: Shield,
+          color: "text-violet-600",
+          bg: "bg-violet-50",
+          border: "border-violet-100",
+          action: () => setLocation("/admin/manage-admins"),
+        },
+        {
+          title: "Managers",
+          value: dashboardData.staff?.managers?.toLocaleString() || "0",
+          change: "Active manager accounts",
+          icon: Crown,
+          color: "text-indigo-600",
+          bg: "bg-indigo-50",
+          border: "border-indigo-100",
+          action: () => setLocation("/admin/manage-managers"),
+        },
+        {
+          title: "Support Staff",
+          value: dashboardData.staff?.support?.toLocaleString() || "0",
+          change: "Active support accounts",
+          icon: Users,
+          color: "text-sky-600",
+          bg: "bg-sky-50",
+          border: "border-sky-100",
+          action: () => setLocation("/admin/manage-support"),
+        },
+        {
           title: "Certificates Issued",
           value: dashboardData.certificates?.total?.toLocaleString() || "0",
           change: "All time",

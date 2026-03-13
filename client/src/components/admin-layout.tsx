@@ -134,17 +134,23 @@ export default function AdminLayout({ children, title = "Admin Dashboard" }: Adm
 
   const isSuperAdmin = currentUser?.role === 'admin';
 
-  const menuItems = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard" },
-    { id: "users", label: "User Management", icon: Users, path: "/admin/users" },
-    { id: "providers", label: "Providers", icon: UserCheck, path: "/admin/providers" },
-    { id: "activity", label: "System Log", icon: Activity, path: "/admin/activity" },
-    { id: "reported-chats", label: "Reported Chats", icon: Flag, path: "/admin/reported-chats" },
-    { id: "support", label: "Support Tickets", icon: Headphones, path: "/admin/support" },
-    { id: "audit-logs", label: "Audit Logs", icon: Clock, path: "/admin/audit-logs" },
-    ...(isSuperAdmin ? [{ id: "manage-admins", label: "Manage Admins", icon: ShieldCheck, path: "/admin/manage-admins" }] : []),
-    { id: "settings", label: "Settings", icon: Settings, path: "/admin/settings" },
+  const allMenuItems = [
+    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard", roles: ['admin', 'manager', 'support'] },
+    { id: "users", label: "User Management", icon: Users, path: "/admin/users", roles: ['admin', 'manager', 'support'] },
+    { id: "providers", label: "Providers", icon: UserCheck, path: "/admin/providers", roles: ['admin', 'manager', 'support'] },
+    { id: "activity", label: "System Log", icon: Activity, path: "/admin/activity", roles: ['admin', 'manager'] },
+    { id: "reported-chats", label: "Reported Chats", icon: Flag, path: "/admin/reported-chats", roles: ['admin', 'manager', 'support'] },
+    { id: "support", label: "Support Tickets", icon: Headphones, path: "/admin/support", roles: ['admin', 'manager', 'support'] },
+    { id: "audit-logs", label: "Audit Logs", icon: Clock, path: "/admin/audit-logs", roles: ['admin', 'manager', 'support'] },
+    { id: "manage-admins", label: "Manage Admins", icon: ShieldCheck, path: "/admin/manage-admins", roles: ['admin'] },
+    { id: "manage-managers", label: "Manage Managers", icon: Shield, path: "/admin/manage-managers", roles: ['admin'] },
+    { id: "manage-support", label: "Manage Support", icon: Headphones, path: "/admin/manage-support", roles: ['admin'] },
+    { id: "settings", label: "Settings", icon: Settings, path: "/admin/settings", roles: ['admin', 'manager'] },
   ];
+
+  const menuItems = allMenuItems.filter(item => 
+    item.roles.includes(currentUser?.role || '')
+  );
 
   const handleLogout = async () => {
     try {
@@ -221,7 +227,7 @@ export default function AdminLayout({ children, title = "Admin Dashboard" }: Adm
                   Admin Portal
                 </p>
                 <p className="text-[10px] text-muted-foreground">
-                  {currentUser?.role === 'admin' ? 'Admin' : 'Manager'}
+                  {currentUser?.role === 'admin' ? 'Admin' : currentUser?.role === 'manager' ? 'Manager' : currentUser?.role === 'support' ? 'Support' : 'Staff'}
                 </p>
               </div>
             </div>

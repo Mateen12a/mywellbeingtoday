@@ -4,19 +4,18 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { UserPlus, Shield, ShieldCheck, Headphones, Loader2, Users, AlertCircle, Mail, User, Trash2, Clock } from "lucide-react";
+import { UserPlus, Headphones, Loader2, AlertCircle, Mail, User, Trash2, Clock } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { useLocation } from "wouter";
 import api from "@/lib/api";
 import AdminLayout from "@/components/admin-layout";
 
-export default function ManageAdminsPage() {
+export default function ManageSupportPage() {
   const [, setLocation] = useLocation();
   const { toast } = useToast();
   const queryClient = useQueryClient();
@@ -25,10 +24,10 @@ export default function ManageAdminsPage() {
 
   const [isInviteDialogOpen, setIsInviteDialogOpen] = useState(false);
   const [deleteDialogAdmin, setDeleteDialogAdmin] = useState<any>(null);
-  const [inviteForm, setInviteForm] = useState({ email: "", firstName: "", lastName: "", role: "manager" as "admin" | "manager" | "support" });
+  const [inviteForm, setInviteForm] = useState({ email: "", firstName: "", lastName: "" });
   const [formError, setFormError] = useState<string | null>(null);
 
-  const { data: allStaffData, isLoading } = useQuery({
+  const { data: adminsData, isLoading } = useQuery({
     queryKey: ['admins'],
     queryFn: async () => {
       const response = await api.getAdmins();
@@ -38,12 +37,17 @@ export default function ManageAdminsPage() {
     enabled: isSuperAdmin,
   });
 
-  const adminsData = (allStaffData || []).filter((a: any) =>
-    a.role === 'admin' || (a.adminInvite?.role === 'admin' && a.adminInvite?.accepted === false)
+  const supportStaff = (adminsData || []).filter((a: any) =>
+    a.role === 'support' || (a.adminInvite?.role === 'support' && a.adminInvite?.accepted === false)
   );
 
+  const isNewInvite = (admin: any) => !!admin.isPendingInvite;
+  const isExistingPending = (admin: any) =>
+    !admin.isPendingInvite && admin.role !== 'support' && admin.adminInvite && admin.adminInvite.accepted === false;
+  const isPending = (admin: any) => isNewInvite(admin) || isExistingPending(admin);
+
   const inviteAdminMutation = useMutation({
-    mutationFn: async (data: { email: string; firstName: string; lastName: string; role: 'admin' | 'manager' | 'support' }) => {
+    mutationFn: async (data: { email: string; firstName: string; lastName: string; role: 'support' }) => {
       const response = await api.inviteAdmin(data);
       if (!response.success) throw new Error(response.message || 'Failed to send invitation');
       return response;
@@ -54,7 +58,7 @@ export default function ManageAdminsPage() {
       resetForm();
       toast({
         title: "Invitation Sent",
-        description: "An invitation email has been sent. They'll be able to complete their account setup via the link.",
+        description: "A support staff invitation has been sent. They'll follow the link to complete their account setup.",
       });
     },
     onError: (error: Error) => {
@@ -66,21 +70,21 @@ export default function ManageAdminsPage() {
   const deleteAdminMutation = useMutation({
     mutationFn: async (id: string) => {
       const response = await api.deleteAdmin(id);
-      if (!response.success) throw new Error(response.message || 'Failed to delete admin');
+      if (!response.success) throw new Error(response.message || 'Failed to remove support account');
       return response;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['admins'] });
       setDeleteDialogAdmin(null);
-      toast({ title: "Admin Deleted", description: "The administrator account has been removed." });
+      toast({ title: "Support Account Removed", description: "The support staff account has been removed." });
     },
     onError: (error: Error) => {
-      toast({ title: "Error", description: error.message || "Failed to delete admin", variant: "destructive" });
+      toast({ title: "Error", description: error.message || "Failed to remove account", variant: "destructive" });
     },
   });
 
   const resetForm = () => {
-    setInviteForm({ email: "", firstName: "", lastName: "", role: "manager" });
+    setInviteForm({ email: "", firstName: "", lastName: "" });
     setFormError(null);
   };
 
@@ -99,7 +103,7 @@ export default function ManageAdminsPage() {
       return;
     }
 
-    inviteAdminMutation.mutate(inviteForm);
+    inviteAdminMutation.mutate({ ...inviteForm, role: 'support' });
   };
 
   if (!isSuperAdmin) {
@@ -108,7 +112,7 @@ export default function ManageAdminsPage() {
         <div className="flex flex-col items-center justify-center min-h-[400px] space-y-4">
           <AlertCircle className="h-16 w-16 text-destructive" />
           <h2 className="text-xl font-semibold">Access Denied</h2>
-          <p className="text-muted-foreground text-center">Only Super Administrators can access this page.</p>
+          <p className="text-muted-foreground text-center">Only Administrators can manage support staff.</p>
           <Button onClick={() => setLocation("/admin/dashboard")}>Return to Dashboard</Button>
         </div>
       </AdminLayout>
@@ -132,35 +136,32 @@ export default function ManageAdminsPage() {
     return date.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
   };
 
-  const isNewInvite = (admin: any) => !!admin.isPendingInvite;
-  const isExistingPending = (admin: any) =>
-    !admin.isPendingInvite && admin.role !== 'admin' && admin.adminInvite && admin.adminInvite.accepted === false;
-  const isPending = (admin: any) => isNewInvite(admin) || isExistingPending(admin);
-
   return (
-    <AdminLayout title="Manage Administrators">
+    <AdminLayout title="Manage Support Staff">
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h2 className="text-2xl font-bold tracking-tight">Manage Administrators</h2>
-            <p className="text-muted-foreground">Invite and manage administrator accounts for the platform.</p>
+            <h2 className="text-2xl font-bold tracking-tight">Manage Support Staff</h2>
+            <p className="text-muted-foreground">
+              Invite and manage support staff. Support accounts have view-only access to assist users and providers.
+            </p>
           </div>
 
           <Dialog open={isInviteDialogOpen} onOpenChange={(open) => { setIsInviteDialogOpen(open); if (!open) resetForm(); }}>
             <DialogTrigger asChild>
               <Button className="gap-2">
                 <UserPlus className="h-4 w-4" />
-                Invite Admin
+                Invite Support Staff
               </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[440px]">
               <DialogHeader>
                 <DialogTitle className="flex items-center gap-2">
-                  <ShieldCheck className="h-5 w-5 text-primary" />
-                  Invite Administrator
+                  <Headphones className="h-5 w-5 text-blue-600" />
+                  Invite Support Staff
                 </DialogTitle>
                 <DialogDescription>
-                  Send an invitation email. The recipient will follow the link to complete their account setup.
+                  Send a support invitation. They'll follow the link to set up their account with view-only access.
                 </DialogDescription>
               </DialogHeader>
               <form onSubmit={handleInviteSubmit}>
@@ -171,12 +172,19 @@ export default function ManageAdminsPage() {
                       <AlertDescription>{formError}</AlertDescription>
                     </Alert>
                   )}
+                  <div className="rounded-lg bg-blue-50 border border-blue-200 p-3 flex items-start gap-3">
+                    <Headphones className="h-4 w-4 text-blue-600 mt-0.5 shrink-0" />
+                    <p className="text-xs text-blue-700">
+                      Support staff can view user profiles, provider info, reported chats, support tickets, and audit logs.
+                      They cannot take any management actions.
+                    </p>
+                  </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="space-y-2">
                       <Label htmlFor="firstName">First Name <span className="text-red-500">*</span></Label>
                       <Input
                         id="firstName"
-                        placeholder="John"
+                        placeholder="Jane"
                         value={inviteForm.firstName}
                         onChange={(e) => setInviteForm({ ...inviteForm, firstName: e.target.value })}
                         disabled={inviteAdminMutation.isPending}
@@ -200,7 +208,7 @@ export default function ManageAdminsPage() {
                       <Input
                         id="email"
                         type="email"
-                        placeholder="admin@example.com"
+                        placeholder="support@example.com"
                         className="pl-9"
                         value={inviteForm.email}
                         onChange={(e) => setInviteForm({ ...inviteForm, email: e.target.value })}
@@ -208,55 +216,16 @@ export default function ManageAdminsPage() {
                       />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="role">Role <span className="text-red-500">*</span></Label>
-                    <Select
-                      value={inviteForm.role}
-                      onValueChange={(value: "admin" | "manager" | "support") => setInviteForm({ ...inviteForm, role: value })}
-                      disabled={inviteAdminMutation.isPending}
-                    >
-                      <SelectTrigger>
-                        <SelectValue placeholder="Select role" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="support">
-                          <div className="flex items-center gap-2">
-                            <Headphones className="h-4 w-4" />
-                            Support
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="manager">
-                          <div className="flex items-center gap-2">
-                            <Shield className="h-4 w-4" />
-                            Manager
-                          </div>
-                        </SelectItem>
-                        <SelectItem value="admin">
-                          <div className="flex items-center gap-2">
-                            <ShieldCheck className="h-4 w-4" />
-                            Admin
-                          </div>
-                        </SelectItem>
-                      </SelectContent>
-                    </Select>
-                    <p className="text-xs text-muted-foreground">
-                      {inviteForm.role === 'admin'
-                        ? "Admins can manage other administrators and access all platform settings."
-                        : inviteForm.role === 'support'
-                        ? "Support staff can view user and provider info to assist users. No management actions."
-                        : "Managers can manage users, providers, and moderate content."}
-                    </p>
-                  </div>
                 </div>
                 <DialogFooter>
                   <Button type="button" variant="outline" onClick={() => setIsInviteDialogOpen(false)} disabled={inviteAdminMutation.isPending}>
                     Cancel
                   </Button>
-                  <Button type="submit" disabled={inviteAdminMutation.isPending}>
+                  <Button type="submit" className="bg-blue-600 hover:bg-blue-700" disabled={inviteAdminMutation.isPending}>
                     {inviteAdminMutation.isPending ? (
                       <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Sending...</>
                     ) : (
-                      "Send Invitation"
+                      "Send Support Invite"
                     )}
                   </Button>
                 </DialogFooter>
@@ -268,11 +237,14 @@ export default function ManageAdminsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Users className="h-5 w-5" />
-              Administrator Accounts
+              <Headphones className="h-5 w-5 text-blue-600" />
+              Support Staff
+              {!isLoading && (
+                <Badge variant="outline" className="ml-1 border-blue-300 text-blue-700 bg-blue-50">{supportStaff.length}</Badge>
+              )}
             </CardTitle>
             <CardDescription>
-              All administrator accounts on the platform. Admins have elevated privileges.
+              Support staff have read-only access across the admin panel to help users and providers effectively.
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -280,18 +252,18 @@ export default function ManageAdminsPage() {
               <div className="flex items-center justify-center py-12">
                 <Loader2 className="h-8 w-8 animate-spin text-primary" />
               </div>
-            ) : !adminsData || adminsData.length === 0 ? (
+            ) : supportStaff.length === 0 ? (
               <div className="text-center py-12 text-muted-foreground">
-                <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>No administrators found.</p>
+                <Headphones className="h-12 w-12 mx-auto mb-4 opacity-30" />
+                <p className="font-medium">No support staff yet</p>
+                <p className="text-sm mt-1">Invite support staff to help users and providers.</p>
               </div>
             ) : (
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead>Administrator</TableHead>
+                    <TableHead>Staff Member</TableHead>
                     <TableHead>Email</TableHead>
-                    <TableHead>Role</TableHead>
                     <TableHead>Status</TableHead>
                     <TableHead>Last Login</TableHead>
                     <TableHead>Created</TableHead>
@@ -299,16 +271,12 @@ export default function ManageAdminsPage() {
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {adminsData.map((admin: any) => {
-                    const effectiveRole = admin.role === 'user' || admin.role === 'provider'
-                      ? (admin.adminInvite?.role || admin.role)
-                      : admin.role;
-                    return (
+                  {supportStaff.map((admin: any) => (
                     <TableRow key={admin._id}>
                       <TableCell>
                         <div className="flex items-center gap-3">
                           <Avatar className="h-9 w-9">
-                            <AvatarFallback className="bg-primary/10 text-primary text-sm">
+                            <AvatarFallback className="bg-blue-100 text-blue-700 text-sm">
                               {getInitials(admin.profile?.firstName, admin.profile?.lastName)}
                             </AvatarFallback>
                           </Avatar>
@@ -318,9 +286,6 @@ export default function ManageAdminsPage() {
                                 ? admin.profile?.firstName || 'Pending'
                                 : admin.profile?.displayName || `${admin.profile?.firstName || ''} ${admin.profile?.lastName || ''}`.trim() || 'Unknown'}
                             </p>
-                            {admin._id === currentUser?._id && (
-                              <span className="text-xs text-muted-foreground">(You)</span>
-                            )}
                             {isPending(admin) && (
                               <span className="text-xs text-amber-600 flex items-center gap-1">
                                 <Clock className="h-3 w-3" />Invite pending
@@ -332,25 +297,11 @@ export default function ManageAdminsPage() {
                       <TableCell className="text-muted-foreground">{admin.email}</TableCell>
                       <TableCell>
                         <Badge
-                          variant={effectiveRole === 'admin' ? 'default' : effectiveRole === 'support' ? 'outline' : 'secondary'}
-                          className={`gap-1 ${effectiveRole === 'support' ? 'border-blue-300 text-blue-700 bg-blue-50' : ''}`}
-                        >
-                          {effectiveRole === 'admin' ? (
-                            <><ShieldCheck className="h-3 w-3" />Admin</>
-                          ) : effectiveRole === 'support' ? (
-                            <><Headphones className="h-3 w-3" />Support</>
-                          ) : (
-                            <><Shield className="h-3 w-3" />Manager</>
-                          )}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
                           variant="outline"
                           className={
                             isNewInvite(admin) ? 'border-amber-400 text-amber-700 bg-amber-50' :
                             isExistingPending(admin) ? 'border-yellow-500 text-yellow-700 bg-yellow-50' :
-                            admin.isActive ? 'border-green-400 text-green-700' : 'border-red-400 text-red-700'
+                            admin.isActive ? 'border-blue-300 text-blue-700 bg-blue-50' : 'border-red-400 text-red-700'
                           }
                         >
                           {isNewInvite(admin) ? 'Invited' : isExistingPending(admin) ? 'Pending' : admin.isActive ? 'Active' : 'Inactive'}
@@ -367,20 +318,17 @@ export default function ManageAdminsPage() {
                       </TableCell>
                       <TableCell className="text-muted-foreground">{formatDate(admin.createdAt)}</TableCell>
                       <TableCell className="text-right">
-                        {admin._id !== currentUser?._id && (
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className="text-destructive hover:text-destructive hover:bg-destructive/10"
-                            onClick={() => setDeleteDialogAdmin(admin)}
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        )}
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="text-destructive hover:text-destructive hover:bg-destructive/10"
+                          onClick={() => setDeleteDialogAdmin(admin)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
                       </TableCell>
                     </TableRow>
-                  );
-                  })}
+                  ))}
                 </TableBody>
               </Table>
             )}
@@ -393,10 +341,10 @@ export default function ManageAdminsPage() {
           <DialogHeader>
             <DialogTitle className="flex items-center gap-2 text-destructive">
               <Trash2 className="h-5 w-5" />
-              Delete Administrator
+              Remove Support Staff
             </DialogTitle>
             <DialogDescription>
-              Are you sure you want to delete{' '}
+              Are you sure you want to remove{' '}
               <strong>
                 {deleteDialogAdmin?.isPendingInvite
                   ? deleteDialogAdmin?.profile?.firstName
@@ -415,9 +363,9 @@ export default function ManageAdminsPage() {
               disabled={deleteAdminMutation.isPending}
             >
               {deleteAdminMutation.isPending ? (
-                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Deleting...</>
+                <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Removing...</>
               ) : (
-                "Delete"
+                "Remove"
               )}
             </Button>
           </DialogFooter>

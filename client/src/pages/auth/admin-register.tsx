@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Link, Redirect } from "wouter";
 import { useToast } from "@/hooks/use-toast";
 import { useAuth, getDashboardPath } from "@/contexts/AuthContext";
@@ -6,91 +6,144 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, ShieldAlert, ArrowLeft, CheckCircle2, Eye, EyeOff, Lock } from "lucide-react";
+import { Loader2, ShieldAlert, ArrowLeft, CheckCircle2, Eye, EyeOff, Lock, AlertCircle, Shield, Headphones } from "lucide-react";
 import { PageLoader } from "@/components/ui/page-loader";
 import { PasswordStrengthIndicator } from "@/components/ui/password-strength-indicator";
-import { validatePassword, validateEmail, validateName } from "@/lib/validation";
+import { validatePassword, validateName } from "@/lib/validation";
 import api from "@/lib/api";
 
 export default function AdminRegister() {
   const { toast } = useToast();
   const { user, isLoading: authLoading } = useAuth();
-  
+  const token = new URLSearchParams(window.location.search).get('token');
+  const isInviteFlow = !!token;
+
   const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-  
+  const [inviteError, setInviteError] = useState<string | null>(null);
+  const [inviteInfo, setInviteInfo] = useState<{ firstName: string; email: string; role: string; isExistingUser?: boolean } | null>(null);
+  const [inviteLoading, setInviteLoading] = useState(isInviteFlow);
+
   const [formData, setFormData] = useState({
-    firstName: "",
     lastName: "",
-    email: "",
     password: "",
     confirmPassword: "",
+    firstName: "",
+    email: "",
     role: "admin",
-    secretKey: ""
+    secretKey: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
-  
-  // Show loading while checking auth state
-  if (authLoading) {
-    return <PageLoader />;
-  }
-  
-  // Redirect if already logged in
-  if (user) {
-    return <Redirect to={getDashboardPath(user.role)} />;
-  }
 
-  const validateForm = () => {
+  useEffect(() => {
+    if (!isInviteFlow || !token) return;
+    setInviteLoading(true);
+    api.getAdminInvite(token)
+      .then((res) => {
+        if (res.success && res.data) {
+          setInviteInfo(res.data);
+          setFormData((prev) => ({
+            ...prev,
+            firstName: res.data!.firstName,
+            email: res.data!.email,
+            role: res.data!.role,
+            isExistingUser: res.data!.isExistingUser,
+          } as any));
+        } else {
+          setInviteError("This invitation link is invalid or has expired.");
+        }
+      })
+      .catch(() => {
+        setInviteError("This invitation link is invalid or has expired.");
+      })
+      .finally(() => setInviteLoading(false));
+  }, [token]);
+
+  if (authLoading) return <PageLoader />;
+  if (user) return <Redirect to={getDashboardPath(user.role)} />;
+
+  const validateInviteForm = () => {
     const newErrors: Record<string, string> = {};
-
-    // Validate first name with proper regex
-    const firstNameValidation = validateName(formData.firstName, 'First name');
-    if (!firstNameValidation.isValid) {
-      newErrors.firstName = firstNameValidation.error || "First name is required";
-    }
-    
-    // Validate last name with proper regex
     const lastNameValidation = validateName(formData.lastName, 'Last name');
-    if (!lastNameValidation.isValid) {
-      newErrors.lastName = lastNameValidation.error || "Last name is required";
-    }
-    
-    // Validate email with proper regex
-    const emailValidation = validateEmail(formData.email);
-    if (!emailValidation.isValid) {
-      newErrors.email = emailValidation.error || "Email is required";
-    }
-    
-    // Validate password with full policy
+    if (!lastNameValidation.isValid) newErrors.lastName = lastNameValidation.error || "Last name is required";
     const passwordValidation = validatePassword(formData.password);
-    if (!passwordValidation.isValid) {
-      newErrors.password = passwordValidation.errors[0];
-    }
-    
-    if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = "Passwords do not match";
-    }
-    if (!formData.secretKey.trim()) {
-      newErrors.secretKey = "Secret key is required";
-    }
-
+    if (!passwordValidation.isValid) newErrors.password = passwordValidation.errors[0];
+    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match";
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!validateForm()) {
-      return;
-    }
+  const validateDirectForm = () => {
+    const newErrors: Record<string, string> = {};
+    const firstNameValidation = validateName(formData.firstName, 'First name');
+    if (!firstNameValidation.isValid) newErrors.firstName = firstNameValidation.error || "First name is required";
+    const lastNameValidation = validateName(formData.lastName, 'Last name');
+    if (!lastNameValidation.isValid) newErrors.lastName = lastNameValidation.error || "Last name is required";
+    if (!formData.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) newErrors.email = "Valid email is required";
+    const passwordValidation = validatePassword(formData.password);
+    if (!passwordValidation.isValid) newErrors.password = passwordValidation.errors[0];
+    if (formData.password !== formData.confirmPassword) newErrors.confirmPassword = "Passwords do not match";
+    if (!formData.secretKey.trim()) newErrors.secretKey = "Secret key is required";
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
 
+  const handleInviteSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateInviteForm()) return;
     setIsLoading(true);
-    
+    try {
+      const response = await api.acceptAdminInvite({ token: token!, lastName: formData.lastName, password: formData.password });
+      if (response.success) {
+        setIsSuccess(true);
+        toast({ title: "Account Setup Complete", description: "Your account is ready. You can now log in." });
+      }
+    } catch (error: any) {
+      toast({ title: "Setup Failed", description: error.message || "Failed to complete account setup.", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleExistingUserAccept = async () => {
+    setIsLoading(true);
+    try {
+      const response = await api.acceptAdminInvite({ token: token! });
+      if (response.success) {
+        setIsSuccess(true);
+        toast({ title: "Invitation Accepted", description: "Your account has been upgraded. You can now log in to the admin panel." });
+      }
+    } catch (error: any) {
+      toast({ title: "Failed", description: error.message || "Failed to accept invitation.", variant: "destructive" });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const getRoleLabel = (role: string) => {
+    if (role === 'admin') return 'an Administrator';
+    if (role === 'support') return 'a Support Staff member';
+    return 'a Manager';
+  };
+
+  const getRoleIcon = (role: string) => {
+    if (role === 'support') return <Headphones className="w-8 h-8" />;
+    if (role === 'admin') return <ShieldAlert className="w-8 h-8" />;
+    return <Shield className="w-8 h-8" />;
+  };
+
+  const getRoleColor = (role: string) => {
+    if (role === 'support') return { bg: 'bg-blue-600', light: 'bg-blue-50', text: 'text-blue-600', border: 'border-blue-200' };
+    return { bg: 'bg-slate-900', light: 'bg-slate-50', text: 'text-slate-900', border: 'border-slate-200' };
+  };
+
+  const handleDirectSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!validateDirectForm()) return;
+    setIsLoading(true);
     try {
       const response = await api.post('/auth/register-admin', {
         firstName: formData.firstName,
@@ -98,22 +151,14 @@ export default function AdminRegister() {
         email: formData.email,
         password: formData.password,
         role: formData.role,
-        secretKey: formData.secretKey
+        secretKey: formData.secretKey,
       });
-
       if (response.success) {
         setIsSuccess(true);
-        toast({
-          title: "Registration Successful",
-          description: "Your admin account is ready. A confirmation has been sent to your email.",
-        });
+        toast({ title: "Registration Successful", description: "Your admin account is ready." });
       }
     } catch (error: any) {
-      toast({
-        title: "Registration Failed",
-        description: error.message || "Failed to create admin account. Please check the secret key and try again.",
-        variant: "destructive",
-      });
+      toast({ title: "Registration Failed", description: error.message || "Failed to create admin account.", variant: "destructive" });
     } finally {
       setIsLoading(false);
     }
@@ -127,28 +172,21 @@ export default function AdminRegister() {
             <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4 text-green-600">
               <CheckCircle2 className="w-8 h-8" />
             </div>
-            <CardTitle className="text-2xl text-green-800">Registration Successful</CardTitle>
+            <CardTitle className="text-2xl text-green-800">
+              {isInviteFlow ? "Account Setup Complete" : "Registration Successful"}
+            </CardTitle>
             <CardDescription className="text-green-700">
-              Welcome! Your admin account is ready to use.
+              {isInviteFlow
+                ? "Your administrator account is ready. You can now log in."
+                : "Welcome! Your admin account is ready to use."}
             </CardDescription>
           </CardHeader>
           <CardContent className="text-center space-y-4 pt-4">
-            <p className="text-slate-600 text-sm">
-              You have successfully registered as <strong>{formData.role === 'admin' ? 'an Administrator' : 'a Manager'}</strong> at <strong>{formData.email}</strong>.
-            </p>
-            <div className="bg-green-50 border border-green-200 rounded-lg p-3 text-left text-sm text-green-800">
-              <strong>Confirmation sent.</strong> A welcome email has been sent to <strong>{formData.email}</strong> with your account details. You can log in immediately using the credentials you just set.
-            </div>
-            <div className="bg-slate-50 p-4 rounded-lg border text-left text-sm space-y-2">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Role:</span>
-                <span className="font-medium capitalize">{formData.role === 'admin' ? 'Administrator' : 'Manager'}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Status:</span>
-                <span className="text-green-600 font-medium">Active</span>
-              </div>
-            </div>
+            {inviteInfo?.email && (
+              <p className="text-slate-600 text-sm">
+                Account created for <strong>{inviteInfo.email}</strong>.
+              </p>
+            )}
           </CardContent>
           <CardFooter className="flex justify-center pt-2">
             <Link href="/auth/admin-login">
@@ -156,6 +194,171 @@ export default function AdminRegister() {
             </Link>
           </CardFooter>
         </Card>
+      </div>
+    );
+  }
+
+  if (isInviteFlow) {
+    if (inviteLoading) return <PageLoader />;
+
+    if (inviteError) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+          <Card className="w-full max-w-md border-red-200 shadow-xl">
+            <CardHeader className="text-center">
+              <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4 text-red-600">
+                <AlertCircle className="w-8 h-8" />
+              </div>
+              <CardTitle className="text-xl text-red-800">Invalid Invitation</CardTitle>
+              <CardDescription className="text-red-700">{inviteError}</CardDescription>
+            </CardHeader>
+            <CardFooter className="flex justify-center">
+              <Link href="/auth/admin-login">
+                <Button variant="outline">Go to Admin Login</Button>
+              </Link>
+            </CardFooter>
+          </Card>
+        </div>
+      );
+    }
+
+    const roleColor = getRoleColor(inviteInfo?.role || 'manager');
+
+    if (inviteInfo?.isExistingUser) {
+      return (
+        <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+          <div className="w-full max-w-md space-y-6">
+            <Card className={`border-2 ${roleColor.border} shadow-xl`}>
+              <CardHeader className="text-center pb-2">
+                <div className={`mx-auto w-16 h-16 ${inviteInfo.role === 'support' ? 'bg-blue-100 text-blue-600' : 'bg-slate-100 text-slate-900'} rounded-full flex items-center justify-center mb-4`}>
+                  {getRoleIcon(inviteInfo.role)}
+                </div>
+                <CardTitle className="text-xl">Admin Panel Invitation</CardTitle>
+                <CardDescription>
+                  Hi <strong>{inviteInfo.firstName}</strong>, you have been invited to join the admin team as{' '}
+                  <strong>{getRoleLabel(inviteInfo.role)}</strong>.
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <div className={`rounded-lg ${roleColor.light} border ${roleColor.border} p-4`}>
+                  <p className="text-sm font-medium mb-1">Account</p>
+                  <p className="text-sm text-muted-foreground">{inviteInfo.email}</p>
+                </div>
+                <div className="rounded-lg bg-amber-50 border border-amber-200 p-4">
+                  <p className="text-xs text-amber-800">
+                    Your existing account will get admin panel access. Your regular account login and data remain unchanged.
+                  </p>
+                </div>
+              </CardContent>
+              <CardFooter className="flex flex-col gap-3">
+                <Button
+                  className={`w-full ${inviteInfo.role === 'support' ? 'bg-blue-600 hover:bg-blue-700' : ''}`}
+                  onClick={handleExistingUserAccept}
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Accepting...</>
+                  ) : (
+                    "Accept Invitation"
+                  )}
+                </Button>
+                <Link href="/auth/admin-login">
+                  <Button variant="ghost" size="sm" className="text-muted-foreground w-full">
+                    Cancel
+                  </Button>
+                </Link>
+              </CardFooter>
+            </Card>
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-slate-50 p-4">
+        <div className="w-full max-w-md space-y-6">
+          <div className="flex items-center gap-3">
+            <div className={`p-2 ${roleColor.bg} text-white rounded-lg`}>
+              {getRoleIcon(inviteInfo?.role || 'manager')}
+            </div>
+            <div>
+              <h1 className="text-2xl font-serif font-bold text-slate-900">Complete Your Account</h1>
+              <p className="text-slate-600 text-sm">You've been invited as {getRoleLabel(inviteInfo?.role || 'manager')}</p>
+            </div>
+          </div>
+
+          <Card className="border-slate-200 shadow-md">
+            <CardHeader>
+              <CardTitle>Set Up Your Account</CardTitle>
+              <CardDescription>
+                Welcome, <strong>{inviteInfo?.firstName}</strong>! Please complete your account setup below.
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <form onSubmit={handleInviteSubmit} className="space-y-4">
+                <div className="space-y-2">
+                  <Label>Email</Label>
+                  <Input value={inviteInfo?.email || ''} disabled className="bg-slate-50" />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="lastName">Last Name</Label>
+                  <Input
+                    id="lastName"
+                    placeholder="Doe"
+                    value={formData.lastName}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
+                    className={errors.lastName ? "border-red-500" : ""}
+                  />
+                  {errors.lastName && <p className="text-xs text-red-500">{errors.lastName}</p>}
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="password">Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={formData.password}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                      className={errors.password ? "border-red-500 pr-10" : "pr-10"}
+                    />
+                    <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
+                      {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  {errors.password && <p className="text-xs text-red-500">{errors.password}</p>}
+                  <PasswordStrengthIndicator password={formData.password} />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="confirmPassword">Confirm Password</Label>
+                  <div className="relative">
+                    <Input
+                      id="confirmPassword"
+                      type={showConfirmPassword ? "text" : "password"}
+                      placeholder="••••••••"
+                      value={formData.confirmPassword}
+                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                      className={errors.confirmPassword ? "border-red-500 pr-10" : "pr-10"}
+                    />
+                    <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
+                      {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                    </Button>
+                  </div>
+                  {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword}</p>}
+                </div>
+
+                <div className="pt-2">
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Setting Up...</> : "Complete Setup"}
+                  </Button>
+                </div>
+              </form>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     );
   }
@@ -182,31 +385,29 @@ export default function AdminRegister() {
         <Card className="border-slate-200 shadow-md">
           <CardHeader>
             <CardTitle>Create Admin Account</CardTitle>
-            <CardDescription>
-              This page requires a valid secret key to create admin accounts.
-            </CardDescription>
+            <CardDescription>This page requires a valid secret key to create admin accounts.</CardDescription>
           </CardHeader>
           <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleDirectSubmit} className="space-y-4">
               <div className="grid sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="firstName">First Name</Label>
-                  <Input 
-                    id="firstName" 
-                    placeholder="John" 
+                  <Input
+                    id="firstName"
+                    placeholder="John"
                     value={formData.firstName}
-                    onChange={(e) => setFormData({...formData, firstName: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, firstName: e.target.value })}
                     className={errors.firstName ? "border-red-500" : ""}
                   />
                   {errors.firstName && <p className="text-xs text-red-500">{errors.firstName}</p>}
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="lastName">Last Name</Label>
-                  <Input 
-                    id="lastName" 
-                    placeholder="Doe" 
+                  <Input
+                    id="lastName"
+                    placeholder="Doe"
                     value={formData.lastName}
-                    onChange={(e) => setFormData({...formData, lastName: e.target.value})}
+                    onChange={(e) => setFormData({ ...formData, lastName: e.target.value })}
                     className={errors.lastName ? "border-red-500" : ""}
                   />
                   {errors.lastName && <p className="text-xs text-red-500">{errors.lastName}</p>}
@@ -215,12 +416,12 @@ export default function AdminRegister() {
 
               <div className="space-y-2">
                 <Label htmlFor="email">Email</Label>
-                <Input 
-                  id="email" 
-                  type="email" 
-                  placeholder="admin@example.com" 
+                <Input
+                  id="email"
+                  type="email"
+                  placeholder="admin@example.com"
                   value={formData.email}
-                  onChange={(e) => setFormData({...formData, email: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                   className={errors.email ? "border-red-500" : ""}
                 />
                 {errors.email && <p className="text-xs text-red-500">{errors.email}</p>}
@@ -230,21 +431,15 @@ export default function AdminRegister() {
                 <div className="space-y-2">
                   <Label htmlFor="password">Password</Label>
                   <div className="relative">
-                    <Input 
-                      id="password" 
+                    <Input
+                      id="password"
                       type={showPassword ? "text" : "password"}
-                      placeholder="••••••••" 
+                      placeholder="••••••••"
                       value={formData.password}
-                      onChange={(e) => setFormData({...formData, password: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                       className={errors.password ? "border-red-500 pr-10" : "pr-10"}
                     />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => setShowPassword(!showPassword)}
-                    >
+                    <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowPassword(!showPassword)}>
                       {showPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
@@ -254,48 +449,20 @@ export default function AdminRegister() {
                 <div className="space-y-2">
                   <Label htmlFor="confirmPassword">Confirm Password</Label>
                   <div className="relative">
-                    <Input 
-                      id="confirmPassword" 
+                    <Input
+                      id="confirmPassword"
                       type={showConfirmPassword ? "text" : "password"}
-                      placeholder="••••••••" 
+                      placeholder="••••••••"
                       value={formData.confirmPassword}
-                      onChange={(e) => setFormData({...formData, confirmPassword: e.target.value})}
+                      onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                       className={errors.confirmPassword ? "border-red-500 pr-10" : "pr-10"}
                     />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    >
+                    <Button type="button" variant="ghost" size="sm" className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent" onClick={() => setShowConfirmPassword(!showConfirmPassword)}>
                       {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
                     </Button>
                   </div>
                   {errors.confirmPassword && <p className="text-xs text-red-500">{errors.confirmPassword}</p>}
-                  {formData.confirmPassword && formData.password !== formData.confirmPassword && (
-                    <p className="text-xs text-red-500">Passwords do not match</p>
-                  )}
                 </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="role">Admin Role</Label>
-                <Select 
-                  value={formData.role} 
-                  onValueChange={(value) => setFormData({...formData, role: value})}
-                >
-                  <SelectTrigger>
-                    <SelectValue placeholder="Select role" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="admin">Administrator</SelectItem>
-                    <SelectItem value="manager">Manager</SelectItem>
-                  </SelectContent>
-                </Select>
-                <p className="text-[11px] text-muted-foreground">
-                  Administrators have full system access. Managers have limited admin access.
-                </p>
               </div>
 
               <div className="space-y-2">
@@ -303,12 +470,12 @@ export default function AdminRegister() {
                   <Lock className="w-3 h-3" />
                   Secret Key
                 </Label>
-                <Input 
-                  id="secretKey" 
+                <Input
+                  id="secretKey"
                   type="password"
-                  placeholder="Enter the admin registration secret key" 
+                  placeholder="Enter the admin registration secret key"
                   value={formData.secretKey}
-                  onChange={(e) => setFormData({...formData, secretKey: e.target.value})}
+                  onChange={(e) => setFormData({ ...formData, secretKey: e.target.value })}
                   className={errors.secretKey ? "border-red-500" : ""}
                 />
                 {errors.secretKey && <p className="text-xs text-red-500">{errors.secretKey}</p>}
@@ -319,14 +486,7 @@ export default function AdminRegister() {
 
               <div className="pt-2">
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? (
-                    <>
-                      <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                      Creating Account...
-                    </>
-                  ) : (
-                    "Create Admin Account"
-                  )}
+                  {isLoading ? <><Loader2 className="mr-2 h-4 w-4 animate-spin" />Creating Account...</> : "Create Admin Account"}
                 </Button>
               </div>
             </form>

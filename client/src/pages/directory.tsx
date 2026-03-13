@@ -1210,143 +1210,347 @@ interface EmergencyTabContentProps {
   isLoadingProviders: boolean;
 }
 
+type LocationPhase = 'detecting' | 'prompt' | 'gps-requesting' | 'resolved';
+
+function getCountryFlag(code: string) {
+  return code.toUpperCase().replace(/./g, (c) =>
+    String.fromCodePoint(127397 + c.charCodeAt(0))
+  );
+}
+
+const SUPPORTED_COUNTRY_CODES = Object.keys(EMERGENCY_NUMBERS).filter((k) => k !== 'DEFAULT');
+
 const EmergencyTabContent = ({ emergencyProviders, isLoadingProviders }: EmergencyTabContentProps) => {
+  const [phase, setPhase] = useState<LocationPhase>('detecting');
   const [userCountry, setUserCountry] = useState<string | null>(null);
   const [userCity, setUserCity] = useState<string | null>(null);
   const [userRegion, setUserRegion] = useState<string | null>(null);
-  const [locationLoading, setLocationLoading] = useState(true);
-  const [locationError, setLocationError] = useState<string | null>(null);
+  const [showTermsDialog, setShowTermsDialog] = useState(false);
+  const [showCountryPicker, setShowCountryPicker] = useState(false);
+  const [callDialog, setCallDialog] = useState<{ number: string; label: string; description: string } | null>(null);
+
+  const countryOptions = useMemo(() => {
+    const displayNames = new Intl.DisplayNames(['en'], { type: 'region' });
+    return SUPPORTED_COUNTRY_CODES.map((code) => ({
+      code,
+      name: displayNames.of(code) || code,
+    })).sort((a, b) => a.name.localeCompare(b.name));
+  }, []);
 
   useEffect(() => {
-    const detectLocation = async () => {
-      setLocationLoading(true);
-      
-      if (navigator.geolocation) {
-        navigator.geolocation.getCurrentPosition(
-          async (position) => {
-            try {
-              const { latitude, longitude } = position.coords;
-              const response = await fetch(
-                `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
-              );
-              const data = await response.json();
-              if (data.countryCode) {
-                setUserCountry(data.countryCode);
-                setUserCity(data.city || data.locality || null);
-                setUserRegion(data.principalSubdivision || null);
-              } else {
-                await fallbackToIP();
-              }
-            } catch {
-              await fallbackToIP();
-            }
-            setLocationLoading(false);
-          },
-          async () => {
-            await fallbackToIP();
-            setLocationLoading(false);
-          },
-          { timeout: 5000 }
-        );
-      } else {
-        await fallbackToIP();
-        setLocationLoading(false);
-      }
-    };
-
-    const fallbackToIP = async () => {
-      try {
-        const response = await fetch('https://ipapi.co/json/');
-        const data = await response.json();
+    fetch('https://ipapi.co/json/')
+      .then((r) => r.json())
+      .then((data) => {
         if (data.country_code) {
           setUserCountry(data.country_code);
           setUserCity(data.city || null);
           setUserRegion(data.region || null);
+          setPhase('resolved');
         } else {
-          setLocationError("Could not detect your location");
+          setPhase('prompt');
         }
-      } catch {
-        setLocationError("Could not detect your location");
-      }
-    };
-
-    detectLocation();
+      })
+      .catch(() => setPhase('prompt'));
   }, []);
 
-  const emergencyNumbers = userCountry && EMERGENCY_NUMBERS[userCountry] 
-    ? EMERGENCY_NUMBERS[userCountry] 
-    : EMERGENCY_NUMBERS.DEFAULT;
+  const requestGPS = () => {
+    setShowTermsDialog(false);
+    setPhase('gps-requesting');
+    if (!navigator.geolocation) {
+      setPhase('prompt');
+      return;
+    }
+    navigator.geolocation.getCurrentPosition(
+      async (position) => {
+        try {
+          const { latitude, longitude } = position.coords;
+          const res = await fetch(
+            `https://api.bigdatacloud.net/data/reverse-geocode-client?latitude=${latitude}&longitude=${longitude}&localityLanguage=en`
+          );
+          const data = await res.json();
+          if (data.countryCode) {
+            setUserCountry(data.countryCode);
+            setUserCity(data.city || data.locality || null);
+            setUserRegion(data.principalSubdivision || null);
+          }
+        } catch {}
+        setPhase('resolved');
+      },
+      () => setPhase('prompt'),
+      { timeout: 8000 }
+    );
+  };
 
-  const countryName = userCountry ? new Intl.DisplayNames(['en'], { type: 'region' }).of(userCountry) : null;
-  const locationDisplay = userCity && countryName 
-    ? `${userCity}, ${countryName}` 
-    : userRegion && countryName
-    ? `${userRegion}, ${countryName}`
-    : countryName || null;
+  const handleManualCountry = (code: string) => {
+    setUserCountry(code);
+    setUserCity(null);
+    setUserRegion(null);
+    setShowCountryPicker(false);
+    setPhase('resolved');
+  };
+
+  const emergencyNumbers =
+    userCountry && EMERGENCY_NUMBERS[userCountry]
+      ? EMERGENCY_NUMBERS[userCountry]
+      : EMERGENCY_NUMBERS.DEFAULT;
+
+  const countryName = userCountry
+    ? new Intl.DisplayNames(['en'], { type: 'region' }).of(userCountry)
+    : null;
+  const countryFlag = userCountry ? getCountryFlag(userCountry) : null;
+  const locationDisplay =
+    userCity && countryName
+      ? `${userCity}, ${countryName}`
+      : userRegion && countryName
+      ? `${userRegion}, ${countryName}`
+      : countryName || null;
 
   return (
     <div className="space-y-6" data-testid="emergency-tab-content">
-      <Card className="border-red-200 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/30 dark:to-red-900/20 overflow-hidden">
-        <CardHeader className="pb-3 px-4 sm:px-6 pt-4 sm:pt-6">
-          <div className="flex items-center gap-3">
-            <div className="h-12 w-12 rounded-full bg-red-500 flex items-center justify-center shrink-0 shadow-lg shadow-red-500/30">
-              <AlertCircle className="w-6 h-6 text-white" />
-            </div>
-            <div>
-              <CardTitle className="text-lg sm:text-xl font-bold text-red-800 dark:text-red-200 flex items-center gap-2 flex-wrap">
-                Emergency Numbers
-                {locationLoading && (
-                  <Loader2 className="w-4 h-4 animate-spin text-red-600" />
-                )}
-              </CardTitle>
-              <CardDescription className="text-red-700/80 dark:text-red-300/80 font-medium text-sm">
-                {locationLoading ? (
-                  "Detecting your location..."
-                ) : locationError ? (
-                  "Showing international emergency numbers"
-                ) : locationDisplay ? (
-                  `Emergency numbers for ${locationDisplay}`
-                ) : (
-                  "International emergency numbers"
-                )}
-              </CardDescription>
-            </div>
-          </div>
-        </CardHeader>
-        <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-3">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {emergencyNumbers.map((emergency, index) => (
-              <a
-                key={index}
-                href={`tel:${emergency.number.replace(/\s/g, '')}`}
-                className="flex items-center gap-2 sm:gap-4 p-2 sm:p-4 bg-white dark:bg-red-950/50 rounded-xl border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/50 transition-all group shadow-sm hover:shadow-md directory-emergency-dial"
-                data-testid={`dial-emergency-${index}`}
-              >
-                <div className="h-10 w-10 sm:h-14 sm:w-14 rounded-full bg-red-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-md directory-emergency-dial-icon">
-                  <Phone className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-                </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-xl sm:text-2xl md:text-3xl font-bold text-red-700 dark:text-red-300 tracking-wide directory-emergency-number">{emergency.number}</p>
-                  <p className="font-bold text-sm text-red-800 dark:text-red-200 truncate">{emergency.label}</p>
-                  <p className="text-xs text-red-600/80 dark:text-red-400/80 truncate">{emergency.description}</p>
-                </div>
-                <div className="shrink-0">
-                  <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-red-100 dark:bg-red-800 flex items-center justify-center group-hover:bg-red-500 transition-colors directory-emergency-phone-btn">
-                    <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 dark:text-red-300 group-hover:text-white transition-colors" />
+
+      {/* Location prompt card – shown until country is resolved */}
+      {(phase === 'detecting' || phase === 'prompt' || phase === 'gps-requesting') && (
+        <Card className="border-amber-200 bg-amber-50/60 dark:bg-amber-950/20">
+          <CardContent className="pt-5 pb-5 px-4 sm:px-6">
+            {phase === 'detecting' && (
+              <div className="flex items-center gap-3 text-amber-800 dark:text-amber-200">
+                <Loader2 className="w-5 h-5 animate-spin shrink-0" />
+                <p className="text-sm font-medium">Detecting your country for local emergency numbers…</p>
+              </div>
+            )}
+
+            {phase === 'gps-requesting' && (
+              <div className="flex items-center gap-3 text-amber-800 dark:text-amber-200">
+                <Loader2 className="w-5 h-5 animate-spin shrink-0" />
+                <p className="text-sm font-medium">Requesting your GPS location…</p>
+              </div>
+            )}
+
+            {phase === 'prompt' && (
+              <div className="space-y-4">
+                <div className="flex items-start gap-3">
+                  <MapPin className="w-5 h-5 text-amber-600 darkink:text-amber-300 mt-0.5 shrink-0" />
+                  <div>
+                    <p className="font-semibold text-amber-900 dark:text-amber-100 text-sm">
+                      Set your location for accurate emergency numbers
+                    </p>
+                    <p className="text-xs text-amber-700 dark:text-amber-300 mt-0.5">
+                      Allow location access or pick your country from the list below.
+                    </p>
                   </div>
                 </div>
-              </a>
-            ))}
-          </div>
 
-          {!userCountry && !locationLoading && (
-            <div className="bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 text-sm text-amber-800 dark:text-amber-200 flex items-start gap-2">
-              <Info className="w-4 h-4 mt-0.5 shrink-0" />
-              <p>Allow location access to see emergency numbers and providers specific to your area.</p>
+                <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-center">
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className="border-amber-400 text-amber-900 hover:bg-amber-100 dark:border-amber-600 dark:text-amber-200 gap-2"
+                    onClick={() => setShowTermsDialog(true)}
+                  >
+                    <MapPin className="w-3.5 h-3.5" />
+                    Use My Location
+                  </Button>
+                  <span className="text-xs text-amber-600 dark:text-amber-400 hidden sm:block">or</span>
+                  <Select onValueChange={handleManualCountry}>
+                    <SelectTrigger className="w-full sm:w-56 h-9 border-amber-300 text-sm bg-white dark:bg-amber-950/30">
+                      <SelectValue placeholder="Select your country…" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-64">
+                      {countryOptions.map(({ code, name }) => (
+                        <SelectItem key={code} value={code}>
+                          <span className="mr-2">{getCountryFlag(code)}</span>{name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <p className="text-[11px] text-amber-600 dark:text-amber-400">
+                  Showing international defaults until your country is set.
+                </p>
+
+                {/* Still show default numbers while in prompt state */}
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1">
+                  {EMERGENCY_NUMBERS.DEFAULT.map((e, i) => (
+                    <button
+                      key={i}
+                      onClick={() => setCallDialog(e)}
+                      className="flex items-center gap-3 p-3 bg-white dark:bg-red-950/50 rounded-xl border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/50 transition-all group shadow-sm hover:shadow-md text-left"
+                    >
+                      <div className="h-10 w-10 rounded-full bg-red-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-md">
+                        <Phone className="w-4 h-4 text-white" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xl font-bold text-red-700 dark:text-red-300 tracking-wide">{e.number}</p>
+                        <p className="font-semibold text-xs text-red-800 dark:text-red-200 truncate">{e.label}</p>
+                        <p className="text-[10px] text-red-600/80 dark:text-red-400/80 truncate">{e.description}</p>
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Resolved: Full emergency numbers card */}
+      {phase === 'resolved' && (
+        <Card className="border-red-200 bg-gradient-to-br from-red-50 to-red-100/50 dark:from-red-950/30 dark:to-red-900/20 overflow-hidden">
+          <CardHeader className="pb-3 px-4 sm:px-6 pt-4 sm:pt-6">
+            <div className="flex items-start justify-between gap-3 flex-wrap">
+              <div className="flex items-center gap-3">
+                <div className="h-12 w-12 rounded-full bg-red-500 flex items-center justify-center shrink-0 shadow-lg shadow-red-500/30">
+                  <AlertCircle className="w-6 h-6 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-lg sm:text-xl font-bold text-red-800 dark:text-red-200">
+                    Emergency Numbers
+                  </CardTitle>
+                  <CardDescription className="text-red-700/80 dark:text-red-300/80 font-medium text-sm flex items-center gap-1.5 flex-wrap">
+                    {countryFlag && <span className="text-base">{countryFlag}</span>}
+                    {locationDisplay
+                      ? `Numbers for ${locationDisplay}`
+                      : countryName
+                      ? `Numbers for ${countryName}`
+                      : 'International numbers'}
+                    {userCountry && (
+                      <Badge variant="outline" className="text-[10px] font-bold border-red-300 text-red-700 ml-1">
+                        {userCountry}
+                      </Badge>
+                    )}
+                  </CardDescription>
+                </div>
+              </div>
+
+              {/* Change country control */}
+              <div className="flex items-center gap-2">
+                {!showCountryPicker ? (
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-xs text-red-600 hover:text-red-800 hover:bg-red-100 h-7 px-2 gap-1"
+                    onClick={() => setShowCountryPicker(true)}
+                  >
+                    <MapPin className="w-3 h-3" /> Change
+                  </Button>
+                ) : (
+                  <Select onValueChange={handleManualCountry}>
+                    <SelectTrigger className="w-44 h-8 text-xs border-red-300">
+                      <SelectValue placeholder="Select country…" />
+                    </SelectTrigger>
+                    <SelectContent className="max-h-64">
+                      {countryOptions.map(({ code, name }) => (
+                        <SelectItem key={code} value={code} className="text-sm">
+                          <span className="mr-2">{getCountryFlag(code)}</span>{name}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
+          </CardHeader>
+
+          <CardContent className="px-4 sm:px-6 pb-4 sm:pb-6 space-y-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {emergencyNumbers.map((emergency, index) => (
+                <button
+                  key={index}
+                  onClick={() => setCallDialog(emergency)}
+                  className="flex items-center gap-2 sm:gap-4 p-2 sm:p-4 bg-white dark:bg-red-950/50 rounded-xl border border-red-200 dark:border-red-800 hover:bg-red-50 dark:hover:bg-red-900/50 transition-all group shadow-sm hover:shadow-md text-left directory-emergency-dial"
+                  data-testid={`dial-emergency-${index}`}
+                >
+                  <div className="h-10 w-10 sm:h-14 sm:w-14 rounded-full bg-red-500 flex items-center justify-center shrink-0 group-hover:scale-105 transition-transform shadow-md directory-emergency-dial-icon">
+                    <Phone className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-xl sm:text-2xl md:text-3xl font-bold text-red-700 dark:text-red-300 tracking-wide directory-emergency-number">
+                      {emergency.number}
+                    </p>
+                    <p className="font-bold text-sm text-red-800 dark:text-red-200 truncate">{emergency.label}</p>
+                    <p className="text-xs text-red-600/80 dark:text-red-400/80 truncate">{emergency.description}</p>
+                  </div>
+                  <div className="shrink-0">
+                    <div className="h-8 w-8 sm:h-10 sm:w-10 rounded-full bg-red-100 dark:bg-red-800 flex items-center justify-center group-hover:bg-red-500 transition-colors directory-emergency-phone-btn">
+                      <Phone className="w-4 h-4 sm:w-5 sm:h-5 text-red-600 dark:text-red-300 group-hover:text-white transition-colors" />
+                    </div>
+                  </div>
+                </button>
+              ))}
+            </div>
+            <p className="text-[11px] text-red-500/70 text-center pt-1">
+              Tap a number to confirm before calling.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* Location Terms Dialog */}
+      <Dialog open={showTermsDialog} onOpenChange={setShowTermsDialog}>
+        <DialogContent className="sm:max-w-[380px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <MapPin className="h-5 w-5 text-amber-500" />
+              Allow Location Access
+            </DialogTitle>
+            <DialogDescription className="text-left space-y-2 pt-1">
+              <span className="block">
+                We'll use your device's GPS to detect your country and show you the correct local emergency numbers.
+              </span>
+              <span className="block text-xs text-muted-foreground">
+                Your location is used only in this session to match emergency contacts for your area. It is not stored or shared.
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col sm:flex-row gap-2 pt-2">
+            <Button variant="outline" className="flex-1" onClick={() => setShowTermsDialog(false)}>
+              Cancel
+            </Button>
+            <Button className="flex-1 bg-amber-500 hover:bg-amber-600 text-white" onClick={requestGPS}>
+              <MapPin className="w-4 h-4 mr-2" />
+              Allow &amp; Continue
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Call Confirmation Dialog */}
+      <Dialog open={!!callDialog} onOpenChange={(open) => { if (!open) setCallDialog(null); }}>
+        <DialogContent className="sm:max-w-[340px]">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-red-700">
+              <Phone className="h-5 w-5" />
+              Confirm Emergency Call
+            </DialogTitle>
+            <DialogDescription className="text-left pt-1 space-y-1">
+              <span className="block text-2xl font-bold text-red-700 tracking-wide">{callDialog?.number}</span>
+              <span className="block font-semibold text-base text-foreground">{callDialog?.label}</span>
+              <span className="block text-sm text-muted-foreground">{callDialog?.description}</span>
+              <span className="block text-xs text-muted-foreground pt-1">
+                Tap <strong>Call</strong> to dial this emergency number from your device.
+              </span>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-2 pt-2">
+            <Button variant="outline" className="flex-1" onClick={() => setCallDialog(null)}>
+              Cancel
+            </Button>
+            <Button
+              className="flex-1 bg-red-600 hover:bg-red-700 text-white gap-2"
+              onClick={() => {
+                if (callDialog) {
+                  window.location.href = `tel:${callDialog.number.replace(/\s/g, '')}`;
+                  setCallDialog(null);
+                }
+              }}
+            >
+              <Phone className="w-4 h-4" />
+              Call Now
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
 
       <Card className="border-red-100 overflow-hidden">
         <CardHeader className="pb-3 px-4 sm:px-6 pt-4 sm:pt-6 bg-red-50/50 dark:bg-red-950/20">
@@ -1693,6 +1897,48 @@ const ExpandedMapModal = ({ isOpen, onClose, providers, initialSelectedProviderI
   );
 };
 
+const MapPreview = ({ providers }: { providers: any[] }) => {
+  const providersWithLocation = providers.filter((p: any) =>
+    p.practice?.location?.coordinates?.length === 2
+  );
+  const defaultCenter: [number, number] =
+    providersWithLocation.length > 0 && providersWithLocation[0].practice?.location?.coordinates
+      ? [
+          providersWithLocation[0].practice.location.coordinates[1],
+          providersWithLocation[0].practice.location.coordinates[0],
+        ]
+      : [51.505, -0.09];
+
+  return (
+    <div className="w-full h-full relative isolate overflow-hidden">
+      <MapContainer
+        center={defaultCenter}
+        zoom={13}
+        scrollWheelZoom={false}
+        zoomControl={false}
+        dragging={false}
+        className="w-full h-full z-0 absolute inset-0 pointer-events-none"
+        style={{ width: '100%', height: '100%' }}
+      >
+        <TileLayer
+          attribution='&copy; <a href="/">mywellbeingtoday</a>'
+          url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
+        />
+        {providersWithLocation.map((provider: any) => (
+          <Marker
+            key={provider._id}
+            position={[
+              provider.practice.location.coordinates[1],
+              provider.practice.location.coordinates[0],
+            ]}
+            icon={mapIcon}
+          />
+        ))}
+      </MapContainer>
+    </div>
+  );
+};
+
 export default function Directory() {
   const [search, setSearch] = useState("");
   const [specialty, setSpecialty] = useState("all");
@@ -1708,7 +1954,7 @@ export default function Directory() {
   });
   const { user } = useAuth();
   const queryClient = useQueryClient();
-  const { isAtLimit, isNearLimit, getRemaining, getLimit } = useSubscription();
+  const { isAtLimit, isNearLimit, getRemaining, getLimit, plan } = useSubscription();
   
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -1808,42 +2054,6 @@ export default function Directory() {
     return filtered;
   }, [providers, search]);
 
-  const MapPreview = () => {
-    const providersWithLocation = providers.filter((p: any) => 
-      p.practice?.location?.coordinates?.length === 2
-    );
-    const defaultCenter: [number, number] = providersWithLocation.length > 0 && 
-      providersWithLocation[0].practice?.location?.coordinates ?
-      [providersWithLocation[0].practice.location.coordinates[1], providersWithLocation[0].practice.location.coordinates[0]] :
-      [51.505, -0.09];
-
-    return (
-      <div className="w-full h-full relative isolate overflow-hidden">
-        <MapContainer 
-          center={defaultCenter}
-          zoom={13} 
-          scrollWheelZoom={false} 
-          zoomControl={false}
-          dragging={false}
-          className="w-full h-full z-0 absolute inset-0 pointer-events-none"
-          style={{ width: '100%', height: '100%' }}
-        >
-           <TileLayer
-             attribution='&copy; <a href="/">mywellbeingtoday</a>'
-             url="https://{s}.basemaps.cartocdn.com/light_all/{z}/{x}/{y}{r}.png"
-           />
-           {providersWithLocation.map((provider: any) => (
-             <Marker 
-                key={provider._id} 
-                position={[provider.practice.location.coordinates[1], provider.practice.location.coordinates[0]]}
-                icon={mapIcon}
-             />
-           ))}
-        </MapContainer>
-      </div>
-    );
-  };
-
   const aiSuggestion = aiSuggestionsData?.aiSuggestion;
   const aiProviders = aiSuggestionsData?.providers || [];
   const wellbeingSnapshot = aiSuggestionsData?.userWellbeingSnapshot;
@@ -1861,7 +2071,7 @@ export default function Directory() {
       {isAtLimit("directoryAccess") && (
         <UpgradePrompt
           feature="directoryAccess"
-          featureLabel="directory searches"
+          currentPlan={plan}
           limit={getLimit("directoryAccess")}
         />
       )}
@@ -2095,7 +2305,7 @@ export default function Directory() {
             <div className="bg-secondary/10 h-40 sm:h-48 md:h-64 relative flex items-center justify-center border-b group cursor-pointer w-full"
               onClick={() => setIsMapOpen(true)}
             >
-              {providers.length > 0 ? <MapPreview /> : (
+              {providers.length > 0 ? <MapPreview providers={providers} /> : (
                 <div className="flex flex-col items-center gap-2 text-muted-foreground">
                   <Navigation className="w-8 sm:w-12 h-8 sm:h-12" />
                   <p className="text-xs sm:text-sm font-medium">No provider locations available</p>
@@ -2198,20 +2408,22 @@ export default function Directory() {
                     <div className="flex flex-col items-center gap-3 sm:gap-4 text-center">
                       <User className="w-10 sm:w-12 h-10 sm:h-12 text-muted-foreground" />
                       <div>
-                        <h3 className="font-bold text-base sm:text-lg">No Providers Found</h3>
+                        <h3 className="font-bold text-base sm:text-lg">
+                          {search || city || specialty !== "all" ? "No Providers Found" : "Coming Soon"}
+                        </h3>
                         <p className="text-muted-foreground text-xs sm:text-sm mt-1">
-                          {search || city || specialty !== "all" 
+                          {search || city || specialty !== "all"
                             ? "Try adjusting your search filters."
-                            : "No providers are currently available."}
+                            : "We're bringing the best and nearest providers to you soon."}
                         </p>
                       </div>
                     </div>
                   </Card>
                 ) : (
                   filteredProviders.map((provider: any) => (
-                    <ProviderCard 
-                      key={provider._id} 
-                      provider={provider} 
+                    <ProviderCard
+                      key={provider._id}
+                      provider={provider}
                       onLocationClick={handleProviderLocationClick}
                     />
                   ))
@@ -2246,9 +2458,13 @@ export default function Directory() {
                       <div className="flex flex-col items-center gap-3 sm:gap-4 text-center">
                         <User className="w-10 sm:w-12 h-10 sm:h-12 text-muted-foreground" />
                         <div>
-                          <h3 className="font-bold text-base sm:text-lg">No Providers Found</h3>
+                          <h3 className="font-bold text-base sm:text-lg">
+                            {search || city ? "No Providers Found" : "Coming Soon"}
+                          </h3>
                           <p className="text-muted-foreground text-xs sm:text-sm mt-1">
-                            Try adjusting your search filters.
+                            {search || city
+                              ? "Try adjusting your search filters."
+                              : "We're bringing the best and nearest providers to you soon."}
                           </p>
                         </div>
                       </div>

@@ -3,7 +3,8 @@ import { AppError } from '../middlewares/errorHandler.js';
 import { logAction } from '../middlewares/auditLog.js';
 import { USER_ROLES } from '../config/constants.js';
 import { generateAdminInsights } from '../services/aiService.js';
-import { sendProviderApprovalEmail, sendAdminCreationEmail } from '../services/emailService.js';
+import { sendProviderApprovalEmail, sendAdminCreationEmail, sendAdminInviteEmail, sendNotification } from '../services/emailService.js';
+import crypto from 'crypto';
 
 export const getUsers = async (req, res, next) => {
   try {
@@ -621,7 +622,10 @@ export const getDashboardStats = async (req, res, next) => {
       totalCertificates,
       totalActivities,
       totalMoodLogs,
-      totalAuditLogs
+      totalAuditLogs,
+      totalAdmins,
+      totalManagers,
+      totalSupport
     ] = await Promise.all([
       User.countDocuments({ role: USER_ROLES.USER }),
       User.countDocuments({ role: USER_ROLES.USER, isActive: true, lastLogin: { $gte: weekAgo } }),
@@ -634,7 +638,10 @@ export const getDashboardStats = async (req, res, next) => {
       Certificate.countDocuments(),
       ActivityLog.countDocuments(),
       MoodLog.countDocuments(),
-      AuditLog.countDocuments()
+      AuditLog.countDocuments(),
+      User.countDocuments({ role: USER_ROLES.ADMIN }),
+      User.countDocuments({ role: USER_ROLES.MANAGER }),
+      User.countDocuments({ role: USER_ROLES.SUPPORT })
     ]);
 
     const userGrowth = await User.aggregate([
@@ -654,6 +661,7 @@ export const getDashboardStats = async (req, res, next) => {
         activities: { total: totalActivities },
         moodLogs: { total: totalMoodLogs },
         auditLogs: { total: totalAuditLogs },
+        staff: { admins: totalAdmins, managers: totalManagers, support: totalSupport },
         userGrowth
       }
     });
@@ -831,13 +839,289 @@ export const getAdmins = async (req, res, next) => {
       throw new AppError('Access denied', 403, 'FORBIDDEN');
     }
 
-    const admins = await User.find({ 
-      role: { $in: [USER_ROLES.MANAGER, USER_ROLES.ADMIN] } 
-    }).select('-password');
+    const admins = await User.find({
+      $or: [
+        { role: { $in: [USER_ROLES.SUPPORT, USER_ROLES.MANAGER, USER_ROLES.ADMIN] } },
+        { 'adminInvite.accepted': false, 'adminInvite.expiresAt': { $gt: new Date() } }
+      ]
+    }).select('-password -adminInvite.token');
 
     res.json({
       success: true,
       data: { admins }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const inviteAdmin = async (req, res, next) => {
+  try {
+    if (req.user.role !== USER_ROLES.ADMIN) {
+      throw new AppError('Only admins can invite new admins', 403, 'FORBIDDEN');
+    }
+
+    const { email, firstName, lastName, role } = req.body;
+
+    if (!email || !firstName || !lastName) {
+      throw new AppError('Email, first name, and last name are required', 400, 'VALIDATION_ERROR');
+    }
+
+    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+    if (!emailRegex.test(email)) {
+      throw new AppError('Invalid email address', 400, 'VALIDATION_ERROR');
+    }
+
+    const existingUser = await User.findOne({ email: email.toLowerCase() });
+
+    const validRoles = [USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.SUPPORT];
+
+    if (existingUser && !existingUser.isPendingInvite) {
+      const isAlreadyStaff = [USER_ROLES.ADMIN, USER_ROLES.MANAGER, USER_ROLES.SUPPORT].includes(existingUser.role);
+      if (isAlreadyStaff) {
+        throw new AppError('This account is already an admin or staff member', 409, 'EMAIL_EXISTS');
+      }
+    }
+
+    const adminRole = validRoles.includes(role) ? role : USER_ROLES.MANAGER;
+    const inviteToken = crypto.randomBytes(32).toString('hex');
+    const expiresAt = new Date(Date.now() + 48 * 60 * 60 * 1000);
+
+    let pendingUser;
+    if (existingUser) {
+      existingUser.adminInvite = { token: inviteToken, expiresAt, role: adminRole, invitedBy: req.user._id, invitedAt: new Date(), accepted: false };
+      if (existingUser.isPendingInvite) {
+        existingUser.profile.firstName = firstName;
+        existingUser.profile.lastName = lastName;
+        existingUser.profile.displayName = `${firstName} ${lastName}`;
+      }
+      pendingUser = await existingUser.save();
+    } else {
+      pendingUser = await User.create({
+        email: email.toLowerCase(),
+        password: crypto.randomBytes(16).toString('hex'),
+        role: adminRole,
+        profile: { firstName, lastName, displayName: `${firstName} ${lastName}` },
+        verification: { emailVerified: false },
+        isActive: false,
+        isPendingInvite: true,
+        adminInvite: { token: inviteToken, expiresAt, role: adminRole, invitedBy: req.user._id, invitedAt: new Date(), accepted: false }
+      });
+    }
+
+    const baseUrl = process.env.APP_URL || process.env.RENDER_EXTERNAL_URL || 
+      (process.env.REPLIT_DOMAINS ? `https://${process.env.REPLIT_DOMAINS.split(',')[0].trim()}` : `http://localhost:5000`);
+    const inviteLink = `${baseUrl}/auth/admin-register?token=${inviteToken}`;
+
+    try {
+      await sendAdminInviteEmail(email, firstName, inviteLink, adminRole, lastName);
+    } catch (emailErr) {
+      console.error('[ADMIN] Failed to send invite email:', emailErr.message);
+    }
+
+    await logAction(req.user._id, 'INVITE_ADMIN', 'user', pendingUser._id, { email, role: adminRole, firstName }, req);
+
+    res.status(201).json({
+      success: true,
+      message: `Invitation sent to ${email}. They will receive an email to complete their account setup.`,
+      data: { inviteLink }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const getAdminInvite = async (req, res, next) => {
+  try {
+    const { token } = req.params;
+    if (!token) throw new AppError('Token is required', 400, 'VALIDATION_ERROR');
+
+    const user = await User.findOne({
+      'adminInvite.token': token,
+      'adminInvite.accepted': false,
+      'adminInvite.expiresAt': { $gt: new Date() },
+    });
+
+    if (!user) {
+      throw new AppError('Invalid or expired invitation link', 400, 'INVALID_TOKEN');
+    }
+
+    res.json({
+      success: true,
+      data: {
+        firstName: user.profile.firstName,
+        email: user.email,
+        role: user.adminInvite.role,
+        isExistingUser: !user.isPendingInvite
+      }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const acceptAdminInvite = async (req, res, next) => {
+  try {
+    const { token, lastName, password } = req.body;
+
+    if (!token) {
+      throw new AppError('Token is required', 400, 'VALIDATION_ERROR');
+    }
+
+    const user = await User.findOne({
+      'adminInvite.token': token,
+      'adminInvite.accepted': false,
+      'adminInvite.expiresAt': { $gt: new Date() },
+    });
+
+    if (!user) {
+      throw new AppError('Invalid or expired invitation link', 400, 'INVALID_TOKEN');
+    }
+
+    const newRole = user.adminInvite.role;
+
+    if (!user.isPendingInvite) {
+      user.role = newRole;
+    } else {
+      if (!lastName || !password) {
+        throw new AppError('Last name and password are required for new accounts', 400, 'VALIDATION_ERROR');
+      }
+      if (password.length < 8) {
+        throw new AppError('Password must be at least 8 characters', 400, 'VALIDATION_ERROR');
+      }
+      user.profile.lastName = lastName;
+      user.profile.displayName = `${user.profile.firstName} ${lastName}`;
+      user.password = password;
+      user.verification.emailVerified = true;
+      user.isActive = true;
+      user.role = newRole;
+    }
+
+    user.isPendingInvite = false;
+    user.adminInvite.accepted = true;
+    user.adminInvite.token = undefined;
+    await user.save();
+
+    await logAction(user._id, 'ACCEPT_ADMIN_INVITE', 'user', user._id, { email: user.email, role: newRole }, req);
+
+    const acceptedName = user.profile?.displayName || user.profile?.firstName || user.email;
+    const roleLabel = newRole === 'admin' ? 'Administrator' : newRole === 'manager' ? 'Manager' : 'Support Staff';
+    const allAdmins = await User.find({ role: USER_ROLES.ADMIN }).select('email profile').lean();
+    await Promise.allSettled(
+      allAdmins.map(admin => {
+        const adminName = admin.profile?.displayName || admin.profile?.firstName || 'Admin';
+        return sendNotification(
+          admin.email,
+          adminName,
+          `New ${roleLabel} has joined`,
+          `<p><strong>${acceptedName}</strong> (${user.email}) has accepted their invitation and joined the platform as a <strong>${roleLabel}</strong>.</p><p>They now have access to the admin portal with ${roleLabel.toLowerCase()} permissions.</p>`,
+          null,
+          `View ${roleLabel}s`
+        );
+      })
+    );
+
+    res.json({
+      success: true,
+      message: 'Account setup complete. You can now log in.',
+      data: { email: user.email }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteAdmin = async (req, res, next) => {
+  try {
+    if (req.user.role !== USER_ROLES.ADMIN) {
+      throw new AppError('Only admins can delete admin accounts', 403, 'FORBIDDEN');
+    }
+
+    const { id } = req.params;
+
+    if (id === req.user._id.toString()) {
+      throw new AppError('You cannot delete your own account', 400, 'INVALID_OPERATION');
+    }
+
+    const targetUser = await User.findById(id);
+    if (!targetUser) {
+      throw new AppError('Admin not found', 404, 'NOT_FOUND');
+    }
+
+    if (!['admin', 'manager', 'support'].includes(targetUser.role)) {
+      throw new AppError('User is not an admin, manager or support account', 400, 'INVALID_OPERATION');
+    }
+
+    await logAction(req.user._id, 'DELETE_ADMIN', 'user', targetUser._id, { email: targetUser.email, role: targetUser.role }, req);
+    await User.findByIdAndDelete(id);
+
+    res.json({
+      success: true,
+      message: 'Admin account deleted successfully'
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const updateAdmin = async (req, res, next) => {
+  try {
+    if (req.user.role !== USER_ROLES.ADMIN) {
+      throw new AppError('Only admins can update admin accounts', 403, 'FORBIDDEN');
+    }
+
+    const { id } = req.params;
+    const { isActive, role } = req.body;
+
+    const targetUser = await User.findById(id);
+    if (!targetUser || !['admin', 'manager', 'support'].includes(targetUser.role)) {
+      throw new AppError('Admin not found', 404, 'NOT_FOUND');
+    }
+
+    if (isActive !== undefined) targetUser.isActive = isActive;
+    if (role && ['admin', 'manager', 'support'].includes(role)) targetUser.role = role;
+    await targetUser.save();
+
+    await logAction(req.user._id, 'UPDATE_ADMIN', 'user', targetUser._id, { isActive, role }, req);
+
+    res.json({
+      success: true,
+      message: 'Admin updated successfully',
+      data: { user: targetUser.toJSON() }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const deleteProvider = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    const provider = await Provider.findById(id).populate('userId', 'email profile');
+    if (!provider) {
+      throw new AppError('Provider not found', 404, 'NOT_FOUND');
+    }
+
+    const providerName = provider.practice?.name ||
+      `${provider.userId?.profile?.firstName || ''} ${provider.userId?.profile?.lastName || ''}`.trim() ||
+      'Unknown';
+
+    await logAction(req.user._id, 'ADMIN_DELETE_PROVIDER', 'provider', provider._id, {
+      providerEmail: provider.userId?.email,
+      providerName,
+      adminEmail: req.user.email
+    }, req);
+
+    if (provider.userId) {
+      await User.findByIdAndUpdate(provider.userId._id, { role: USER_ROLES.USER });
+    }
+
+    await Provider.findByIdAndDelete(id);
+
+    res.json({
+      success: true,
+      message: 'Provider deleted successfully'
     });
   } catch (error) {
     next(error);

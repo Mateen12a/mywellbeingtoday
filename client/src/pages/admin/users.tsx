@@ -205,9 +205,13 @@ export default function AdminUsersPage() {
   const filteredUsers = useMemo(() => {
     if (!usersData?.users) return [];
     
-    if (riskFilter === "all") return usersData.users;
+    const nonAdminUsers = usersData.users.filter((u: any) => 
+      !['admin', 'manager', 'support'].includes(u.role)
+    );
     
-    return usersData.users.filter((user: any) => {
+    if (riskFilter === "all") return nonAdminUsers;
+    
+    return nonAdminUsers.filter((user: any) => {
       const risks = analyzeUserRisk(user);
       if (riskFilter === "flagged") return risks.length > 0;
       if (riskFilter === "high") return risks.some(r => r.level === "high");
@@ -218,7 +222,9 @@ export default function AdminUsersPage() {
 
   const flaggedCount = useMemo(() => {
     if (!usersData?.users) return 0;
-    return usersData.users.filter((user: any) => analyzeUserRisk(user).length > 0).length;
+    return usersData.users
+      .filter((u: any) => !['admin', 'manager', 'support'].includes(u.role))
+      .filter((user: any) => analyzeUserRisk(user).length > 0).length;
   }, [usersData?.users]);
 
   const disableUserMutation = useMutation({
