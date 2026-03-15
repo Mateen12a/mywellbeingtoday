@@ -249,7 +249,7 @@ export default function Landing() {
                 { icon: Activity, text: "Activity Log", detail: "Log your daily activities including exercise, meals, sleep, social interactions, and more. Build healthy habits by monitoring your routines." },
                 { icon: Heart, text: "Mood Analysis", detail: "Log and analyse your emotional wellbeing with AI-powered insights. Understand patterns in your mood and get personalised suggestions." },
                 { icon: FileText, text: "Wellbeing Report", detail: "Generate comprehensive wellbeing reports you can download and share with your healthcare providers for better-informed care." },
-                { icon: Users, text: "Provider Directory", detail: "Find certified health and social care providers near you. Book appointments and connect with professionals who can support your wellbeing journey." },
+                { icon: Users, text: "Providers Directory", detail: "Find certified health and social care providers near you. Book appointments and connect with professionals who can support your wellbeing journey." },
               ].map((item, i) => (
                 <button
                   key={i}
