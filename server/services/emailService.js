@@ -963,6 +963,203 @@ export async function sendOTPEmail(email, userName, otpCode) {
   }
 }
 
+const createStaffWelcomeEmailTemplate = (name, email, role, loginUrl) => {
+  const roleLabel = role === 'manager' ? 'Manager' : role === 'support' ? 'Support Staff' : 'Administrator';
+  const roleColor = role === 'support' ? '#2563EB' : '#1E293B';
+  const roleBadgeBg = role === 'support' ? '#EFF6FF' : '#F1F5F9';
+  const roleBadgeText = role === 'support' ? '#1D4ED8' : '#334155';
+
+  const managerPermissions = `
+    <tr><td style="padding:10px 0; font-family:${FONT_STACK}; font-size:14px; color:#374151; line-height:1.6; border-bottom:1px solid #E5E7EB;">
+      <span style="color:#10B981; font-weight:700; margin-right:10px;">&#10003;</span> Manage users and wellbeing data
+    </td></tr>
+    <tr><td style="padding:10px 0; font-family:${FONT_STACK}; font-size:14px; color:#374151; line-height:1.6; border-bottom:1px solid #E5E7EB;">
+      <span style="color:#10B981; font-weight:700; margin-right:10px;">&#10003;</span> Review &amp; approve healthcare providers
+    </td></tr>
+    <tr><td style="padding:10px 0; font-family:${FONT_STACK}; font-size:14px; color:#374151; line-height:1.6; border-bottom:1px solid #E5E7EB;">
+      <span style="color:#10B981; font-weight:700; margin-right:10px;">&#10003;</span> Moderate content and reported chats
+    </td></tr>
+    <tr><td style="padding:10px 0; font-family:${FONT_STACK}; font-size:14px; color:#374151; line-height:1.6;">
+      <span style="color:#10B981; font-weight:700; margin-right:10px;">&#10003;</span> Handle support tickets and system logs
+    </td></tr>`;
+
+  const supportPermissions = `
+    <tr><td style="padding:10px 0; font-family:${FONT_STACK}; font-size:14px; color:#374151; line-height:1.6; border-bottom:1px solid #E5E7EB;">
+      <span style="color:#3B82F6; font-weight:700; margin-right:10px;">&#10003;</span> View user profiles and wellbeing records
+    </td></tr>
+    <tr><td style="padding:10px 0; font-family:${FONT_STACK}; font-size:14px; color:#374151; line-height:1.6; border-bottom:1px solid #E5E7EB;">
+      <span style="color:#3B82F6; font-weight:700; margin-right:10px;">&#10003;</span> View provider information and audit logs
+    </td></tr>
+    <tr><td style="padding:10px 0; font-family:${FONT_STACK}; font-size:14px; color:#374151; line-height:1.6; border-bottom:1px solid #E5E7EB;">
+      <span style="color:#3B82F6; font-weight:700; margin-right:10px;">&#10003;</span> Access reported chats and support tickets
+    </td></tr>
+    <tr><td style="padding:10px 0; font-family:${FONT_STACK}; font-size:14px; color:#6B7280; line-height:1.6;">
+      <span style="color:#9CA3AF; font-weight:700; margin-right:10px;">&#8861;</span> View-only &mdash; no management actions
+    </td></tr>`;
+
+  const permissions = role === 'support' ? supportPermissions : managerPermissions;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1.0" />
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <title>Welcome to the Admin Portal</title>
+</head>
+<body style="margin:0; padding:0; background-color:#F8FAFC; font-family:${FONT_STACK};">
+  <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; background-color:#F8FAFC;">
+    <tr>
+      <td align="center" style="padding:40px 20px;">
+        <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; max-width:580px;">
+
+          <!-- Dark Header -->
+          <tr>
+            <td style="background-color:#0F172A; border-radius:12px 12px 0 0; padding:36px 40px 32px 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                <tr>
+                  <td>
+                    <img src="${LOGO_IMG_SRC}" alt="mywellbeingtoday" width="44" height="44" style="display:block; border-radius:22px; border:2px solid rgba(255,255,255,0.15);" />
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top:16px; font-family:${FONT_STACK}; font-size:22px; font-weight:700; color:#FFFFFF; letter-spacing:-0.3px; line-height:1.3;">
+                    mywellbeingtoday
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-top:6px;">
+                    <span style="display:inline-block; background-color:rgba(255,255,255,0.1); color:rgba(255,255,255,0.7); font-family:${FONT_STACK}; font-size:11px; font-weight:600; letter-spacing:1.2px; text-transform:uppercase; padding:4px 10px; border-radius:4px;">Admin Portal</span>
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+          <!-- Body -->
+          <tr>
+            <td style="background-color:#FFFFFF; padding:40px 40px 36px 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+
+                <!-- Role Badge -->
+                <tr>
+                  <td style="padding-bottom:24px;">
+                    <span style="display:inline-block; background-color:${roleBadgeBg}; color:${roleBadgeText}; font-family:${FONT_STACK}; font-size:12px; font-weight:700; letter-spacing:0.8px; text-transform:uppercase; padding:6px 14px; border-radius:20px; border:1px solid ${roleColor}22;">${roleLabel}</span>
+                  </td>
+                </tr>
+
+                <!-- Heading -->
+                <tr>
+                  <td style="font-family:${FONT_STACK}; font-size:26px; font-weight:700; color:#0F172A; line-height:1.3; padding-bottom:12px;">
+                    Welcome aboard, ${name}
+                  </td>
+                </tr>
+                <tr>
+                  <td style="font-family:${FONT_STACK}; font-size:15px; color:#64748B; line-height:1.7; padding-bottom:32px;">
+                    Your <strong style="color:#0F172A;">${roleLabel}</strong> account is now active. You can log in to the admin portal using the credentials you set during setup.
+                  </td>
+                </tr>
+
+                <!-- Account Card -->
+                <tr>
+                  <td style="padding-bottom:32px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse; background-color:#F8FAFC; border:1px solid #E2E8F0; border-radius:8px; overflow:hidden;">
+                      <tr>
+                        <td style="padding:14px 20px; border-bottom:1px solid #E2E8F0;">
+                          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                            <tr>
+                              <td style="font-family:${FONT_STACK}; font-size:11px; font-weight:600; color:#94A3B8; text-transform:uppercase; letter-spacing:0.8px; padding-bottom:4px;">Login Email</td>
+                            </tr>
+                            <tr>
+                              <td style="font-family:${FONT_STACK}; font-size:15px; font-weight:600; color:#0F172A;">${email}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding:14px 20px;">
+                          <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                            <tr>
+                              <td style="font-family:${FONT_STACK}; font-size:11px; font-weight:600; color:#94A3B8; text-transform:uppercase; letter-spacing:0.8px; padding-bottom:4px;">Role</td>
+                            </tr>
+                            <tr>
+                              <td style="font-family:${FONT_STACK}; font-size:15px; font-weight:600; color:${roleColor};">${roleLabel}</td>
+                            </tr>
+                          </table>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Permissions -->
+                <tr>
+                  <td style="font-family:${FONT_STACK}; font-size:13px; font-weight:700; color:#64748B; text-transform:uppercase; letter-spacing:0.8px; padding-bottom:12px;">
+                    Your Access
+                  </td>
+                </tr>
+                <tr>
+                  <td style="padding-bottom:32px;">
+                    <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                      ${permissions}
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- CTA Button -->
+                <tr>
+                  <td align="center" style="padding-bottom:28px;">
+                    <table cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                      <tr>
+                        <td align="center" style="border-radius:8px; background-color:#0F172A;">
+                          <a href="${loginUrl}" style="display:inline-block; background-color:#0F172A; color:#FFFFFF; text-decoration:none; padding:14px 40px; font-family:${FONT_STACK}; font-weight:600; font-size:15px; border-radius:8px; letter-spacing:0.2px;">
+                            Log in to Admin Portal &rarr;
+                          </a>
+                        </td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+
+                <!-- Security note -->
+                <tr>
+                  <td style="background-color:#FFFBEB; border:1px solid #FDE68A; border-radius:6px; padding:14px 16px;">
+                    <p style="margin:0; font-family:${FONT_STACK}; font-size:13px; color:#92400E; line-height:1.6;">
+                      <strong>Security reminder:</strong> Never share your login credentials. If you suspect unauthorised access, contact a system administrator immediately.
+                    </p>
+                  </td>
+                </tr>
+
+              </table>
+            </td>
+          </tr>
+
+          <!-- Footer -->
+          <tr>
+            <td style="background-color:#F1F5F9; border-top:1px solid #E2E8F0; border-radius:0 0 12px 12px; padding:24px 40px;">
+              <table width="100%" cellpadding="0" cellspacing="0" border="0" style="border-collapse:collapse;">
+                <tr>
+                  <td align="center" style="font-family:${FONT_STACK}; font-size:12px; color:#94A3B8; line-height:1.6;">
+                    &copy; 2026 mywellbeingtoday Admin Portal &bull; This email was sent to ${email}
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-top:4px; font-family:${FONT_STACK}; font-size:12px; color:#CBD5E1; line-height:1.6;">
+                    If you did not accept this invitation, please contact a system administrator.
+                  </td>
+                </tr>
+              </table>
+            </td>
+          </tr>
+
+        </table>
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
+};
+
 const createAdminSelfRegistrationEmailTemplate = (name, email, role) => {
   const roleLabel = role === 'admin' ? 'Administrator' : 'Manager';
   const content = `
@@ -1165,6 +1362,31 @@ const createAdminCreationEmailTemplate = (name, email, password, role) => {
   `;
   return createEmailWrapper(content);
 };
+
+export async function sendStaffWelcomeEmail(email, name, role) {
+  try {
+    const roleLabel = role === 'manager' ? 'Manager' : role === 'support' ? 'Support Staff' : 'Administrator';
+    const loginUrl = `${getBaseUrl()}/auth/admin-login`;
+    if (!resend) {
+      console.log('[EMAIL SERVICE] RESEND_API_KEY not configured. Staff welcome email would be sent to:', {
+        to: email, name, role: roleLabel, timestamp: new Date().toISOString()
+      });
+      return { success: true, fallback: true, message: 'Email logged (API key not configured)' };
+    }
+    const html = createStaffWelcomeEmailTemplate(name, email, role, loginUrl);
+    const response = await resend.emails.send({
+      from: SENDER_EMAIL,
+      to: email,
+      subject: `Welcome to the Admin Portal — You're now a ${roleLabel}`,
+      html,
+    });
+    console.log('[EMAIL SERVICE] Staff welcome email sent to:', email);
+    return response;
+  } catch (error) {
+    console.error('[EMAIL SERVICE] Error sending staff welcome email:', error);
+    throw error;
+  }
+}
 
 export async function sendAdminSelfRegistrationEmail(email, name, role) {
   try {

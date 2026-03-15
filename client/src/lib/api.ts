@@ -1212,6 +1212,44 @@ class ApiClient {
       body: JSON.stringify(activityData),
     });
   }
+
+  async getStaffMembers() {
+    return this.request<{ members: any[] }>('/admin/messages/members');
+  }
+
+  async getStaffUnreadCount() {
+    return this.request<{ count: number }>('/admin/messages/unread-count');
+  }
+
+  async getStaffConversations() {
+    return this.request<{ conversations: any[] }>('/admin/messages/conversations');
+  }
+
+  async createStaffConversation(recipientId: string, message?: string) {
+    return this.request<{ conversation: any; otherParticipant: any }>('/admin/messages/conversations', {
+      method: 'POST',
+      body: JSON.stringify({ recipientId, message }),
+    });
+  }
+
+  async getStaffConversationMessages(id: string, page = 1) {
+    return this.request<{ conversation: any; otherParticipant: any; messages: any[]; pagination: any }>(
+      `/admin/messages/conversations/${id}?page=${page}`
+    );
+  }
+
+  async sendStaffMessage(conversationId: string, content: string) {
+    return this.request<{ message: any }>(`/admin/messages/conversations/${conversationId}/send`, {
+      method: 'POST',
+      body: JSON.stringify({ content }),
+    });
+  }
+
+  async markStaffConversationRead(conversationId: string) {
+    return this.request<{}>(`/admin/messages/conversations/${conversationId}/read`, {
+      method: 'PATCH',
+    });
+  }
 }
 
 export const api = new ApiClient();

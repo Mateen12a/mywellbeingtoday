@@ -461,7 +461,7 @@ export default function AdminDashboard() {
                   htmlFor="role-toggle"
                   className="text-xs font-semibold cursor-pointer block text-foreground"
                 >
-                  Super Admin Mode
+                  Admin Mode
                 </Label>
                 <p className="text-[10px] text-muted-foreground">
                   View audit logs & configs
@@ -1078,7 +1078,7 @@ export default function AdminDashboard() {
                         <div className="flex flex-col items-center justify-center py-12 text-center">
                           <Shield className="h-12 w-12 text-muted-foreground mb-4" />
                           <p className="text-muted-foreground">
-                            Enable Super Admin mode to view audit logs
+                            Enable Admin mode to view audit logs
                           </p>
                         </div>
                       ) : (

@@ -67,7 +67,7 @@ export default function AdminAuditLogsPage() {
               <div className="flex flex-col items-center justify-center py-12 text-center">
                 <Shield className="h-12 w-12 text-muted-foreground mb-4" />
                 <p className="text-muted-foreground">
-                  Super Admin access required to view audit logs
+                  Admin access required to view audit logs
                 </p>
               </div>
             ) : (

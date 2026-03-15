@@ -122,7 +122,7 @@ export default function SystemSettingsPage() {
             <div>
               <h2 className="text-2xl font-bold tracking-tight" data-testid="text-page-title">System Settings</h2>
               <p className="text-muted-foreground">
-                Super Admin only. Configure platform-wide settings and maintenance mode.
+                Admin only. Configure platform-wide settings and maintenance mode.
               </p>
             </div>
           </div>

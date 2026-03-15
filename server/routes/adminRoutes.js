@@ -1,5 +1,6 @@
 import { Router } from 'express';
 import * as adminController from '../controllers/adminController.js';
+import * as staffMessageController from '../controllers/staffMessageController.js';
 import { authenticate, isAdmin, isSuperAdmin, isAdminOrSupport } from '../middlewares/auth.js';
 
 const router = Router();
@@ -41,5 +42,13 @@ router.get('/settings', isSuperAdmin, adminController.getSystemSettings);
 router.get('/analytics', isSuperAdmin, adminController.getAnonymizedAnalytics);
 router.get('/superadmin-stats', isSuperAdmin, adminController.getSuperAdminStats);
 router.get('/subscription-analytics', isSuperAdmin, adminController.getSubscriptionAnalytics);
+
+router.get('/messages/members', staffMessageController.getStaffMembers);
+router.get('/messages/unread-count', staffMessageController.getStaffUnreadCount);
+router.get('/messages/conversations', staffMessageController.getStaffConversations);
+router.post('/messages/conversations', staffMessageController.createStaffConversation);
+router.get('/messages/conversations/:id', staffMessageController.getStaffConversationMessages);
+router.post('/messages/conversations/:id/send', staffMessageController.sendStaffMessage);
+router.patch('/messages/conversations/:id/read', staffMessageController.markStaffConversationRead);
 
 export default router;

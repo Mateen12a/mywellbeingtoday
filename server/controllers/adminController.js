@@ -3,7 +3,7 @@ import { AppError } from '../middlewares/errorHandler.js';
 import { logAction } from '../middlewares/auditLog.js';
 import { USER_ROLES } from '../config/constants.js';
 import { generateAdminInsights } from '../services/aiService.js';
-import { sendProviderApprovalEmail, sendAdminCreationEmail, sendAdminInviteEmail, sendNotification } from '../services/emailService.js';
+import { sendProviderApprovalEmail, sendAdminCreationEmail, sendAdminInviteEmail, sendNotification, sendStaffWelcomeEmail } from '../services/emailService.js';
 import crypto from 'crypto';
 
 export const getUsers = async (req, res, next) => {
@@ -1014,7 +1014,13 @@ export const acceptAdminInvite = async (req, res, next) => {
 
     await logAction(user._id, 'ACCEPT_ADMIN_INVITE', 'user', user._id, { email: user.email, role: newRole }, req);
 
-    const acceptedName = user.profile?.displayName || user.profile?.firstName || user.email;
+    const acceptedName = user.profile?.displayName || `${user.profile?.firstName || ''} ${user.profile?.lastName || ''}`.trim() || user.profile?.firstName || user.email;
+
+    try {
+      await sendStaffWelcomeEmail(user.email, acceptedName, newRole);
+    } catch (emailErr) {
+      console.error('[ADMIN] Failed to send staff welcome email:', emailErr.message);
+    }
     const roleLabel = newRole === 'admin' ? 'Administrator' : newRole === 'manager' ? 'Manager' : 'Support Staff';
     const allAdmins = await User.find({ role: USER_ROLES.ADMIN }).select('email profile').lean();
     await Promise.allSettled(

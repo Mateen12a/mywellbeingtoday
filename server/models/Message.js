@@ -42,6 +42,11 @@ const messageSchema = new mongoose.Schema({
 });
 
 const conversationSchema = new mongoose.Schema({
+  type: {
+    type: String,
+    enum: ['user', 'staff'],
+    default: 'user'
+  },
   participants: [{
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',

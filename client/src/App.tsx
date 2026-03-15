@@ -44,6 +44,7 @@ import ManageManagersPage from "@/pages/admin/manage-managers";
 import ManageSupportPage from "@/pages/admin/manage-support";
 import SystemSettingsPage from "@/pages/admin/system-settings";
 import AdminContentPage from "@/pages/admin/content";
+import AdminMessagesPage from "@/pages/admin/messages";
 import PrivacyPolicy from "@/pages/privacy-policy";
 import TermsOfService from "@/pages/terms-of-service";
 import About from "@/pages/about";
@@ -245,6 +246,13 @@ function Router() {
           {() => (
             <ProtectedRoute requiredRole={['admin', 'manager', 'support']} fallbackPath="/dashboard">
               <AdminSupportPage />
+            </ProtectedRoute>
+          )}
+        </Route>
+        <Route path="/admin/messages">
+          {() => (
+            <ProtectedRoute requiredRole={['admin', 'manager', 'support']} fallbackPath="/dashboard">
+              <AdminMessagesPage />
             </ProtectedRoute>
           )}
         </Route>

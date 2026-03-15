@@ -189,6 +189,7 @@ export default function AdminUsersPage() {
   });
 
   const isSuperAdmin = currentUser?.role === "admin";
+  const isSupport = currentUser?.role === "support";
 
   const { data: usersData, isLoading: usersLoading } = useQuery({
     queryKey: ["admin", "users", userPage, userSearch],
@@ -540,7 +541,7 @@ export default function AdminUsersPage() {
                                 </TooltipTrigger>
                                 <TooltipContent>View Profile</TooltipContent>
                               </Tooltip>
-                              {user.isActive !== false && (
+                              {!isSupport && user.isActive !== false && (
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <Button
@@ -556,36 +557,38 @@ export default function AdminUsersPage() {
                                   <TooltipContent>Suspend User</TooltipContent>
                                 </Tooltip>
                               )}
-                              <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                  <Button variant="ghost" size="icon" className="h-8 w-8" data-testid={`button-user-actions-${user._id}`}>
-                                    <MoreHorizontal className="h-4 w-4" />
-                                  </Button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end">
-                                  <DropdownMenuItem onClick={() => openActionDialog("role", user)}>
-                                    Change Role
-                                  </DropdownMenuItem>
-                                  <DropdownMenuItem
-                                    onClick={() => openActionDialog("suspend", user)}
-                                    className="text-amber-600 focus:text-amber-600"
-                                  >
-                                    Disable Account
-                                  </DropdownMenuItem>
-                                  {canDeleteUser(user) && (
-                                    <>
-                                      <DropdownMenuSeparator />
-                                      <DropdownMenuItem
-                                        onClick={() => openDeleteDialog(user)}
-                                        className="text-red-600 focus:text-red-600"
-                                      >
-                                        <Trash2 className="h-4 w-4 mr-2" />
-                                        Delete User
-                                      </DropdownMenuItem>
-                                    </>
-                                  )}
-                                </DropdownMenuContent>
-                              </DropdownMenu>
+                              {!isSupport && (
+                                <DropdownMenu>
+                                  <DropdownMenuTrigger asChild>
+                                    <Button variant="ghost" size="icon" className="h-8 w-8" data-testid={`button-user-actions-${user._id}`}>
+                                      <MoreHorizontal className="h-4 w-4" />
+                                    </Button>
+                                  </DropdownMenuTrigger>
+                                  <DropdownMenuContent align="end">
+                                    <DropdownMenuItem onClick={() => openActionDialog("role", user)}>
+                                      Change Role
+                                    </DropdownMenuItem>
+                                    <DropdownMenuItem
+                                      onClick={() => openActionDialog("suspend", user)}
+                                      className="text-amber-600 focus:text-amber-600"
+                                    >
+                                      Disable Account
+                                    </DropdownMenuItem>
+                                    {canDeleteUser(user) && (
+                                      <>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                          onClick={() => openDeleteDialog(user)}
+                                          className="text-red-600 focus:text-red-600"
+                                        >
+                                          <Trash2 className="h-4 w-4 mr-2" />
+                                          Delete User
+                                        </DropdownMenuItem>
+                                      </>
+                                    )}
+                                  </DropdownMenuContent>
+                                </DropdownMenu>
+                              )}
                             </div>
                           </td>
                         </tr>

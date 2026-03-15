@@ -1,14 +1,8 @@
 import express from "express";
 import cors from "cors";
 import dotenv from "dotenv";
-import Matowatch from "matowatch";   // ← ESM import, not require()
+
 dotenv.config();
-// ← Init right here, before anything else
-Matowatch.init({
-  apiKey: process.env.MATOWATCH_API_KEY,
-  endpoint: 'https://matowatch.com',
-  environment: 'production'
-});
 
 import path from "path";
 import { fileURLToPath } from "url";

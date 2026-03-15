@@ -23,6 +23,7 @@ import {
   Headphones,
   Check,
   ShieldCheck,
+  MessageSquare,
 } from "lucide-react";
 import {
   Popover,
@@ -132,20 +133,30 @@ export default function AdminLayout({ children, title = "Admin Dashboard" }: Adm
     return 'info';
   };
 
-  const isSuperAdmin = currentUser?.role === 'admin';
+  const { data: staffUnreadData } = useQuery({
+    queryKey: ['staff-unread-count'],
+    queryFn: async () => {
+      const response = await api.getStaffUnreadCount();
+      return response?.data?.count || 0;
+    },
+    refetchInterval: 10000,
+    staleTime: 8000,
+  });
+  const staffUnreadCount = staffUnreadData || 0;
 
-  const allMenuItems = [
-    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard", roles: ['admin', 'manager', 'support'] },
-    { id: "users", label: "User Management", icon: Users, path: "/admin/users", roles: ['admin', 'manager', 'support'] },
-    { id: "providers", label: "Providers", icon: UserCheck, path: "/admin/providers", roles: ['admin', 'manager', 'support'] },
-    { id: "activity", label: "System Log", icon: Activity, path: "/admin/activity", roles: ['admin', 'manager'] },
-    { id: "reported-chats", label: "Reported Chats", icon: Flag, path: "/admin/reported-chats", roles: ['admin', 'manager', 'support'] },
-    { id: "support", label: "Support Tickets", icon: Headphones, path: "/admin/support", roles: ['admin', 'manager', 'support'] },
-    { id: "audit-logs", label: "Audit Logs", icon: Clock, path: "/admin/audit-logs", roles: ['admin', 'manager', 'support'] },
-    { id: "manage-admins", label: "Manage Admins", icon: ShieldCheck, path: "/admin/manage-admins", roles: ['admin'] },
-    { id: "manage-managers", label: "Manage Managers", icon: Shield, path: "/admin/manage-managers", roles: ['admin'] },
-    { id: "manage-support", label: "Manage Support", icon: Headphones, path: "/admin/manage-support", roles: ['admin'] },
-    { id: "settings", label: "Settings", icon: Settings, path: "/admin/settings", roles: ['admin', 'manager'] },
+  const allMenuItems: Array<{ id: string; label: string; icon: any; path: string; roles: string[]; badge: number }> = [
+    { id: "dashboard", label: "Dashboard", icon: LayoutDashboard, path: "/admin/dashboard", roles: ['admin', 'manager', 'support'], badge: 0 },
+    { id: "users", label: "User Management", icon: Users, path: "/admin/users", roles: ['admin', 'manager', 'support'], badge: 0 },
+    { id: "providers", label: "Providers", icon: UserCheck, path: "/admin/providers", roles: ['admin', 'manager', 'support'], badge: 0 },
+    { id: "messages", label: "Messages", icon: MessageSquare, path: "/admin/messages", roles: ['admin', 'manager', 'support'], badge: staffUnreadCount },
+    { id: "activity", label: "System Log", icon: Activity, path: "/admin/activity", roles: ['admin', 'manager'], badge: 0 },
+    { id: "reported-chats", label: "Reported Chats", icon: Flag, path: "/admin/reported-chats", roles: ['admin', 'manager', 'support'], badge: 0 },
+    { id: "support", label: "Support Tickets", icon: Headphones, path: "/admin/support", roles: ['admin', 'manager', 'support'], badge: 0 },
+    { id: "audit-logs", label: "Audit Logs", icon: Clock, path: "/admin/audit-logs", roles: ['admin', 'manager', 'support'], badge: 0 },
+    { id: "manage-admins", label: "Manage Admins", icon: ShieldCheck, path: "/admin/manage-admins", roles: ['admin'], badge: 0 },
+    { id: "manage-managers", label: "Manage Managers", icon: Shield, path: "/admin/manage-managers", roles: ['admin'], badge: 0 },
+    { id: "manage-support", label: "Manage Support", icon: Headphones, path: "/admin/manage-support", roles: ['admin'], badge: 0 },
+    { id: "settings", label: "Settings", icon: Settings, path: "/admin/settings", roles: ['admin', 'manager'], badge: 0 },
   ];
 
   const menuItems = allMenuItems.filter(item => 
@@ -208,10 +219,22 @@ export default function AdminLayout({ children, title = "Admin Dashboard" }: Adm
                         size="lg"
                         className="transition-all duration-200 rounded-lg hover:bg-muted"
                       >
-                        <item.icon className="h-5 w-5" />
-                        <span className="font-medium group-data-[collapsible=icon]:hidden">
+                        <div className="relative">
+                          <item.icon className="h-5 w-5" />
+                          {item.badge > 0 && (
+                            <span className="absolute -top-1.5 -right-1.5 h-4 w-4 bg-primary rounded-full flex items-center justify-center text-[9px] font-bold text-white">
+                              {item.badge > 9 ? '9+' : item.badge}
+                            </span>
+                          )}
+                        </div>
+                        <span className="font-medium group-data-[collapsible=icon]:hidden flex-1">
                           {item.label}
                         </span>
+                        {item.badge > 0 && (
+                          <span className="group-data-[collapsible=icon]:hidden h-5 min-w-5 px-1 bg-primary rounded-full flex items-center justify-center text-[10px] font-bold text-white">
+                            {item.badge > 9 ? '9+' : item.badge}
+                          </span>
+                        )}
                       </SidebarMenuButton>
                     </SidebarMenuItem>
                   ))}
