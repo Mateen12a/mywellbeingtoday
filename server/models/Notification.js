@@ -9,7 +9,7 @@ const notificationSchema = new mongoose.Schema({
   },
   type: {
     type: String,
-    enum: ['login', 'register', 'mood_logged', 'activity_logged', 'appointment_booked', 'appointment_confirmed', 'appointment_cancelled', 'appointment_reminder', 'emergency', 'welcome', 'system', 'provider_verified'],
+    enum: ['login', 'register', 'mood_logged', 'activity_logged', 'appointment_booked', 'appointment_confirmed', 'appointment_cancelled', 'appointment_reminder', 'emergency', 'welcome', 'system', 'provider_verified', 'provider_application'],
     required: true
   },
   title: {

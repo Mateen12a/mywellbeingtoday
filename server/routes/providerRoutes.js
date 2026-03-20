@@ -1,6 +1,7 @@
 import { Router } from 'express';
 import * as providerController from '../controllers/providerController.js';
 import { authenticate, isProvider, optionalAuth } from '../middlewares/auth.js';
+import { providerApplyLimiter } from '../middleware/rateLimiter.js';
 
 const router = Router();
 
@@ -23,6 +24,12 @@ router.get('/ai-conversations/:conversationId', authenticate, isProvider, provid
 router.patch('/ai-conversations/:conversationId', authenticate, isProvider, providerController.updateProviderConversationTitle);
 router.delete('/ai-conversations/:conversationId', authenticate, isProvider, providerController.deleteProviderConversation);
 router.post('/ai-conversations/:conversationId/messages', authenticate, isProvider, providerController.sendProviderChatMessage);
+
+// Provider request (manual matching) - public but uses optional auth to prefill
+router.post('/request', optionalAuth, providerController.submitProviderRequest);
+
+// Provider application (join as provider) - rate limited to prevent spam
+router.post('/apply', providerApplyLimiter, optionalAuth, providerController.submitProviderApplication);
 
 // Must be last - catches provider IDs
 router.get('/:id', optionalAuth, providerController.getProviderById);

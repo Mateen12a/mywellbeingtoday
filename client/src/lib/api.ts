@@ -437,6 +437,20 @@ class ApiClient {
     });
   }
 
+  async submitProviderRequest(data: { helpWith: string; preferredLocation: string; city?: string; name?: string; email?: string }) {
+    return this.request<{ id: string }>('/providers/request', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
+  async submitProviderApplication(data: { fullName: string; providerEmail: string; phone?: string; specialty: string; qualifications?: string; practiceType: string; city?: string; additionalInfo?: string }) {
+    return this.request<{ id: string }>('/providers/apply', {
+      method: 'POST',
+      body: JSON.stringify(data),
+    });
+  }
+
   async getAppointments(params?: any) {
     const query = new URLSearchParams(params as any).toString();
     return this.request<{ appointments: any[]; pagination: any }>(`/appointments?${query}`);

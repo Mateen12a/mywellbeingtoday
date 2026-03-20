@@ -13,6 +13,7 @@ import subscriptionRoutes from './subscriptionRoutes.js';
 import notificationRoutes from './notificationRoutes.js';
 import pushRoutes from './pushRoutes.js';
 import uploadRoutes from './uploadRoutes.js';
+import { authLimiter, apiLimiter } from '../middleware/rateLimiter.js';
 
 const router = Router();
 
@@ -26,7 +27,8 @@ router.get('/health', (req, res) => {
   });
 });
 
-router.use('/auth', authRoutes);
+router.use('/auth', authLimiter, authRoutes);
+router.use(apiLimiter);
 router.use('/activities', activityRoutes);
 router.use('/moods', moodRoutes);
 router.use('/wellbeing', wellbeingRoutes);

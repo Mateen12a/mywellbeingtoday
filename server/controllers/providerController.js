@@ -138,13 +138,6 @@ export const updateProviderProfile = async (req, res, next) => {
 
 export const searchProviders = async (req, res, next) => {
   try {
-    if (req.user?._id) {
-      const usageCheck = await checkMonthlyUsageLimit(req.user._id, 'directoryAccess');
-      if (!usageCheck.allowed) {
-        return res.status(403).json({ success: false, message: usageCheck.reason });
-      }
-      incrementUsage(req.user._id, 'directoryAccess').catch(err => console.error('[USAGE]', err));
-    }
 
     const { 
       specialty, 
@@ -809,6 +802,100 @@ export const sendProviderChatMessage = async (req, res, next) => {
           sources: aiResponse.sources
         }
       }
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const submitProviderRequest = async (req, res, next) => {
+  try {
+    const { helpWith, preferredLocation, city, name, email } = req.body;
+    if (!helpWith || !helpWith.trim()) {
+      return res.status(400).json({ success: false, message: 'Please describe what you need help with.' });
+    }
+    const ProviderRequest = (await import('../models/ProviderRequest.js')).default;
+    const requestData = {
+      helpWith: helpWith.trim(),
+      preferredLocation: preferredLocation || 'no_preference',
+      city: city?.trim() || '',
+      name: name?.trim() || '',
+      email: email?.trim() || '',
+    };
+    if (req.user) {
+      requestData.userId = req.user._id;
+      if (!requestData.email && req.user.email) requestData.email = req.user.email;
+      if (!requestData.name && req.user.profile) {
+        const fn = req.user.profile.firstName || '';
+        const ln = req.user.profile.lastName || '';
+        requestData.name = `${fn} ${ln}`.trim();
+      }
+    }
+    const providerRequest = await ProviderRequest.create(requestData);
+    res.status(201).json({ success: true, message: 'Your request has been received. Our team will be in touch shortly.', data: { id: providerRequest._id } });
+  } catch (error) {
+    next(error);
+  }
+};
+
+export const submitProviderApplication = async (req, res, next) => {
+  try {
+    const { fullName, providerEmail, phone, specialty, qualifications, practiceType, city, additionalInfo } = req.body;
+    if (!fullName?.trim()) return res.status(400).json({ success: false, message: 'Full name is required.' });
+    if (!providerEmail?.trim()) return res.status(400).json({ success: false, message: 'Provider email is required.' });
+    if (!specialty?.trim()) return res.status(400).json({ success: false, message: 'Specialty is required.' });
+
+    const normalizedEmail = providerEmail.trim().toLowerCase();
+
+    if (req.user && req.user.email?.toLowerCase() === normalizedEmail) {
+      return res.status(400).json({ success: false, message: 'Your provider account must use a different email address from your user account.' });
+    }
+
+    const User = (await import('../models/User.js')).default;
+    const existingUser = await User.findOne({ email: normalizedEmail });
+    if (existingUser) {
+      return res.status(400).json({ success: false, message: 'An account with this email already exists. Please use a different provider email.' });
+    }
+
+    const ProviderApplication = (await import('../models/ProviderApplication.js')).default;
+    const appData = {
+      fullName: fullName.trim(),
+      providerEmail: normalizedEmail,
+      phone: phone?.trim() || '',
+      specialty: specialty.trim(),
+      qualifications: qualifications?.trim() || '',
+      practiceType: practiceType || 'both',
+      city: city?.trim() || '',
+      additionalInfo: additionalInfo?.trim() || '',
+    };
+    if (req.user) {
+      appData.userId = req.user._id;
+      appData.submitterEmail = req.user.email;
+    }
+    const application = await ProviderApplication.create(appData);
+
+    try {
+      const Notification = (await import('../models/Notification.js')).default;
+      const adminUsers = await User.find({ role: { $in: ['admin', 'manager'] }, isActive: true }, '_id').lean();
+      if (adminUsers.length > 0) {
+        const notifications = adminUsers.map(u => ({
+          userId: u._id,
+          type: 'provider_application',
+          title: 'New Provider Application',
+          message: `${fullName.trim()} (${normalizedEmail}) has applied to join as a ${specialty.trim()} provider.`,
+          link: '/admin/providers',
+          metadata: { applicationId: application._id, specialty: specialty.trim(), practiceType },
+        }));
+        await Notification.insertMany(notifications);
+      }
+    } catch (notifErr) {
+      console.error('[PROVIDER_APPLY] Notification error (non-fatal):', notifErr.message);
+    }
+
+    res.status(201).json({
+      success: true,
+      message: 'Application received. Our team will review your information and contact you at your provider email to complete setup.',
+      data: { id: application._id },
     });
   } catch (error) {
     next(error);

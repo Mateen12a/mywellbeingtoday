@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle, CardFooter, CardDescription }
 import { Input } from "@/components/ui/input";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
-import { MapPin, Search, Star, Phone, Navigation, Clock, ShieldCheck, HeartPulse, Stethoscope, BriefcaseMedical, Ambulance, AlertCircle, Calendar as CalendarIcon, MessageSquare, CheckCircle2, X, Maximize2, Info, ChevronRight, FileText, Loader2, User, Sparkles, ChevronDown, ChevronUp } from "lucide-react";
+import { MapPin, Search, Star, Phone, Navigation, Clock, ShieldCheck, HeartPulse, Stethoscope, BriefcaseMedical, Ambulance, AlertCircle, Calendar as CalendarIcon, MessageSquare, CheckCircle2, X, Maximize2, Info, ChevronRight, FileText, Loader2, User, Sparkles, ChevronDown, ChevronUp, HandHeart, ArrowRight, Compass } from "lucide-react";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Switch } from "@/components/ui/switch";
 import { ScrollArea, ScrollBar } from "@/components/ui/scroll-area";
@@ -715,6 +715,349 @@ const ProviderCardSkeleton = () => (
   </Card>
 );
 
+interface RequestProviderDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+const RequestProviderDialog = ({ open, onOpenChange }: RequestProviderDialogProps) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [helpWith, setHelpWith] = useState('');
+  const [preferredLocation, setPreferredLocation] = useState('no_preference');
+  const [city, setCity] = useState('');
+  const [name, setName] = useState('');
+  const [email, setEmail] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  const handleClose = () => {
+    onOpenChange(false);
+    setTimeout(() => {
+      setHelpWith('');
+      setPreferredLocation('no_preference');
+      setCity('');
+      setName('');
+      setEmail('');
+      setIsSubmitting(false);
+      setSubmitted(false);
+    }, 300);
+  };
+
+  const handleSubmit = async () => {
+    if (!helpWith.trim()) {
+      toast({ title: 'Please describe what you need help with.', variant: 'destructive' });
+      return;
+    }
+    if (!user && !email.trim()) {
+      toast({ title: 'Please enter your email so we can get back to you.', variant: 'destructive' });
+      return;
+    }
+    setIsSubmitting(true);
+    try {
+      await api.submitProviderRequest({ helpWith, preferredLocation, city, name, email });
+      setSubmitted(true);
+    } catch (err: any) {
+      toast({ title: 'Something went wrong', description: err.message || 'Please try again.', variant: 'destructive' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-[480px] w-[95vw] z-[60] rounded-xl gap-0 p-0 overflow-hidden">
+        <div className="bg-primary/5 p-5 border-b">
+          <DialogHeader>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <HandHeart className="w-4 h-4 text-primary" />
+              </div>
+              <DialogTitle className="font-serif text-lg">Request a Provider</DialogTitle>
+            </div>
+            <DialogDescription className="text-sm">
+              Tell us what you need and we'll personally match you with the right provider.
+            </DialogDescription>
+          </DialogHeader>
+        </div>
+
+        <div className="p-5">
+          {submitted ? (
+            <div className="flex flex-col items-center gap-4 py-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <div className="h-16 w-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center shadow-lg shadow-green-100/50">
+                <CheckCircle2 className="h-9 w-9" />
+              </div>
+              <div className="space-y-1">
+                <h3 className="text-lg font-serif font-bold">Request Received</h3>
+                <p className="text-sm text-muted-foreground max-w-xs">
+                  Our team will review your needs and reach out to match you with the right provider shortly.
+                </p>
+              </div>
+              <Button onClick={handleClose} className="mt-2 w-full sm:w-auto">Done</Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="space-y-2">
+                <Label className="font-medium text-sm">What do you need help with? <span className="text-red-500">*</span></Label>
+                <Textarea
+                  placeholder="e.g. I'm dealing with anxiety and looking for a therapist who can do regular sessions..."
+                  value={helpWith}
+                  onChange={(e) => setHelpWith(e.target.value)}
+                  className="min-h-[100px] resize-none text-sm"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="font-medium text-sm">Preferred session type</Label>
+                <Select value={preferredLocation} onValueChange={setPreferredLocation}>
+                  <SelectTrigger className="text-sm z-[70]">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="z-[100]">
+                    <SelectItem value="no_preference">No preference</SelectItem>
+                    <SelectItem value="online">Online / video call</SelectItem>
+                    <SelectItem value="in_person">In person</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {preferredLocation === 'in_person' && (
+                <div className="space-y-2 animate-in fade-in duration-200">
+                  <Label className="font-medium text-sm">Your city or area</Label>
+                  <div className="relative">
+                    <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                    <Input
+                      placeholder="e.g. Kingston, Jamaica"
+                      value={city}
+                      onChange={(e) => setCity(e.target.value)}
+                      className="pl-9 text-sm"
+                    />
+                  </div>
+                </div>
+              )}
+
+              {!user && (
+                <div className="space-y-3 pt-1">
+                  <div className="space-y-2">
+                    <Label className="font-medium text-sm">Your name</Label>
+                    <Input placeholder="Your name" value={name} onChange={(e) => setName(e.target.value)} className="text-sm" />
+                  </div>
+                  <div className="space-y-2">
+                    <Label className="font-medium text-sm">Email <span className="text-red-500">*</span></Label>
+                    <Input type="email" placeholder="so we can reach you" value={email} onChange={(e) => setEmail(e.target.value)} className="text-sm" />
+                  </div>
+                </div>
+              )}
+
+              <div className="flex items-start gap-2 bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-blue-800">
+                <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                <p>We'll review your request and personally match you with the right provider. No commitment required.</p>
+              </div>
+
+              <Button onClick={handleSubmit} disabled={isSubmitting} className="w-full gap-2">
+                {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Sending...</> : <><HandHeart className="w-4 h-4" /> Send Request</>}
+              </Button>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
+interface JoinAsProviderDialogProps {
+  open: boolean;
+  onOpenChange: (open: boolean) => void;
+}
+
+const SPECIALTIES_FOR_APPLY = [
+  { id: "general_practitioner", label: "General Practitioner" },
+  { id: "mental_health", label: "Mental Health" },
+  { id: "nutrition", label: "Nutrition" },
+  { id: "physical_therapy", label: "Physical Therapy" },
+  { id: "counseling", label: "Counseling" },
+  { id: "social_work", label: "Social Work" },
+  { id: "occupational_therapy", label: "Occupational Therapy" },
+  { id: "psychiatry", label: "Psychiatry" },
+  { id: "emergency_services", label: "Emergency Services" },
+  { id: "other", label: "Other" },
+];
+
+const JoinAsProviderDialog = ({ open, onOpenChange }: JoinAsProviderDialogProps) => {
+  const { user } = useAuth();
+  const { toast } = useToast();
+  const [fullName, setFullName] = useState('');
+  const [providerEmail, setProviderEmail] = useState('');
+  const [phone, setPhone] = useState('');
+  const [specialty, setSpecialty] = useState('');
+  const [qualifications, setQualifications] = useState('');
+  const [practiceType, setPracticeType] = useState('both');
+  const [city, setCity] = useState('');
+  const [additionalInfo, setAdditionalInfo] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submitted, setSubmitted] = useState(false);
+
+  useEffect(() => {
+    if (open && user) {
+      const p = user.profile;
+      if (p) {
+        const name = `${p.firstName || ''} ${p.lastName || ''}`.trim();
+        if (name) setFullName(name);
+      }
+    }
+  }, [open, user]);
+
+  const handleClose = () => {
+    onOpenChange(false);
+    setTimeout(() => {
+      setFullName(''); setProviderEmail(''); setPhone(''); setSpecialty('');
+      setQualifications(''); setPracticeType('both'); setCity('');
+      setAdditionalInfo(''); setIsSubmitting(false); setSubmitted(false);
+    }, 300);
+  };
+
+  const handleSubmit = async () => {
+    if (!fullName.trim()) { toast({ title: 'Please enter your full name.', variant: 'destructive' }); return; }
+    if (!providerEmail.trim()) { toast({ title: 'Please enter a provider email address.', variant: 'destructive' }); return; }
+    if (user && providerEmail.trim().toLowerCase() === user.email?.toLowerCase()) {
+      toast({ title: 'Different email required', description: 'Your provider account must use a different email from your user account. These are separate accounts.', variant: 'destructive' }); return;
+    }
+    if (!specialty) { toast({ title: 'Please select your specialty.', variant: 'destructive' }); return; }
+    setIsSubmitting(true);
+    try {
+      await api.submitProviderApplication({ fullName, providerEmail, phone, specialty, qualifications, practiceType, city, additionalInfo });
+      setSubmitted(true);
+    } catch (err: any) {
+      toast({ title: 'Something went wrong', description: err.message || 'Please try again.', variant: 'destructive' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="sm:max-w-[520px] w-[95vw] z-[60] rounded-xl gap-0 p-0 overflow-hidden flex flex-col max-h-[90dvh]">
+        <div className="bg-primary/5 p-5 border-b shrink-0">
+          <DialogHeader>
+            <div className="flex items-center gap-2 mb-1">
+              <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center">
+                <Stethoscope className="w-4 h-4 text-primary" />
+              </div>
+              <DialogTitle className="font-serif text-lg">Apply to Join as a Provider</DialogTitle>
+            </div>
+            <DialogDescription className="text-sm">
+              Submit your professional information and our team will review your application. You'll receive an email at your provider address to complete account setup.
+            </DialogDescription>
+          </DialogHeader>
+        </div>
+
+        <div className="overflow-y-auto flex-1 p-5">
+          {submitted ? (
+            <div className="flex flex-col items-center gap-4 py-6 text-center animate-in fade-in slide-in-from-bottom-4 duration-300">
+              <div className="h-16 w-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center shadow-lg shadow-green-100/50">
+                <CheckCircle2 className="h-9 w-9" />
+              </div>
+              <div className="space-y-2">
+                <h3 className="text-lg font-serif font-bold">Application Submitted</h3>
+                <p className="text-sm text-muted-foreground max-w-sm">
+                  We'll review your application and reach out to <span className="font-medium text-foreground">{providerEmail}</span> to complete your provider account setup.
+                </p>
+              </div>
+              <div className="bg-blue-50 border border-blue-100 rounded-lg p-3 text-xs text-blue-800 text-left max-w-sm">
+                <p className="font-semibold mb-1">Important to know:</p>
+                <p>Your provider account is separate from your user account. You'll be able to log in with your provider email once your application is approved.</p>
+              </div>
+              <Button onClick={handleClose} className="w-full sm:w-auto mt-2">Done</Button>
+            </div>
+          ) : (
+            <div className="space-y-4">
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="font-medium text-sm">Full name <span className="text-red-500">*</span></Label>
+                  <Input placeholder="Dr. Jane Smith" value={fullName} onChange={(e) => setFullName(e.target.value)} className="text-sm" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="font-medium text-sm">Phone number</Label>
+                  <Input placeholder="+1 555 000 0000" value={phone} onChange={(e) => setPhone(e.target.value)} className="text-sm" />
+                </div>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="font-medium text-sm">
+                  Provider email <span className="text-red-500">*</span>
+                  <span className="text-muted-foreground font-normal ml-1">(for your provider account — can be different from your user email)</span>
+                </Label>
+                <Input type="email" placeholder="professional@example.com" value={providerEmail} onChange={(e) => setProviderEmail(e.target.value)} className="text-sm" />
+              </div>
+
+              <div className="space-y-2">
+                <Label className="font-medium text-sm">Specialty <span className="text-red-500">*</span></Label>
+                <Select value={specialty} onValueChange={setSpecialty}>
+                  <SelectTrigger className="text-sm z-[70]">
+                    <SelectValue placeholder="Select your specialty" />
+                  </SelectTrigger>
+                  <SelectContent className="z-[100]">
+                    {SPECIALTIES_FOR_APPLY.map(s => (
+                      <SelectItem key={s.id} value={s.id}>{s.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label className="font-medium text-sm">Qualifications & credentials</Label>
+                <Textarea placeholder="e.g. MBBS, MSc Mental Health, licensed CBT therapist with 8 years experience..." value={qualifications} onChange={(e) => setQualifications(e.target.value)} className="text-sm resize-none min-h-[80px]" />
+              </div>
+
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="font-medium text-sm">Session type</Label>
+                  <Select value={practiceType} onValueChange={setPracticeType}>
+                    <SelectTrigger className="text-sm z-[70]">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent className="z-[100]">
+                      <SelectItem value="both">In-person & Online</SelectItem>
+                      <SelectItem value="in_person">In-person only</SelectItem>
+                      <SelectItem value="online">Online only</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                {(practiceType === 'in_person' || practiceType === 'both') && (
+                  <div className="space-y-2 animate-in fade-in duration-200">
+                    <Label className="font-medium text-sm">City / Location</Label>
+                    <div className="relative">
+                      <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-400" />
+                      <Input placeholder="e.g. London, UK" value={city} onChange={(e) => setCity(e.target.value)} className="pl-9 text-sm" />
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label className="font-medium text-sm">Anything else you'd like us to know? <span className="text-muted-foreground font-normal">(optional)</span></Label>
+                <Textarea placeholder="e.g. I specialise in working with young adults and offer sliding-scale fees..." value={additionalInfo} onChange={(e) => setAdditionalInfo(e.target.value)} className="text-sm resize-none min-h-[60px]" />
+              </div>
+
+              <div className="bg-amber-50 border border-amber-100 rounded-lg p-3 text-xs text-amber-800 flex items-start gap-2">
+                <Info className="w-3.5 h-3.5 mt-0.5 shrink-0" />
+                <div>
+                  <p className="font-semibold">Provider and user accounts are separate.</p>
+                  <p className="mt-0.5">Once approved, you'll get an email to your provider address to set a password and complete setup. You can still keep using the platform as a regular user.</p>
+                </div>
+              </div>
+
+              <Button onClick={handleSubmit} disabled={isSubmitting} className="w-full gap-2">
+                {isSubmitting ? <><Loader2 className="w-4 h-4 animate-spin" /> Submitting...</> : <><Stethoscope className="w-4 h-4" /> Submit Application</>}
+              </Button>
+            </div>
+          )}
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+};
+
 interface AIProviderCardProps {
   provider: any;
 }
@@ -1226,7 +1569,6 @@ const EmergencyTabContent = ({ emergencyProviders, isLoadingProviders }: Emergen
   const [userCity, setUserCity] = useState<string | null>(null);
   const [userRegion, setUserRegion] = useState<string | null>(null);
   const [showTermsDialog, setShowTermsDialog] = useState(false);
-  const [showCountryPicker, setShowCountryPicker] = useState(false);
   const [callDialog, setCallDialog] = useState<{ number: string; label: string; description: string } | null>(null);
 
   const countryOptions = useMemo(() => {
@@ -1285,7 +1627,6 @@ const EmergencyTabContent = ({ emergencyProviders, isLoadingProviders }: Emergen
     setUserCountry(code);
     setUserCity(null);
     setUserRegion(null);
-    setShowCountryPicker(false);
     setPhase('resolved');
   };
 
@@ -1423,31 +1764,29 @@ const EmergencyTabContent = ({ emergencyProviders, isLoadingProviders }: Emergen
                 </div>
               </div>
 
-              {/* Change country control */}
-              <div className="flex items-center gap-2">
-                {!showCountryPicker ? (
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-xs text-red-600 hover:text-red-800 hover:bg-red-100 h-7 px-2 gap-1"
-                    onClick={() => setShowCountryPicker(true)}
-                  >
-                    <MapPin className="w-3 h-3" /> Change
-                  </Button>
-                ) : (
-                  <Select onValueChange={handleManualCountry}>
-                    <SelectTrigger className="w-44 h-8 text-xs border-red-300">
+              {/* Country selector */}
+              <div className="flex items-center">
+                <Select value={userCountry || ''} onValueChange={handleManualCountry}>
+                  <SelectTrigger className="w-44 h-8 text-xs border-red-300 bg-white/80">
+                    {userCountry ? (
+                      <span className="flex items-center gap-1.5 truncate">
+                        <span>{getCountryFlag(userCountry)}</span>
+                        <span className="truncate">
+                          {new Intl.DisplayNames(['en'], { type: 'region' }).of(userCountry) || userCountry}
+                        </span>
+                      </span>
+                    ) : (
                       <SelectValue placeholder="Select country…" />
-                    </SelectTrigger>
-                    <SelectContent className="max-h-64">
-                      {countryOptions.map(({ code, name }) => (
-                        <SelectItem key={code} value={code} className="text-sm">
-                          <span className="mr-2">{getCountryFlag(code)}</span>{name}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                    )}
+                  </SelectTrigger>
+                  <SelectContent className="max-h-64">
+                    {countryOptions.map(({ code, name }) => (
+                      <SelectItem key={code} value={code} className="text-sm">
+                        <span className="mr-2">{getCountryFlag(code)}</span>{name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
           </CardHeader>
@@ -1776,9 +2115,9 @@ const ExpandedMapModal = ({ isOpen, onClose, providers, initialSelectedProviderI
               <Navigation className="w-5 h-5 text-primary" /> Interactive Directory Map
             </DialogTitle>
             <DialogDescription className="hidden md:block text-gray-600 font-medium">
-              {providersWithLocation.length > 0 
+              {providers.length > 0
                 ? "Click on pins to view provider details and book appointments."
-                : "No providers with location data available."
+                : "Providers are being onboarded — the map will update as they join."
               }
             </DialogDescription>
           </div>
@@ -1790,6 +2129,35 @@ const ExpandedMapModal = ({ isOpen, onClose, providers, initialSelectedProviderI
         </div>
         
         <div className="relative w-full h-full bg-secondary/10 overflow-hidden isolate">
+          {providers.length === 0 ? (
+            <div className="w-full h-full flex flex-col items-center justify-center gap-6 p-6 bg-gradient-to-br from-primary/5 via-background to-secondary/10">
+              <div className="flex flex-col items-center gap-4 text-center max-w-md animate-in fade-in slide-in-from-bottom-4 duration-500">
+                <div className="relative">
+                  <div className="h-24 w-24 rounded-full bg-primary/10 flex items-center justify-center shadow-lg shadow-primary/10">
+                    <MapPin className="w-12 h-12 text-primary/60" />
+                  </div>
+                  <div className="absolute -top-1 -right-1 h-8 w-8 rounded-full bg-amber-100 border-2 border-white flex items-center justify-center shadow">
+                    <Clock className="w-4 h-4 text-amber-600" />
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <h3 className="text-xl font-serif font-bold text-black">Provider Map Coming Soon</h3>
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    We're carefully vetting and onboarding verified providers in your area. The map will light up as providers join the platform.
+                  </p>
+                </div>
+                <div className="flex flex-col sm:flex-row gap-2 w-full justify-center">
+                  <Button size="sm" className="gap-1.5 shadow-sm" onClick={onClose}>
+                    <HandHeart className="w-3.5 h-3.5" /> I need a provider
+                  </Button>
+                  <Button size="sm" variant="outline" className="gap-1.5 text-primary border-primary/30" onClick={onClose}>
+                    <Stethoscope className="w-3.5 h-3.5" /> Join as a provider
+                  </Button>
+                </div>
+                <p className="text-xs text-muted-foreground/70">In the meantime, use "Request a Provider" and our team will match you personally.</p>
+              </div>
+            </div>
+          ) : (
           <MapContainer 
             center={defaultCenter} 
             zoom={13} 
@@ -1831,6 +2199,7 @@ const ExpandedMapModal = ({ isOpen, onClose, providers, initialSelectedProviderI
                </Marker>
              ))}
           </MapContainer>
+          )}
 
           {selectedProvider && (
             <div className="absolute bottom-0 left-0 right-0 md:bottom-6 md:left-auto md:right-6 md:w-80 animate-in slide-in-from-bottom-10 fade-in duration-300 z-[400] pointer-events-auto p-2 sm:p-4 md:p-0 bg-gradient-to-t from-black/20 to-transparent md:bg-none">
@@ -1946,8 +2315,10 @@ export default function Directory() {
   const [isMapOpen, setIsMapOpen] = useState(false);
   const [aiDismissed, setAiDismissed] = useState(false);
   const [aiExpanded, setAiExpanded] = useState(true);
-  const [viewMode, setViewMode] = useState<"ai" | "browse">("ai");
+  const [viewMode, setViewMode] = useState<"ai" | "browse">("browse");
   const [selectedProviderForMap, setSelectedProviderForMap] = useState<string | null>(null);
+  const [requestOpen, setRequestOpen] = useState(false);
+  const [joinProviderOpen, setJoinProviderOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('tab') || "providers";
@@ -1993,6 +2364,8 @@ export default function Directory() {
     retry: 1,
   });
 
+  const atDirectoryLimit = isAtLimit("directoryAccess");
+
   const { data: providersData, isLoading, isError, error } = useQuery({
     queryKey: ["providers", specialty, city],
     queryFn: async () => {
@@ -2007,6 +2380,7 @@ export default function Directory() {
       return response.data;
     },
     staleTime: 1000 * 60 * 5,
+    enabled: !atDirectoryLimit,
   });
 
   const { data: emergencyProvidersData, isLoading: isLoadingEmergency } = useQuery({
@@ -2225,16 +2599,25 @@ export default function Directory() {
                         <ScrollBar orientation="horizontal" />
                       </ScrollArea>
                     ) : (
-                      <div className="text-center py-6 text-muted-foreground">
-                        <User className="w-8 h-8 mx-auto mb-2 opacity-50" />
-                        <p className="text-sm font-medium">No matching providers found for your profile.</p>
-                        <Button 
-                          variant="link" 
-                          className="mt-2 text-primary"
-                          onClick={() => setViewMode("browse")}
-                        >
-                          Browse all providers instead
-                        </Button>
+                      <div className="text-center py-6 space-y-3">
+                        <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center mx-auto">
+                          <Sparkles className="w-5 h-5 text-primary/60" />
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">Curating your matches</p>
+                          <p className="text-xs text-muted-foreground mt-1">Top providers are being carefully selected for the platform. In the meantime, our team can match you personally.</p>
+                        </div>
+                        <div className="flex flex-col sm:flex-row gap-2 justify-center pt-1 flex-wrap">
+                          <Button size="sm" className="gap-1.5" onClick={() => setRequestOpen(true)}>
+                            <HandHeart className="w-3.5 h-3.5" /> Request a Provider
+                          </Button>
+                          <Button size="sm" variant="outline" className="gap-1.5 text-primary border-primary/30" onClick={() => setJoinProviderOpen(true)}>
+                            <Stethoscope className="w-3.5 h-3.5" /> Are you a provider? Join us
+                          </Button>
+                          <Button size="sm" variant="ghost" onClick={() => setViewMode("browse")}>
+                            Browse all
+                          </Button>
+                        </div>
                       </div>
                     )}
                   </>
@@ -2288,6 +2671,12 @@ export default function Directory() {
                   </SelectContent>
                 </Select>
               </div>
+              {providers.length === 0 && !isLoading && !atDirectoryLimit && (
+                <div className="flex items-start gap-2 text-xs text-muted-foreground bg-muted/40 rounded-lg p-2.5">
+                  <Info className="w-3.5 h-3.5 mt-0.5 shrink-0 text-primary/60" />
+                  <span>Providers are launching soon — search will be active once the first providers join.</span>
+                </div>
+              )}
             </CardContent>
            </Card>
 
@@ -2301,29 +2690,69 @@ export default function Directory() {
         </div>
 
         <div className="order-1 md:order-2 md:col-span-2 space-y-4 sm:space-y-6">
+
+          {providers.length === 0 && !isLoading && (
+            <Card className="border-primary/20 bg-gradient-to-br from-primary/5 via-transparent to-transparent overflow-hidden">
+              <CardContent className="p-4 sm:p-6">
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                  <div className="h-12 w-12 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                    <ShieldCheck className="w-6 h-6 text-primary" />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-serif font-bold text-base sm:text-lg text-foreground">Top providers coming soon</h3>
+                    <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+                      We're carefully vetting and onboarding the best certified health professionals. Every provider on this platform is verified by our team.
+                    </p>
+                    <div className="flex flex-wrap items-center gap-2 mt-3">
+                      <Button size="sm" className="gap-1.5 font-bold" onClick={() => setRequestOpen(true)}>
+                        <HandHeart className="w-3.5 h-3.5" />
+                        Request a Provider
+                      </Button>
+                      <Button size="sm" variant="outline" className="gap-1.5 font-bold text-primary border-primary/30 hover:bg-primary/5" onClick={() => setJoinProviderOpen(true)}>
+                        <Stethoscope className="w-3.5 h-3.5" />
+                        Are you a provider? Join us
+                      </Button>
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
           <Card className="overflow-hidden border-2 border-primary/10 shadow-sm hover:shadow-md transition-shadow">
-            <div className="bg-secondary/10 h-40 sm:h-48 md:h-64 relative flex items-center justify-center border-b group cursor-pointer w-full"
-              onClick={() => setIsMapOpen(true)}
-            >
-              {providers.length > 0 ? <MapPreview providers={providers} /> : (
-                <div className="flex flex-col items-center gap-2 text-muted-foreground">
-                  <Navigation className="w-8 sm:w-12 h-8 sm:h-12" />
-                  <p className="text-xs sm:text-sm font-medium">No provider locations available</p>
+            {providers.length > 0 ? (
+              <div className="bg-secondary/10 h-40 sm:h-48 md:h-64 relative flex items-center justify-center border-b group cursor-pointer w-full"
+                onClick={() => setIsMapOpen(true)}
+              >
+                <MapPreview providers={providers} />
+                <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
+                <div className="absolute top-2 sm:top-4 right-2 sm:right-4 bg-white/95 p-1.5 sm:p-2 rounded-lg shadow-sm z-20 border border-gray-200">
+                  <Maximize2 className="w-4 sm:w-5 h-4 sm:h-5 text-black" />
                 </div>
-              )}
-              <div className="absolute inset-0 bg-black/5 group-hover:bg-black/0 transition-colors z-10" />
-
-              <div className="absolute top-2 sm:top-4 right-2 sm:right-4 bg-white/95 p-1.5 sm:p-2 rounded-lg shadow-sm z-20 border border-gray-200">
-                <Maximize2 className="w-4 sm:w-5 h-4 sm:h-5 text-black" />
-              </div>
-
-              <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center space-y-1 sm:space-y-2 z-20 px-3 sm:px-4 py-2 sm:py-3 bg-white/95 backdrop-blur-md rounded-lg sm:rounded-xl shadow-lg border border-gray-200 animate-in fade-in zoom-in duration-300 w-[min(90%,280px)] sm:w-auto">
-                <div className="flex items-center gap-1.5 sm:gap-2 justify-center text-black font-bold text-sm sm:text-lg">
-                  <Navigation className="w-4 sm:w-5 h-4 sm:h-5" /> Interactive Map
+                <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-center space-y-1 sm:space-y-2 z-20 px-3 sm:px-4 py-2 sm:py-3 bg-white/95 backdrop-blur-md rounded-lg sm:rounded-xl shadow-lg border border-gray-200 animate-in fade-in zoom-in duration-300 w-[min(90%,280px)] sm:w-auto">
+                  <div className="flex items-center gap-1.5 sm:gap-2 justify-center text-black font-bold text-sm sm:text-lg">
+                    <Navigation className="w-4 sm:w-5 h-4 sm:h-5" /> Interactive Map
+                  </div>
+                  <p className="text-[10px] sm:text-xs font-semibold text-gray-700">Click to expand & view providers</p>
                 </div>
-                <p className="text-[10px] sm:text-xs font-semibold text-gray-700">Click to expand & view providers</p>
               </div>
-            </div>
+            ) : (
+              <div className="bg-gradient-to-br from-primary/5 via-secondary/10 to-transparent h-40 sm:h-48 md:h-64 relative flex flex-col items-center justify-center border-b px-4 gap-3">
+                <div className="relative">
+                  <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
+                    <MapPin className="w-7 h-7 text-primary/50" />
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 h-5 w-5 rounded-full bg-amber-100 border-2 border-white flex items-center justify-center">
+                    <Clock className="w-2.5 h-2.5 text-amber-600" />
+                  </div>
+                </div>
+                <div className="text-center">
+                  <p className="text-sm font-bold text-foreground">Interactive Map</p>
+                  <p className="text-xs text-muted-foreground mt-0.5 max-w-[200px]">Will show verified providers near you once they join</p>
+                </div>
+                <span className="text-[10px] font-semibold tracking-wide text-primary/60 uppercase bg-primary/8 px-2.5 py-1 rounded-full border border-primary/15">Coming Soon</span>
+              </div>
+            )}
           </Card>
 
           <Tabs value={activeTab} className="w-full" onValueChange={(val) => {
@@ -2406,17 +2835,38 @@ export default function Directory() {
                 ) : filteredProviders.length === 0 ? (
                   <Card className="p-4 sm:p-6">
                     <div className="flex flex-col items-center gap-3 sm:gap-4 text-center">
-                      <User className="w-10 sm:w-12 h-10 sm:h-12 text-muted-foreground" />
-                      <div>
-                        <h3 className="font-bold text-base sm:text-lg">
-                          {search || city || specialty !== "all" ? "No Providers Found" : "Coming Soon"}
-                        </h3>
-                        <p className="text-muted-foreground text-xs sm:text-sm mt-1">
-                          {search || city || specialty !== "all"
-                            ? "Try adjusting your search filters."
-                            : "We're bringing the best and nearest providers to you soon."}
-                        </p>
-                      </div>
+                      {search || city || specialty !== "all" ? (
+                        <>
+                          <User className="w-10 sm:w-12 h-10 sm:h-12 text-muted-foreground" />
+                          <div>
+                            <h3 className="font-bold text-base sm:text-lg">No Providers Found</h3>
+                            <p className="text-muted-foreground text-xs sm:text-sm mt-1">Try adjusting your search filters.</p>
+                          </div>
+                          <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setRequestOpen(true)}>
+                            <HandHeart className="w-3.5 h-3.5" /> Can't find what you need? Request a provider
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
+                            <ShieldCheck className="w-7 h-7 text-primary/70" />
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-base sm:text-lg">Top providers coming soon</h3>
+                            <p className="text-muted-foreground text-xs sm:text-sm mt-1 max-w-xs mx-auto">
+                              We're vetting the best providers for this platform. Our team can personally match you in the meantime.
+                            </p>
+                          </div>
+                          <div className="flex flex-wrap justify-center gap-2">
+                            <Button size="sm" className="gap-1.5" onClick={() => setRequestOpen(true)}>
+                              <HandHeart className="w-3.5 h-3.5" /> Request a Provider
+                            </Button>
+                            <Button size="sm" variant="outline" className="gap-1.5 text-primary border-primary/30" onClick={() => setJoinProviderOpen(true)}>
+                              <Stethoscope className="w-3.5 h-3.5" /> Are you a provider? Join us
+                            </Button>
+                          </div>
+                        </>
+                      )}
                     </div>
                   </Card>
                 ) : (
@@ -2456,17 +2906,38 @@ export default function Directory() {
                   ) : filteredProviders.length === 0 ? (
                     <Card className="p-4 sm:p-6">
                       <div className="flex flex-col items-center gap-3 sm:gap-4 text-center">
-                        <User className="w-10 sm:w-12 h-10 sm:h-12 text-muted-foreground" />
-                        <div>
-                          <h3 className="font-bold text-base sm:text-lg">
-                            {search || city ? "No Providers Found" : "Coming Soon"}
-                          </h3>
-                          <p className="text-muted-foreground text-xs sm:text-sm mt-1">
-                            {search || city
-                              ? "Try adjusting your search filters."
-                              : "We're bringing the best and nearest providers to you soon."}
-                          </p>
-                        </div>
+                        {search || city ? (
+                          <>
+                            <User className="w-10 sm:w-12 h-10 sm:h-12 text-muted-foreground" />
+                            <div>
+                              <h3 className="font-bold text-base sm:text-lg">No Providers Found</h3>
+                              <p className="text-muted-foreground text-xs sm:text-sm mt-1">Try adjusting your search filters.</p>
+                            </div>
+                            <Button size="sm" variant="outline" className="gap-1.5" onClick={() => setRequestOpen(true)}>
+                              <HandHeart className="w-3.5 h-3.5" /> Can't find what you need? Request a provider
+                            </Button>
+                          </>
+                        ) : (
+                          <>
+                            <div className="h-14 w-14 rounded-full bg-primary/10 flex items-center justify-center">
+                              <ShieldCheck className="w-7 h-7 text-primary/70" />
+                            </div>
+                            <div>
+                              <h3 className="font-bold text-base sm:text-lg">Top providers coming soon</h3>
+                              <p className="text-muted-foreground text-xs sm:text-sm mt-1 max-w-xs mx-auto">
+                                We're vetting the best providers for this specialty. Our team can personally match you in the meantime.
+                              </p>
+                            </div>
+                            <div className="flex flex-wrap justify-center gap-2">
+                              <Button size="sm" className="gap-1.5" onClick={() => setRequestOpen(true)}>
+                                <HandHeart className="w-3.5 h-3.5" /> Request a Provider
+                              </Button>
+                              <Button size="sm" variant="outline" className="gap-1.5 text-primary border-primary/30" onClick={() => setJoinProviderOpen(true)}>
+                                <Stethoscope className="w-3.5 h-3.5" /> Are you a provider? Join us
+                              </Button>
+                            </div>
+                          </>
+                        )}
                       </div>
                     </Card>
                   ) : (
@@ -2484,6 +2955,9 @@ export default function Directory() {
           </Tabs>
         </div>
       </div>
+
+      <RequestProviderDialog open={requestOpen} onOpenChange={setRequestOpen} />
+      <JoinAsProviderDialog open={joinProviderOpen} onOpenChange={setJoinProviderOpen} />
 
       <ExpandedMapModal 
         isOpen={isMapOpen} 

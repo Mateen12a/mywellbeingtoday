@@ -23,13 +23,13 @@ export const CLIENT_PLAN_LIMITS: Record<string, Record<string, number>> = {
   free: {
     activityLogs: 2,
     moodLogs: 2,
-    directoryAccess: 2,
+    directoryAccess: -1,
     aiInteractions: 2,
   },
   starter: {
     activityLogs: 10,
     moodLogs: 10,
-    directoryAccess: 10,
+    directoryAccess: -1,
     aiInteractions: 10,
   },
   pro: {

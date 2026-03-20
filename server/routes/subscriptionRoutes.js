@@ -169,11 +169,11 @@ async function checkAndResetUsage(subscription) {
   return subscription;
 }
 
-const MONTHLY_FEATURES = ['directoryAccess'];
+const MONTHLY_FEATURES = [];
 
 const MONTHLY_PLAN_LIMITS = {
-  free: { directoryAccess: 10 },
-  starter: { directoryAccess: 50 },
+  free: { directoryAccess: -1 },
+  starter: { directoryAccess: -1 },
   pro: { directoryAccess: -1 },
   premium: { directoryAccess: -1 },
   team: { directoryAccess: -1 },
