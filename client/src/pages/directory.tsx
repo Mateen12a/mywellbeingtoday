@@ -2150,9 +2150,6 @@ const ExpandedMapModal = ({ isOpen, onClose, providers, initialSelectedProviderI
                   <Button size="sm" className="gap-1.5 shadow-sm" onClick={onClose}>
                     <HandHeart className="w-3.5 h-3.5" /> I need a provider
                   </Button>
-                  <Button size="sm" variant="outline" className="gap-1.5 text-primary border-primary/30" onClick={onClose}>
-                    <Stethoscope className="w-3.5 h-3.5" /> Join as a provider
-                  </Button>
                 </div>
                 <p className="text-xs text-muted-foreground/70">In the meantime, use "Request a Provider" and our team will match you personally.</p>
               </div>
@@ -2318,7 +2315,6 @@ export default function Directory() {
   const [viewMode, setViewMode] = useState<"ai" | "browse">("browse");
   const [selectedProviderForMap, setSelectedProviderForMap] = useState<string | null>(null);
   const [requestOpen, setRequestOpen] = useState(false);
-  const [joinProviderOpen, setJoinProviderOpen] = useState(false);
   const [activeTab, setActiveTab] = useState(() => {
     const urlParams = new URLSearchParams(window.location.search);
     return urlParams.get('tab') || "providers";
@@ -2611,9 +2607,6 @@ export default function Directory() {
                           <Button size="sm" className="gap-1.5" onClick={() => setRequestOpen(true)}>
                             <HandHeart className="w-3.5 h-3.5" /> Request a Provider
                           </Button>
-                          <Button size="sm" variant="outline" className="gap-1.5 text-primary border-primary/30" onClick={() => setJoinProviderOpen(true)}>
-                            <Stethoscope className="w-3.5 h-3.5" /> Are you a provider? Join us
-                          </Button>
                           <Button size="sm" variant="ghost" onClick={() => setViewMode("browse")}>
                             Browse all
                           </Button>
@@ -2707,10 +2700,6 @@ export default function Directory() {
                       <Button size="sm" className="gap-1.5 font-bold" onClick={() => setRequestOpen(true)}>
                         <HandHeart className="w-3.5 h-3.5" />
                         Request a Provider
-                      </Button>
-                      <Button size="sm" variant="outline" className="gap-1.5 font-bold text-primary border-primary/30 hover:bg-primary/5" onClick={() => setJoinProviderOpen(true)}>
-                        <Stethoscope className="w-3.5 h-3.5" />
-                        Are you a provider? Join us
                       </Button>
                     </div>
                   </div>
@@ -2861,9 +2850,6 @@ export default function Directory() {
                             <Button size="sm" className="gap-1.5" onClick={() => setRequestOpen(true)}>
                               <HandHeart className="w-3.5 h-3.5" /> Request a Provider
                             </Button>
-                            <Button size="sm" variant="outline" className="gap-1.5 text-primary border-primary/30" onClick={() => setJoinProviderOpen(true)}>
-                              <Stethoscope className="w-3.5 h-3.5" /> Are you a provider? Join us
-                            </Button>
                           </div>
                         </>
                       )}
@@ -2932,9 +2918,6 @@ export default function Directory() {
                               <Button size="sm" className="gap-1.5" onClick={() => setRequestOpen(true)}>
                                 <HandHeart className="w-3.5 h-3.5" /> Request a Provider
                               </Button>
-                              <Button size="sm" variant="outline" className="gap-1.5 text-primary border-primary/30" onClick={() => setJoinProviderOpen(true)}>
-                                <Stethoscope className="w-3.5 h-3.5" /> Are you a provider? Join us
-                              </Button>
                             </div>
                           </>
                         )}
@@ -2957,8 +2940,6 @@ export default function Directory() {
       </div>
 
       <RequestProviderDialog open={requestOpen} onOpenChange={setRequestOpen} />
-      <JoinAsProviderDialog open={joinProviderOpen} onOpenChange={setJoinProviderOpen} />
-
       <ExpandedMapModal 
         isOpen={isMapOpen} 
         onClose={() => {

@@ -759,7 +759,8 @@ export function Reverify() {
         api.setTokens(response.data.accessToken, response.data.refreshToken);
         api.setUser(response.data.user);
         toast({ title: "Verified!", description: "Session verified successfully" });
-        const dashboardPath = response.data.user.role === 'provider' ? '/provider-dashboard' : '/dashboard';
+        const role = response.data.user.role;
+        const dashboardPath = (role === 'admin' || role === 'manager' || role === 'support') ? '/admin/dashboard' : role === 'provider' ? '/provider-dashboard' : '/dashboard';
         setLocation(dashboardPath);
       } else {
         toast({ title: "Verification failed", description: response.message || "Invalid code", variant: "destructive" });
